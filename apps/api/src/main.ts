@@ -33,7 +33,7 @@ async function bootstrap() {
 
   await app.listen(port);
   logger.log(`🚀 Arihant BOS API is running on http://localhost:${port}/api`);
-  logger.log(`⚡ WebSocket gateway running on port ${configService.get<number>('WS_PORT') || 4001}`);
+  logger.log(`⚡ WebSocket gateway running on port ${port}`);
 }
 
 bootstrap();

@@ -12,7 +12,7 @@ import { Kysely } from 'kysely';
 import { KYSELY_DB } from '../database/database.module.js';
 import type { Database, UserRole } from '@arihant/shared';
 
-@WebSocketGateway(4001, {
+@WebSocketGateway({
   cors: {
     origin: '*',
     credentials: true,
