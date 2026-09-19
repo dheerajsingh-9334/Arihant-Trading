@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  # 1. Backend API (NestJS + Socket.IO)
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: arihant-api
+    restart: always
+    ports:
+      - "4000:4000"
+      - "4001:4001"
+    env_file:
+      - apps/api/.env
+    networks:
+      - arihant-net
+
+  # 2. Frontend Web (Next.js)
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: arihant-web
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - API_INTERNAL_URL=http://api:4000
+      - NEXT_PUBLIC_API_URL=http://localhost:4000/api
+      - NEXT_PUBLIC_WS_URL=http://localhost:4001
+    depends_on:
+      - api
+    networks:
+      - arihant-net
+
+networks:
+  arihant-net:
+    driver: bridge

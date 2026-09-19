@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Arihant BOS — Build Blueprint</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F4F6F9; --ink:#0F1521; --ink-2:#3D4658; --ink-3:#6E7688;
+    --line:#E2E7EF; --line-2:#EEF1F6; --surface:#FFFFFF;
+    --navy:#0B1A3A; --navy-2:#122A57;
+    --accent:#2350D9; --accent-ink:#17348F; --accent-tint:#E9EFFC;
+    --amber:#B9781A; --amber-bg:#FBF1DD;
+    --green:#17835A; --green-bg:#E2F2EA;
+    --red:#C4392C; --red-bg:#FBE7E4;
+    --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+    --sans:'IBM Plex Sans',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    --maxprose:70ch;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+  body{
+    margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
+    font-size:16px;line-height:1.62;-webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  code,.mono{font-family:var(--mono)}
+
+  /* ---------- HERO ---------- */
+  .hero{
+    background:
+      repeating-linear-gradient(0deg,rgba(255,255,255,.045) 0 1px,transparent 1px 44px),
+      repeating-linear-gradient(90deg,rgba(255,255,255,.045) 0 1px,transparent 1px 44px),
+      linear-gradient(155deg,var(--navy) 0%,var(--navy-2) 100%);
+    color:#EAF0FB;padding:76px 32px 60px;border-bottom:1px solid #0a1730;
+  }
+  .hero-inner{max-width:1180px;margin:0 auto}
+  .hero .tag{
+    display:inline-block;font-family:var(--mono);font-size:12.5px;letter-spacing:.06em;
+    color:#9DB6EC;border:1px solid #2C4A86;border-radius:999px;
+    padding:5px 12px;margin-bottom:22px;background:rgba(35,80,217,.14);
+  }
+  .hero h1{
+    font-size:clamp(34px,5.4vw,60px);line-height:1.03;letter-spacing:-.02em;
+    font-weight:700;margin:0 0 18px;max-width:20ch;
+  }
+  .hero .lead{font-size:clamp(16px,2vw,20px);color:#C3D2EE;max-width:60ch;margin:0 0 40px}
+  .hero .lead b{color:#fff;font-weight:600}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid #24406f;border-radius:14px;overflow:hidden;max-width:760px}
+  .stat{padding:20px 22px;border-right:1px solid #24406f;background:rgba(11,26,58,.4)}
+  .stat:last-child{border-right:none}
+  .stat .n{font-size:30px;font-weight:700;letter-spacing:-.02em;color:#fff;font-family:var(--mono)}
+  .stat .l{font-size:12.5px;color:#9DB6EC;margin-top:4px}
+  @media(max-width:720px){.stats{grid-template-columns:repeat(2,1fr)}.stat:nth-child(2){border-right:none}}
+
+  /* ---------- LAYOUT ---------- */
+  .wrap{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:236px 1fr;gap:44px;padding:0 32px}
+  .toc{position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto;padding:40px 0 40px;border-right:1px solid var(--line)}
+  .toc h4{font-size:12px;letter-spacing:.05em;color:var(--ink-3);margin:0 0 14px;font-weight:600}
+  .toc ol{list-style:none;margin:0;padding:0;counter-reset:t}
+  .toc li{counter-increment:t;margin:2px 0}
+  .toc a{display:flex;gap:9px;padding:6px 10px;border-radius:7px;color:var(--ink-2);font-size:13.5px;line-height:1.35}
+  .toc a::before{content:counter(t,decimal-leading-zero);font-family:var(--mono);color:var(--ink-3);font-size:12px}
+  .toc a:hover{background:var(--line-2);text-decoration:none}
+  .toc a.active{background:var(--accent-tint);color:var(--accent-ink);font-weight:600}
+  .toc a.active::before{color:var(--accent)}
+
+  main{padding:44px 0 90px;min-width:0}
+  section{padding:14px 0 46px;border-bottom:1px solid var(--line);margin-bottom:6px}
+  section:last-of-type{border-bottom:none}
+  .kick{display:flex;align-items:baseline;gap:12px;margin-bottom:6px}
+  .kick .num{font-family:var(--mono);font-size:14px;color:var(--accent);font-weight:600}
+  h2{font-size:clamp(24px,3vw,30px);letter-spacing:-.018em;font-weight:700;margin:0 0 14px;line-height:1.14}
+  h3{font-size:19px;font-weight:600;letter-spacing:-.01em;margin:34px 0 10px}
+  h4.sub{font-size:15px;font-weight:600;margin:22px 0 8px;color:var(--ink)}
+  p{margin:0 0 14px;max-width:var(--maxprose);color:var(--ink-2)}
+  p strong,li strong{color:var(--ink);font-weight:600}
+  ul,ol.list{max-width:var(--maxprose);color:var(--ink-2);padding-left:20px;margin:0 0 16px}
+  li{margin:7px 0}
+  .lede{font-size:18px;color:var(--ink);max-width:64ch}
+
+  /* callout */
+  .note{border-left:3px solid var(--accent);background:var(--accent-tint);
+    padding:16px 18px;border-radius:0 10px 10px 0;margin:20px 0;max-width:var(--maxprose)}
+  .note.warn{border-color:var(--amber);background:var(--amber-bg)}
+  .note.warn b,.note b{color:var(--ink)}
+  .note p{margin:0;color:var(--ink-2)}
+
+  /* pills */
+  .pill{display:inline-block;font-family:var(--mono);font-size:12px;font-weight:500;
+    padding:2px 8px;border-radius:6px;white-space:nowrap}
+  .p-blue{background:var(--accent-tint);color:var(--accent-ink)}
+  .p-amber{background:var(--amber-bg);color:var(--amber)}
+  .p-green{background:var(--green-bg);color:var(--green)}
+  .p-red{background:var(--red-bg);color:var(--red)}
+  .p-grey{background:var(--line-2);color:var(--ink-3)}
+
+  /* tables */
+  .tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;margin:18px 0;background:var(--surface)}
+  table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:560px}
+  th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line-2);vertical-align:top}
+  thead th{background:#FAFBFD;color:var(--ink);font-weight:600;font-size:12.5px;position:sticky;top:0}
+  tbody tr:last-child td{border-bottom:none}
+  td.c,th.c{text-align:center}
+  .matrix td:first-child{font-weight:500;color:var(--ink)}
+  .matrix td{font-family:var(--mono);font-size:12px}
+  .matrix .yn{color:var(--ink-3)}
+
+  /* code */
+  pre{background:var(--navy);color:#D6E1F5;border-radius:12px;padding:18px 20px;overflow-x:auto;
+    font-family:var(--mono);font-size:13px;line-height:1.62;margin:16px 0;border:1px solid #0a1730}
+  pre .c{color:#7E93BE}   /* comment */
+  pre .k{color:#8FB6FF}   /* key/folder */
+  pre .a{color:#F2C57C}   /* accent */
+  :not(pre)>code{background:var(--line-2);padding:1px 6px;border-radius:5px;font-size:13px;color:var(--accent-ink)}
+
+  /* generic card grid */
+  .grid{display:grid;gap:14px;margin:18px 0}
+  .g2{grid-template-columns:1fr 1fr}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  @media(max-width:760px){.g2,.g3{grid-template-columns:1fr}}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 18px}
+  .card h5{margin:0 0 6px;font-size:15px;font-weight:600}
+  .card p{font-size:14px;margin:0;color:var(--ink-2)}
+  .card .role-tag{font-family:var(--mono);font-size:11.5px;color:var(--accent);display:block;margin-bottom:8px}
+
+  /* flow diagram (chips + connectors) */
+  .flow{display:flex;flex-wrap:wrap;align-items:stretch;gap:0;margin:20px 0;background:var(--surface);
+    border:1px solid var(--line);border-radius:12px;padding:22px 20px}
+  .flow.v{flex-direction:column;align-items:flex-start;gap:0}
+  .step{border:1px solid var(--line);background:#FAFBFD;border-radius:9px;padding:9px 13px;font-size:13px;
+    font-weight:500;color:var(--ink);display:flex;flex-direction:column;gap:2px;min-width:120px}
+  .step small{font-weight:400;color:var(--ink-3);font-size:11.5px;font-family:var(--mono)}
+  .arrow{display:flex;align-items:center;justify-content:center;color:var(--accent);padding:0 12px;font-size:18px}
+  .flow.v .arrow{transform:rotate(90deg);padding:6px 0 6px 32px;height:22px}
+  .step.ok{border-color:var(--green);background:var(--green-bg)}
+  .step.no{border-color:var(--red);background:var(--red-bg)}
+  .step.wait{border-color:var(--amber);background:var(--amber-bg)}
+  .branch{display:flex;gap:10px;flex-wrap:wrap;padding-left:32px;margin:2px 0 2px}
+
+  /* timeline (8-day plan) */
+  .days{margin:20px 0;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--surface)}
+  .day{display:grid;grid-template-columns:92px 1fr;gap:0;border-bottom:1px solid var(--line-2)}
+  .day:last-child{border-bottom:none}
+  .day .dl{background:#FAFBFD;padding:14px 16px;border-right:1px solid var(--line-2);font-family:var(--mono);
+    font-size:13px;font-weight:600;color:var(--accent-ink)}
+  .day .dc{padding:14px 18px}
+  .day .dc b{display:block;font-size:14.5px;margin-bottom:3px;color:var(--ink)}
+  .day .dc p{font-size:13.5px;margin:0;max-width:none}
+
+  /* ref list */
+  .refs{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}
+  @media(max-width:760px){.refs{grid-template-columns:1fr}}
+  .ref{border:1px solid var(--line);border-radius:11px;padding:14px 16px;background:var(--surface)}
+  .ref .rt{font-weight:600;font-size:14.5px}
+  .ref .ru{font-family:var(--mono);font-size:12px;color:var(--accent);word-break:break-all}
+  .ref p{font-size:13px;margin:6px 0 0}
+
+  footer{max-width:1180px;margin:0 auto;padding:34px 32px 60px;color:var(--ink-3);font-size:13px;border-top:1px solid var(--line)}
+
+  /* mobile nav */
+  .mobtoc{display:none}
+  @media(max-width:900px){
+    .wrap{grid-template-columns:1fr;gap:0;padding:0 22px}
+    .toc{display:none}
+    main{padding:26px 0 60px}
+    .mobtoc{display:block;position:sticky;top:0;z-index:20;background:var(--bg);
+      border-bottom:1px solid var(--line);padding:10px 22px;margin:0 -22px 8px}
+    .mobtoc select{width:100%;padding:9px 12px;border-radius:8px;border:1px solid var(--line);
+      font-family:var(--sans);font-size:14px;background:var(--surface);color:var(--ink)}
+    .hero{padding:52px 22px 44px}
+  }
+  svg{max-width:100%;height:auto;display:block}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-inner">
+    <span class="tag">BUILD BLUEPRINT · v1.0 · SEP 2026</span>
+    <h1>Arihant Trading Corporation — Business Operating System</h1>
+    <p class="lead">One operating layer for a government security-equipment trader: every <b>lead, tender, demo, proposal, service ticket, field visit and expense</b> in a single place, so management sees what's pending, what's delayed, and who owns it — without asking anyone on WhatsApp.</p>
+    <div class="stats">
+      <div class="stat"><div class="n">₹10L</div><div class="l">project value</div></div>
+      <div class="stat"><div class="n">300</div><div class="l">users, 8 roles</div></div>
+      <div class="stat"><div class="n">8-day</div><div class="l">production pilot</div></div>
+      <div class="stat"><div class="n">16</div><div class="l">modules (phased)</div></div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <nav class="toc" aria-label="Contents">
+    <h4>CONTENTS</h4>
+    <ol>
+      <li><a href="#biz">The business &amp; the problem</a></li>
+      <li><a href="#scope">Scope reality &amp; phasing</a></li>
+      <li><a href="#arch">Architecture &amp; stack</a></li>
+      <li><a href="#flows">Workflows</a></li>
+      <li><a href="#db">Database schema</a></li>
+      <li><a href="#roles">Roles &amp; permissions</a></li>
+      <li><a href="#folders">Folder structure</a></li>
+      <li><a href="#modules">Building module by module</a></li>
+      <li><a href="#plan">The 8-day plan</a></li>
+      <li><a href="#design">Frontend &amp; design refs</a></li>
+    </ol>
+  </nav>
+
+  <div class="mobtoc">
+    <select onchange="if(this.value)location.hash=this.value">
+      <option value="">Jump to section…</option>
+      <option value="#biz">01 · The business &amp; the problem</option>
+      <option value="#scope">02 · Scope reality &amp; phasing</option>
+      <option value="#arch">03 · Architecture &amp; stack</option>
+      <option value="#flows">04 · Workflows</option>
+      <option value="#db">05 · Database schema</option>
+      <option value="#roles">06 · Roles &amp; permissions</option>
+      <option value="#folders">07 · Folder structure</option>
+      <option value="#modules">08 · Building module by module</option>
+      <option value="#plan">09 · The 8-day plan</option>
+      <option value="#design">10 · Frontend &amp; design refs</option>
+    </select>
+  </div>
+
+  <main>
+
+    <!-- 01 -->
+    <section id="biz">
+      <div class="kick"><span class="num">01</span></div>
+      <h2>The business &amp; the problem</h2>
+      <p class="lede">Arihant sells <strong>security &amp; defence equipment to the government</strong> — hand-held and door-frame metal detectors, X-ray baggage scanners, thermal imagers, night-vision monoculars, bomb blankets, crash-rated bollards and boom barriers.</p>
+      <p>Buyers are BSF, the Indian Army, Railways, Nuclear Power Corporation and Police, and almost every order runs through <strong>GeM tenders</strong> — the <code>GEM/2026/B/…</code> numbers in the tender sheet. Today the whole operation lives on <strong>WhatsApp, Excel and personal follow-ups</strong>, and no one at the top can see who is doing what. That is the pain the BOS removes.</p>
+
+      <h3>What you solve, and what Arihant gets</h3>
+      <div class="tblwrap">
+        <table>
+          <thead><tr><th style="width:44%">Today's problem</th><th>What the BOS gives them</th></tr></thead>
+          <tbody>
+            <tr><td>Tender info scattered across WhatsApp &amp; portals; deadlines missed</td><td>One tender pipeline with EMD, bid-closing dates, approvals and win/loss reasons. A single missed date is a lost government order worth lakhs.</td></tr>
+            <tr><td>Nobody knows which demo unit is free</td><td>Central equipment availability across Patna / Delhi / Kolkata</td></tr>
+            <tr><td>Demos happen, but no one learns why they fail</td><td>Structured demo outcome &amp; failure-reason analysis</td></tr>
+            <tr><td>Staff recreate their whole day at night for reporting</td><td>"Enter once, use everywhere" — daily work becomes the report automatically</td></tr>
+            <tr><td>Follow-ups fall through the cracks</td><td>Automatic reminders + clear ownership and accountability</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="note">
+        <p><b>The one line to say to the client:</b> "A single system where every lead, tender, demo, proposal, service ticket, visit and expense lives in one place — so management sees, in real time, what's pending, what's delayed and who's responsible, without chasing anyone on WhatsApp."</p>
+      </div>
+    </section>
+
+    <!-- 02 -->
+    <section id="scope">
+      <div class="kick"><span class="num">02</span></div>
+      <h2>Scope reality &amp; phasing</h2>
+      <p class="lede">All 16 modules at production quality in 8 days, solo, is not realistic — the blueprint is a multi-month build for a small team. The winning move is to ship a real, deployed pilot of the highest-value modules, loaded with Arihant's <em>own</em> data, and phase the rest.</p>
+      <p>The blueprint plans this for you: <strong>Section 49 (Phase 1 Scope)</strong>, <strong>Section 53 (Stage 1–9 sequence)</strong> and <strong>Section 51 (Scope Freeze)</strong>. Use its own words to frame the split.</p>
+
+      <div class="grid g2">
+        <div class="card" style="border-color:var(--accent)">
+          <span class="role-tag">PHASE 1 · THE 8-DAY PILOT</span>
+          <h5>Ship &amp; deploy these five</h5>
+          <p>1. Auth + Roles + User management<br>2. Leads &amp; Customers + Interaction timeline<br>3. <strong>Tender management</strong> (the demo "wow")<br>4. Visit / field planning<br>5. Management dashboard (the exception view)</p>
+        </div>
+        <div class="card">
+          <span class="role-tag">PHASE 2 · SCHEMA ALREADY BUILT</span>
+          <h5>Screens on tables that exist</h5>
+          <p>Demo &amp; equipment · Proposals · Service tickets · Expenses &amp; approval · Tasks &amp; blockers · full Notifications · Audit trail. The database already contains every one of these tables, so nothing gets re-architected — you only add UI.</p>
+        </div>
+      </div>
+      <div class="note warn">
+        <p><b>The email that protects your ₹10L:</b> get <b>written sign-off on this Phase-1 split before you write code</b> (Section 51 literally asks the client to do this). That single message is the difference between "delivered Phase 1 on time" and "failed to deliver 16 modules."</p>
+      </div>
+    </section>
+
+    <!-- 03 -->
+    <section id="arch">
+      <div class="kick"><span class="num">03</span></div>
+      <h2>Architecture &amp; stack</h2>
+      <p class="lede">NestJS backend, Next.js frontend, Supabase (Postgres + Auth + Storage), no Prisma. For 300 users this stack is effortless — don't spend a minute on scale.</p>
+
+      <svg viewBox="0 0 980 430" role="img" aria-label="System architecture diagram">
+        <defs>
+          <marker id="ah" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+            <path d="M0,0 L8,3 L0,6 Z" fill="#2350D9"/>
+          </marker>
+        </defs>
+        <!-- users -->
+        <rect x="12" y="150" width="120" height="80" rx="10" fill="#EEF1F6" stroke="#D5DCE7"/>
+        <text x="72" y="182" text-anchor="middle" font-family="IBM Plex Sans" font-size="13" font-weight="600" fill="#0F1521">Field &amp; office</text>
+        <text x="72" y="200" text-anchor="middle" font-family="IBM Plex Sans" font-size="13" font-weight="600" fill="#0F1521">staff · 300</text>
+        <text x="72" y="218" text-anchor="middle" font-family="IBM Plex Mono" font-size="10.5" fill="#6E7688">8 roles</text>
+        <!-- frontend -->
+        <rect x="200" y="130" width="180" height="120" rx="12" fill="#FFFFFF" stroke="#2350D9" stroke-width="1.5"/>
+        <text x="290" y="162" text-anchor="middle" font-family="IBM Plex Sans" font-size="15" font-weight="700" fill="#0F1521">Next.js</text>
+        <text x="290" y="182" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#6E7688">Vercel</text>
+        <text x="290" y="208" text-anchor="middle" font-family="IBM Plex Sans" font-size="11.5" fill="#3D4658">Tailwind · shadcn/ui</text>
+        <text x="290" y="226" text-anchor="middle" font-family="IBM Plex Sans" font-size="11.5" fill="#3D4658">Supabase Auth SDK</text>
+        <!-- backend -->
+        <rect x="450" y="120" width="200" height="140" rx="12" fill="#FFFFFF" stroke="#2350D9" stroke-width="1.5"/>
+        <text x="550" y="150" text-anchor="middle" font-family="IBM Plex Sans" font-size="15" font-weight="700" fill="#0F1521">NestJS API</text>
+        <text x="550" y="169" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#6E7688">Railway / Render</text>
+        <line x1="470" y1="182" x2="630" y2="182" stroke="#EEF1F6"/>
+        <text x="550" y="200" text-anchor="middle" font-family="IBM Plex Sans" font-size="11.5" fill="#3D4658">JWT guard · RBAC</text>
+        <text x="550" y="218" text-anchor="middle" font-family="IBM Plex Sans" font-size="11.5" fill="#3D4658">Kysely query builder</text>
+        <text x="550" y="236" text-anchor="middle" font-family="IBM Plex Sans" font-size="11.5" fill="#3D4658">Audit + notifications</text>
+        <!-- db -->
+        <rect x="730" y="130" width="180" height="120" rx="12" fill="#0B1A3A" stroke="#122A57"/>
+        <text x="820" y="165" text-anchor="middle" font-family="IBM Plex Sans" font-size="15" font-weight="700" fill="#FFFFFF">Supabase</text>
+        <text x="820" y="185" text-anchor="middle" font-family="IBM Plex Sans" font-size="13" font-weight="600" fill="#C3D2EE">PostgreSQL</text>
+        <text x="820" y="210" text-anchor="middle" font-family="IBM Plex Mono" font-size="10.5" fill="#9DB6EC">20+ tables · RLS ready</text>
+        <!-- arrows -->
+        <line x1="134" y1="190" x2="196" y2="190" stroke="#2350D9" stroke-width="1.6" marker-end="url(#ah)"/>
+        <line x1="382" y1="190" x2="446" y2="190" stroke="#2350D9" stroke-width="1.6" marker-end="url(#ah)"/>
+        <line x1="652" y1="190" x2="726" y2="190" stroke="#2350D9" stroke-width="1.6" marker-end="url(#ah)"/>
+        <text x="414" y="180" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#17348F">JWT/HTTPS</text>
+        <text x="689" y="180" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#17348F">SQL</text>
+        <!-- services row -->
+        <rect x="450" y="320" width="200" height="76" rx="10" fill="#FAFBFD" stroke="#D5DCE7"/>
+        <text x="550" y="348" text-anchor="middle" font-family="IBM Plex Sans" font-size="12.5" font-weight="600" fill="#0F1521">Supabase services</text>
+        <text x="550" y="368" text-anchor="middle" font-family="IBM Plex Sans" font-size="11.5" fill="#3D4658">Auth · Storage (receipts,</text>
+        <text x="550" y="384" text-anchor="middle" font-family="IBM Plex Sans" font-size="11.5" fill="#3D4658">reports) · Realtime badges</text>
+        <line x1="550" y1="260" x2="550" y2="318" stroke="#D5DCE7" stroke-width="1.4" stroke-dasharray="4 4" marker-end="url(#ah)"/>
+        <line x1="820" y1="250" x2="820" y2="358" stroke="#D5DCE7" stroke-width="1.4" stroke-dasharray="4 4"/>
+        <line x1="820" y1="358" x2="652" y2="358" stroke="#D5DCE7" stroke-width="1.4"/>
+      </svg>
+
+      <h3>The decisions that matter</h3>
+      <div class="tblwrap">
+        <table>
+          <thead><tr><th style="width:26%">Concern</th><th>Choice &amp; why</th></tr></thead>
+          <tbody>
+            <tr><td>DB access (no Prisma)</td><td><strong>Kysely</strong> — type-safe SQL query builder for Postgres. ORM-grade autocomplete, but you write real SQL, no migration engine fighting you. Generate types with <code>kysely-codegen</code>.</td></tr>
+            <tr><td>Auth</td><td><strong>Supabase Auth</strong> issues logins + JWTs. NestJS verifies the JWT in a guard with the Supabase JWT secret, loads role from <code>users</code>, enforces RBAC.</td></tr>
+            <tr><td>Authorization</td><td>NestJS is the only backend and uses the <code>service_role</code> key (bypasses RLS), so <strong>enforce permissions in NestJS guards</strong>, not RLS. Region scoping = <code>where region_id = :userRegion</code>. Keep RLS off while building; enable as defence-in-depth before handover.</td></tr>
+            <tr><td>Files</td><td>Supabase <strong>Storage</strong> for receipts &amp; service reports; store the path in <code>attachments</code>.</td></tr>
+            <tr><td>Deployment</td><td>Frontend → Vercel, NestJS → Railway/Render, DB hosted on Supabase. Deploy the empty apps on Day 0 so every later push auto-deploys.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 04 -->
+    <section id="flows">
+      <div class="kick"><span class="num">04</span></div>
+      <h2>Workflows</h2>
+      <p class="lede">Four flows carry most of the system's value. Each maps to a status field in the schema plus a role guard on the transition.</p>
+
+      <h3>Lead → order lifecycle</h3>
+      <p>The pipeline from your Funnel and Bill&amp;Book sheets. One row = one organisation + product opportunity.</p>
+      <div class="flow">
+        <div class="step">Lead<small>A / E / F</small></div><div class="arrow">›</div>
+        <div class="step">Interaction<small>call·visit·demo</small></div><div class="arrow">›</div>
+        <div class="step">Qualified<small>prob H/M/L</small></div><div class="arrow">›</div>
+        <div class="step">Proposal / Tender<small>quoted</small></div><div class="arrow">›</div>
+        <div class="step ok">Won<small>booked · billed</small></div>
+      </div>
+
+      <h3>Tender approval</h3>
+      <p>Keeps the go/no-go out of WhatsApp. Tender team prepares; <strong>Management approves participation.</strong></p>
+      <div class="flow">
+        <div class="step">Identified</div><div class="arrow">›</div>
+        <div class="step wait">Awaiting approval<small>management</small></div><div class="arrow">›</div>
+        <div class="step">Under preparation</div><div class="arrow">›</div>
+        <div class="step">Submitted</div><div class="arrow">›</div>
+        <div class="step ok">Won</div>
+        <div class="arrow">/</div>
+        <div class="step no">Lost<small>reason logged</small></div>
+      </div>
+
+      <h3>Expense approval — two stages</h3>
+      <div class="flow">
+        <div class="step">Submitted<small>employee</small></div><div class="arrow">›</div>
+        <div class="step wait">Manager approval<small>1st · reg. manager</small></div><div class="arrow">›</div>
+        <div class="step wait">Accounts processed<small>2nd · accounts</small></div><div class="arrow">›</div>
+        <div class="step ok">To Tally<small>outside BOS</small></div>
+      </div>
+
+      <h3>Task &amp; blocker flow — who adds tasks</h3>
+      <p>Build all four task sources:</p>
+      <ol class="list">
+        <li><strong>Managers, down the hierarchy</strong> — Management → anyone; Regional Manager → their region. Defined by <code>reporting_manager_id</code>.</li>
+        <li><strong>Employees, to themselves</strong> — personal tasks.</li>
+        <li><strong>The "also-do-this" intervention</strong> — a manager attaches an extra visit/task onto a planned trip (blueprint §10), firing a notification.</li>
+        <li><strong>The system, automatically</strong> — recurring tasks + auto follow-ups off <code>next_followup_date</code> on leads, proposals and tenders. This is what makes it feel alive.</li>
+      </ol>
+      <div class="flow v">
+        <div class="step">Not started</div><div class="arrow">›</div>
+        <div class="step">In progress</div><div class="arrow">›</div>
+        <div class="step wait">Blocked → manager decides</div>
+        <div class="branch">
+          <span class="pill p-green">accept</span><span class="pill p-red">reject</span>
+          <span class="pill p-amber">extend</span><span class="pill p-blue">reassign</span><span class="pill p-grey">escalate</span>
+        </div>
+        <div class="arrow">›</div>
+        <div class="step ok">Completed</div>
+      </div>
+      <div class="note"><p><b>Performance &amp; salary:</b> the BOS never auto-deducts. It surfaces evidence (assigned vs completed, deadline compliance, approved blockers, repeated misses); management decides per company policy. Say this to the client — it protects them and you.</p></div>
+    </section>
+
+    <!-- 05 -->
+    <section id="db">
+      <div class="kick"><span class="num">05</span></div>
+      <h2>Database schema</h2>
+      <p class="lede">One Supabase SQL file builds all 10 modules' tables at once (delivered separately as <code>arihant_bos_schema.sql</code>). Run it once, then <code>kysely-codegen</code> gives you every table's TypeScript type for free.</p>
+
+      <h3>Module → tables</h3>
+      <div class="tblwrap">
+        <table>
+          <thead><tr><th style="width:34%">Module</th><th>Core tables</th></tr></thead>
+          <tbody>
+            <tr><td>Masters &amp; users</td><td class="mono">zones · regions · products · users</td></tr>
+            <tr><td>Lead &amp; customer</td><td class="mono">organisations · contacts · leads · interactions</td></tr>
+            <tr><td>Visit / field planning</td><td class="mono">visits · visit_updates</td></tr>
+            <tr><td>Demo management</td><td class="mono">demo_equipment · demos · demo_reservations · demo_outcomes</td></tr>
+            <tr><td>Tender management</td><td class="mono">tenders · tender_status_history · tender_outcomes</td></tr>
+            <tr><td>Proposals</td><td class="mono">proposals</td></tr>
+            <tr><td>Service &amp; after-sales</td><td class="mono">service_tickets · service_reports</td></tr>
+            <tr><td>Expenses</td><td class="mono">expenses</td></tr>
+            <tr><td>Tasks &amp; productivity</td><td class="mono">tasks · task_blockers</td></tr>
+            <tr><td>Cross-cutting</td><td class="mono">attachments · notifications · audit_log</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Design decisions grounded in the sheets</h3>
+      <ul>
+        <li><strong><code>organisations</code> is the dedupe anchor.</strong> Contacts, leads, tenders and visits all hang off it — that's how "fresh vs re-approached lead" (§7) works: never duplicate a customer, just add a new interaction to the same org.</li>
+        <li><strong><code>leads</code> grain = organisation + product</strong>, matching each row of your Funnel and Bill&amp;Book sheets. Bill&amp;Book is folded in via <code>booking_month</code> / <code>billing_month</code> / <code>order_status</code>, so it's one clean pipeline.</li>
+        <li><strong><code>interactions</code></strong> is the unified customer timeline — every call/visit/demo/proposal logs here for "one chronological history."</li>
+        <li><strong><code>tenders</code></strong> mirrors your North Tender Sheet columns (tender no, zone, bid-closing date with time, EMD, corrigendum), plus <code>tender_status_history</code> that doubles as the approval workflow and audit trail.</li>
+        <li>Statuses the blueprint says "will be finalised" are <code>text + CHECK</code> (tune without a migration); stable values (role, category A/E/F, probability H/M/L) are Postgres enums.</li>
+      </ul>
+    </section>
+
+    <!-- 06 -->
+    <section id="roles">
+      <div class="kick"><span class="num">06</span></div>
+      <h2>Roles &amp; permissions</h2>
+      <p class="lede">Access stacks two axes: <strong>role</strong> decides which modules you touch; <strong>hierarchy + region</strong> decides whose records you see inside them. Customer history is shared; pipeline, tasks and expenses are private to the owner and their manager chain.</p>
+
+      <div class="grid g2">
+        <div class="card"><span class="role-tag">MANAGEMENT</span><h5>Everything, all regions</h5><p>Lives in dashboards. Approves tender participation. Final authority on performance decisions. Can assign a task to anyone.</p></div>
+        <div class="card"><span class="role-tag">REGIONAL MANAGER</span><h5>One region, full modules</h5><p>Leads, visits, demos, proposals, tenders, service &amp; performance for their region. 1st-level expense approver; accepts/rejects blockers; does the "also-meet" intervention.</p></div>
+        <div class="card"><span class="role-tag">SALES TEAM</span><h5>Own records, daily driver</h5><p>Creates &amp; works own leads, logs interactions, plans visits, requests demos/proposals, raises service complaints, own tasks &amp; expenses. Approves nothing.</p></div>
+        <div class="card"><span class="role-tag">TENDER TEAM</span><h5>Owns the tender module</h5><p>Identifies, prepares, submits, tracks results, logs win/loss. Cannot self-approve participation — pushes to Management.</p></div>
+        <div class="card"><span class="role-tag">DEMO TEAM</span><h5>Demos &amp; equipment</h5><p>Assigns team, allocates/reserves equipment, confirms dates, records outcomes. Equipment owner approves reservations.</p></div>
+        <div class="card"><span class="role-tag">SERVICE TEAM</span><h5>Tickets end-to-end</h5><p>Receives complaints, schedules visits, records the service report, closes tickets. Maintains equipment condition.</p></div>
+        <div class="card"><span class="role-tag">ACCOUNTS TEAM</span><h5>Money-out side</h5><p>2nd-level approver: verifies manager-approved expenses and marks processed (→ Tally). Sees all expenses + expense reports.</p></div>
+        <div class="card"><span class="role-tag">ADMIN</span><h5>System superuser</h5><p>Creates/invites the 300 users, sets role + manager + region, maintains masters, sees audit log. Not a business viewer.</p></div>
+      </div>
+
+      <h3>Permission matrix (your guard spec)</h3>
+      <p style="font-size:13.5px"><span class="pill p-grey">—</span> none &nbsp; <span class="pill p-blue">V</span> view &nbsp; <span class="pill p-blue">E</span> create/edit &nbsp; <span class="pill p-green">A</span> approve. Scope in notes below.</p>
+      <div class="tblwrap">
+        <table class="matrix">
+          <thead><tr><th style="min-width:150px">Module</th><th class="c">Mgmt</th><th class="c">Reg&nbsp;Mgr</th><th class="c">Sales</th><th class="c">Tender</th><th class="c">Demo</th><th class="c">Service</th><th class="c">Accts</th><th class="c">Admin</th></tr></thead>
+          <tbody>
+            <tr><td>Users &amp; roles</td><td class="c">V</td><td class="c">V</td><td class="c yn">—</td><td class="c yn">—</td><td class="c yn">—</td><td class="c yn">—</td><td class="c yn">—</td><td class="c"><b>E</b></td></tr>
+            <tr><td>Masters</td><td class="c">V</td><td class="c">V</td><td class="c">V</td><td class="c">V</td><td class="c">V</td><td class="c">V</td><td class="c">V</td><td class="c"><b>E</b></td></tr>
+            <tr><td>Leads &amp; customers</td><td class="c">V</td><td class="c">E</td><td class="c">E</td><td class="c">V</td><td class="c">V</td><td class="c">V</td><td class="c yn">—</td><td class="c yn">—</td></tr>
+            <tr><td>Customer timeline</td><td class="c">V</td><td class="c">V</td><td class="c">E</td><td class="c">V</td><td class="c">V</td><td class="c">V</td><td class="c yn">—</td><td class="c yn">—</td></tr>
+            <tr><td>Visits</td><td class="c">V</td><td class="c">E</td><td class="c">E</td><td class="c yn">—</td><td class="c">V</td><td class="c">V</td><td class="c yn">—</td><td class="c yn">—</td></tr>
+            <tr><td>Demos</td><td class="c">V</td><td class="c">V</td><td class="c">E</td><td class="c yn">—</td><td class="c">E</td><td class="c">V</td><td class="c yn">—</td><td class="c yn">—</td></tr>
+            <tr><td>Demo equipment</td><td class="c">V</td><td class="c">V</td><td class="c">V</td><td class="c yn">—</td><td class="c"><b>E/A</b></td><td class="c"><b>E/A</b></td><td class="c yn">—</td><td class="c yn">—</td></tr>
+            <tr><td>Tenders</td><td class="c">V</td><td class="c">V</td><td class="c">V</td><td class="c"><b>E</b></td><td class="c yn">—</td><td class="c yn">—</td><td class="c yn">—</td><td class="c yn">—</td></tr>
+            <tr><td>Tender approval</td><td class="c"><b>A</b></td><td class="c">A*</td><td class="c yn">—</td><td class="c yn">—</td><td class="c yn">—</td><td class="c yn">—</td><td class="c yn">—</td><td class="c yn">—</td></tr>
+            <tr><td>Proposals</td><td class="c">V</td><td class="c"><b>E/A</b></td><td class="c">E</td><td class="c yn">—</td><td class="c yn">—</td><td class="c yn">—</td><td class="c yn">—</td><td class="c yn">—</td></tr>
+            <tr><td>Service tickets</td><td class="c">V</td><td class="c">V</td><td class="c">V</td><td class="c yn">—</td><td class="c yn">—</td><td class="c"><b>E</b></td><td class="c yn">—</td><td class="c yn">—</td></tr>
+            <tr><td>Expenses (own)</td><td class="c">E</td><td class="c">E</td><td class="c">E</td><td class="c">E</td><td class="c">E</td><td class="c">E</td><td class="c">E</td><td class="c yn">—</td></tr>
+            <tr><td>Expense approval</td><td class="c">V</td><td class="c"><b>A</b>&nbsp;1st</td><td class="c yn">—</td><td class="c yn">—</td><td class="c yn">—</td><td class="c yn">—</td><td class="c"><b>A</b>&nbsp;2nd</td><td class="c yn">—</td></tr>
+            <tr><td>Tasks</td><td class="c">E</td><td class="c">E</td><td class="c">E</td><td class="c">E</td><td class="c">E</td><td class="c">E</td><td class="c">E</td><td class="c yn">—</td></tr>
+            <tr><td>Dashboards</td><td class="c">all</td><td class="c">region</td><td class="c">own</td><td class="c">tender</td><td class="c">demo</td><td class="c">service</td><td class="c">exp</td><td class="c">sys</td></tr>
+            <tr><td>Audit log</td><td class="c">V</td><td class="c yn">—</td><td class="c yn">—</td><td class="c yn">—</td><td class="c yn">—</td><td class="c yn">—</td><td class="c yn">—</td><td class="c">V</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:13.5px;color:var(--ink-3)"><strong>Scope:</strong> Management = all regions · Regional Manager = own region · Sales/Demo/Service = own or assigned records · <code>A*</code> = Regional Manager approves tenders only if Management delegates it.</p>
+
+      <h4 class="sub">Adding 300 users</h4>
+      <p>Don't do it by hand. Build a <strong>CSV bulk-invite</strong> (email, name, role, manager, region) and run it once; the Contact List import can share the same plumbing. Keep one <code>role</code> per user for the pilot — swap to a <code>user_roles</code> join table in Phase 2 only if true multi-role is needed.</p>
+    </section>
+
+    <!-- 07 -->
+    <section id="folders">
+      <div class="kick"><span class="num">07</span></div>
+      <h2>Folder structure</h2>
+      <p class="lede">Every module is the same three backend files and the same three frontend pages. Build the first set carefully, then it's a template.</p>
+
+      <h3>NestJS — <code>bos-api</code></h3>
+<pre><span class="c"># one folder per module, identical shape</span>
+src/
+  <span class="k">common/</span>        <span class="c"># auth guard, @Roles() decorator, supabase client, audit helper</span>
+  <span class="k">auth/</span>          <span class="c"># login / verify JWT / current-user</span>
+  <span class="k">users/</span>         <span class="c"># controller · service · dto</span>
+  <span class="k">tenders/</span>       tenders.controller.ts  tenders.service.ts  tenders.dto.ts
+  <span class="k">leads/</span>         <span class="c"># same 3 files</span>
+  <span class="k">visits/</span>        <span class="c"># same 3 files</span>
+  <span class="k">dashboard/</span>     <span class="c"># read-only aggregate queries</span>
+  <span class="k">notifications/</span>
+  main.ts</pre>
+
+      <h3>Next.js — <code>bos-web</code> (App Router)</h3>
+<pre>app/
+  <span class="k">(auth)/login/</span>
+  <span class="k">(app)/</span>
+    layout.tsx        <span class="c"># sidebar + topbar + role-based nav</span>
+    <span class="k">dashboard/</span>
+    <span class="k">tenders/</span>        page.tsx <span class="c">(list)</span>  <span class="k">[id]/</span>page.tsx <span class="c">(detail)</span>  <span class="k">new/</span>
+    <span class="k">leads/</span>
+    <span class="k">visits/</span>
+<span class="k">components/ui/</span>       <span class="c"># shadcn: table, dialog, form, badge…</span>
+<span class="k">lib/</span>                <span class="c"># supabase client, api fetcher, auth session</span></pre>
+    </section>
+
+    <!-- 08 -->
+    <section id="modules">
+      <div class="kick"><span class="num">08</span></div>
+      <h2>Building module by module</h2>
+      <p class="lede">The rule that saves the project: build <strong>down, not wide.</strong> Take one feature all the way through the stack first — login → list → detail → status change → reminder. Solve the hard parts once, then every other module is copy-rename.</p>
+
+      <h3>How to read any module from the blueprint</h3>
+      <p>Each module section contains the same four ingredients. Hunt for these four lists and drop each into its slot:</p>
+      <div class="tblwrap">
+        <table>
+          <thead><tr><th style="width:38%">In the blueprint you find…</th><th>…which becomes</th></tr></thead>
+          <tbody>
+            <tr><td>The field list (e.g. §19 tender fields)</td><td>Table columns · form inputs · list columns</td></tr>
+            <tr><td>The statuses / workflow (e.g. §23)</td><td>A dropdown + allowed transitions + who may make each</td></tr>
+            <tr><td>Who acts (from §5 roles)</td><td>The role guard on the API route</td></tr>
+            <tr><td>The notifications (e.g. §24 deadlines)</td><td>Triggers / reminders — added last</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Then build in this fixed order, every time</h3>
+      <div class="flow">
+        <div class="step">API<small>controller·service·DTO</small></div><div class="arrow">›</div>
+        <div class="step">List view<small>table + filters</small></div><div class="arrow">›</div>
+        <div class="step">Detail + form<small>create/edit</small></div><div class="arrow">›</div>
+        <div class="step">Status control<small>guarded transitions</small></div><div class="arrow">›</div>
+        <div class="step wait">Notifications<small>added last</small></div>
+      </div>
+      <div class="note"><p><b>Proof of architecture:</b> when you log in, see 30 real tenders, filter by zone, open one, move it from "under preparation" to "submitted," and the ones closing within 7 days glow red — you've validated the whole stack. Leads, Visits and the Dashboard are then the same moves with different fields, ~3× faster.</p></div>
+    </section>
+
+    <!-- 09 -->
+    <section id="plan">
+      <div class="kick"><span class="num">09</span></div>
+      <h2>The 8-day plan</h2>
+      <p class="lede">Day 0 is setup; the tender slice on Day 2 proves everything; never skip the Day-8 buffer.</p>
+      <div class="days">
+        <div class="day"><div class="dl">Day 0</div><div class="dc"><b>Setup (½ day)</b><p>Sign-off on the Phase-1 split. Create Supabase/Vercel/Railway/GitHub. Run the schema. <code>kysely-codegen</code> for types. Deploy the empty apps.</p></div></div>
+        <div class="day"><div class="dl">Day 1</div><div class="dc"><b>Auth + users + real data</b><p>JWT guard + <code>@Roles()</code>. User CRUD. Login page + app shell with role-based nav. Import Contact List → organisations/contacts and 30 tenders → tenders.</p></div></div>
+        <div class="day"><div class="dl">Day 2</div><div class="dc"><b>Tender slice, top to bottom</b><p>Tender API (list/detail/create/status, guarded + audited). Data table with red deadline badges, detail page, form, role-gated status control. First nightly deadline notification.</p></div></div>
+        <div class="day"><div class="dl">Day 3</div><div class="dc"><b>Leads &amp; timeline</b><p>Import Funnel + Bill&amp;Book. Pipeline list, filters, create/edit, status. Interaction timeline on the org.</p></div></div>
+        <div class="day"><div class="dl">Day 4</div><div class="dc"><b>Tender reporting + visits</b><p>PQ vs General/MHA counts (§27), win/loss. Visit planning: weekly plan, assign, post-visit update, manager "also-meet."</p></div></div>
+        <div class="day"><div class="dl">Day 5</div><div class="dc"><b>Management dashboard</b><p>Exception view: tenders closing in 7 days, follow-ups overdue, pending approvals, region-wise pipeline. Notifications + bell badge.</p></div></div>
+        <div class="day"><div class="dl">Day 6</div><div class="dc"><b>Polish</b><p>UI consistency, mobile field layouts, role routing, empty/loading states, audit logging on key actions, Cmd+K.</p></div></div>
+        <div class="day"><div class="dl">Day 7</div><div class="dc"><b>Ship</b><p>Bug-bash, deploy to production, load real data, bulk-invite the 300 users, record a short demo video.</p></div></div>
+        <div class="day"><div class="dl">Day 8</div><div class="dc"><b>Buffer</b><p>Client walkthrough + fixes. Never skip this.</p></div></div>
+      </div>
+    </section>
+
+    <!-- 10 -->
+    <section id="design">
+      <div class="kick"><span class="num">10</span></div>
+      <h2>Frontend &amp; design refs</h2>
+      <p class="lede">Don't design from scratch — you don't have the days. The 2026 bar for premium B2B dashboards is set by Linear, Attio, Stripe and HubSpot, and the recipe is consistent.</p>
+
+      <h4 class="sub">Design system</h4>
+      <ul>
+        <li><strong>Next.js + Tailwind + shadcn/ui + TypeScript</strong> — the stack every premium admin template ships on; shadcn gives production-grade tables, dialogs, forms and command menus you style to look bespoke.</li>
+        <li>Consider buying a shadcn-based admin kit (e.g. <strong>TailAdmin</strong>, ~$50) to skip 3 days of layout — worth it on a ₹10L project.</li>
+      </ul>
+
+      <h4 class="sub">What makes it look expensive</h4>
+      <ul>
+        <li><strong>Role-based home screen</strong> — management, regional manager and salesperson each land on a different dashboard showing only what they act on (Attio/Linear "operating surface," not a wall of charts).</li>
+        <li><strong>Restraint</strong> — one spacing scale, one type ramp, one accent, lots of whitespace. This alone separates "₹10L" from "template."</li>
+        <li><strong>Dense tables done well</strong> (Linear) — fast, filterable, sortable, inline status pills.</li>
+        <li><strong>Command palette (Cmd+K)</strong> to jump to any tender/customer — cheap with shadcn, looks premium in a demo.</li>
+        <li><strong>Real empty states</strong> so light Phase-2 modules feel intentional, not broken.</li>
+        <li><strong>Mobile-first for field staff</strong> (§48 is a functional requirement) — big tap targets, dropdowns over typing, one-click updates.</li>
+      </ul>
+
+      <h4 class="sub">Product references to copy patterns from</h4>
+      <div class="refs">
+        <div class="ref"><div class="rt">Linear</div><div class="ru">linear.app</div><p>Highest info density, lowest visual noise. The reference for tables &amp; keyboard flow.</p></div>
+        <div class="ref"><div class="rt">Attio</div><div class="ru">attio.com</div><p>CRM as a prioritized operating surface — model your lead &amp; customer screens on it.</p></div>
+        <div class="ref"><div class="rt">Stripe</div><div class="ru">stripe.com</div><p>Layered disclosure — a manager and an operator each land somewhere useful.</p></div>
+        <div class="ref"><div class="rt">HubSpot</div><div class="ru">hubspot.com</div><p>Pipeline &amp; deal-stage patterns for the tender/lead boards.</p></div>
+      </div>
+
+      <h4 class="sub">Inspiration galleries (pull real in-app screens)</h4>
+      <div class="refs">
+        <div class="ref"><div class="rt">Mobbin</div><div class="ru">mobbin.com</div><p>Real dashboard flows, screen by screen, across many apps.</p></div>
+        <div class="ref"><div class="rt">SaaSFrame</div><div class="ru">saasframe.io</div><p>Real in-app dashboard &amp; settings screens from known products.</p></div>
+        <div class="ref"><div class="rt">SaaSUI</div><div class="ru">saasui.design</div><p>Dashboards organised by screen type — layout &amp; data-viz patterns.</p></div>
+        <div class="ref"><div class="rt">shadcn/ui</div><div class="ru">ui.shadcn.com</div><p>The component library you'll actually build on.</p></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer>
+  Arihant Trading Corporation — BOS Build Blueprint · Companion to <span class="mono">arihant_bos_schema.sql</span>.
+  Phased delivery per the client's own scope document (§49, §51, §53). Get the Phase-1 split signed before development.
+</footer>
+
+<script>
+  // scrollspy for the sticky TOC
+  (function(){
+    var links = Array.prototype.slice.call(document.querySelectorAll('.toc a'));
+    var map = {};
+    links.forEach(function(a){ map[a.getAttribute('href').slice(1)] = a; });
+    var secs = Array.prototype.slice.call(document.querySelectorAll('main section'));
+    if(!('IntersectionObserver' in window)) return;
+    var obs = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){
+          links.forEach(function(l){ l.classList.remove('active'); });
+          var m = map[e.target.id]; if(m) m.classList.add('active');
+        }
+      });
+    },{rootMargin:'-45% 0px -50% 0px'});
+    secs.forEach(function(s){ obs.observe(s); });
+  })();
+</script>
+</body>
+</html>

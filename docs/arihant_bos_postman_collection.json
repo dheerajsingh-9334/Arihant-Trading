@@ -1,0 +1,4231 @@
+{
+  "info": {
+    "_postman_id": "cd64890e-5400-475f-a3f2-0f72675833fe",
+    "name": "Arihant Trading Corporation BOS - Complete API & Edge Cases Collection",
+    "description": "Exhaustive, production-grade Postman collection covering all BOS modules defined in the Arihant BOS Scope Blueprint.\n\nFeatures:\n- Complete lifecycle covering both happy paths and closing transitions.\n- Automatic token capture and variable chaining for Postman Collection Runner.\n- Comprehensive 'Edge Cases, RBAC Denials & Validations' test suite.\n- Exact field names matching NestJS DTOs and PostgreSQL schema.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:4000/api",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "mgmtToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "rmToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "salesToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "tenderToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "demoToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "serviceToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "accountsToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "sampleTenderId",
+      "value": "998db1d7-9f08-4880-89d7-b56a38faae5c",
+      "type": "string"
+    },
+    {
+      "key": "sampleOrgId",
+      "value": "81e82c8c-f3e1-4ec8-929e-813cd17574ec",
+      "type": "string"
+    },
+    {
+      "key": "sampleContactId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "sampleProductId",
+      "value": "db0af0a0-26dc-4a21-a006-d0cd319c18c7",
+      "type": "string"
+    },
+    {
+      "key": "sampleVisitId",
+      "value": "b69080a2-993a-4762-99d5-7f92787a281f",
+      "type": "string"
+    },
+    {
+      "key": "sampleDemoId",
+      "value": "e51c8a5c-3c8f-47a0-bcda-4ff922cc7039",
+      "type": "string"
+    },
+    {
+      "key": "sampleEquipmentId",
+      "value": "b530d88f-8fa1-44c1-ae34-c9325376ae8f",
+      "type": "string"
+    },
+    {
+      "key": "sampleExpenseId",
+      "value": "bef51e8a-1ea0-4caa-98d7-2fb5da7e3e25",
+      "type": "string"
+    },
+    {
+      "key": "sampleTaskId",
+      "value": "afef37c9-32bb-4e83-9098-cb26a10e93d6",
+      "type": "string"
+    },
+    {
+      "key": "sampleBlockerId",
+      "value": "bef683bd-a4d2-422e-9972-5a150d684f59",
+      "type": "string"
+    },
+    {
+      "key": "sampleTicketId",
+      "value": "fae4fd1c-2116-4331-863b-829902f2a48a",
+      "type": "string"
+    },
+    {
+      "key": "sampleProposalId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "sampleLeadId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "sampleUserId",
+      "value": "11111111-1111-1111-1111-111111111111",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Authentication & Role Sessions",
+      "item": [
+        {
+          "name": "Login as Regional Manager (North) -> Sets {{rmToken}}",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Logs in as Vikram Sharma (Regional Manager North).",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"regmgr.north@arihant.com\",\n  \"password\": \"password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "var jsonData = pm.response.json();",
+                  "var token = jsonData.accessToken || jsonData.token;",
+                  "if (token) { pm.collectionVariables.set('rmToken', token); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login as Sales Executive (Delhi) -> Sets {{salesToken}}",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Logs in as Amit Verma (Sales Delhi).",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"sales.delhi@arihant.com\",\n  \"password\": \"password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "var jsonData = pm.response.json();",
+                  "var token = jsonData.accessToken || jsonData.token;",
+                  "if (token) { pm.collectionVariables.set('salesToken', token); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login as Tender Team Lead -> Sets {{tenderToken}}",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Logs in as Suresh Nair (Tender Lead).",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"tender@arihant.com\",\n  \"password\": \"password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "var jsonData = pm.response.json();",
+                  "var token = jsonData.accessToken || jsonData.token;",
+                  "if (token) { pm.collectionVariables.set('tenderToken', token); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login as Demo Specialist -> Sets {{demoToken}}",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Logs in as Demo Coordinator.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"demo@arihant.com\",\n  \"password\": \"password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "var jsonData = pm.response.json();",
+                  "var token = jsonData.accessToken || jsonData.token;",
+                  "if (token) { pm.collectionVariables.set('demoToken', token); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login as Service Engineer -> Sets {{serviceToken}}",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Logs in as Service Team Engineer.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"service@arihant.com\",\n  \"password\": \"password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "var jsonData = pm.response.json();",
+                  "var token = jsonData.accessToken || jsonData.token;",
+                  "if (token) { pm.collectionVariables.set('serviceToken', token); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login as Corporate Accounts -> Sets {{accountsToken}}",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Logs in as Accounts Head for Stage-2 expense disbursements.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"accounts@arihant.com\",\n  \"password\": \"password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "var jsonData = pm.response.json();",
+                  "var token = jsonData.accessToken || jsonData.token;",
+                  "if (token) { pm.collectionVariables.set('accountsToken', token); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login as System Admin -> Sets {{adminToken}}",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Logs in as System Admin.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@arihant.com\",\n  \"password\": \"password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "var jsonData = pm.response.json();",
+                  "var token = jsonData.accessToken || jsonData.token;",
+                  "if (token) { pm.collectionVariables.set('adminToken', token); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login as Management -> Sets Default Runner Token {{token}} & {{mgmtToken}}",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Logs in as Rajesh Arihant (Top Management). Keeps default {{token}} set to management so the entire collection runs cleanly.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"mgmt@arihant.com\",\n  \"password\": \"password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "var jsonData = pm.response.json();",
+                  "pm.test('Token exists', () => {",
+                  "    pm.expect(jsonData.accessToken || jsonData.token).to.be.a('string');",
+                  "});",
+                  "var token = jsonData.accessToken || jsonData.token;",
+                  "if (token) {",
+                  "    pm.collectionVariables.set('token', token);",
+                  "    pm.collectionVariables.set('mgmtToken', token);",
+                  "    console.log('Default Management token set successfully!');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Current Authenticated User (Me)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            },
+            "description": "Returns profile and active role of the authenticated session."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('User ID returned', () => pm.expect(pm.response.json().id).to.be.a('string'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Logout (Invalidate Session)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/logout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "logout"
+              ]
+            },
+            "description": "Completes the auth lifecycle."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2. Executive Command Dashboard",
+      "item": [
+        {
+          "name": "Get Aggregated Executive Metrics & Exceptions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/dashboard/metrics",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "dashboard",
+                "metrics"
+              ]
+            },
+            "description": "Returns live KPIs (tenders, leads, tasks, expenses, tickets) and critical exception queue."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+                  "pm.test('Metrics object received', () => {",
+                  "    var res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('tendersCount');",
+                  "    pm.expect(res).to.have.property('recentExceptions');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "3. Tenders (GeM Pipeline)",
+      "item": [
+        {
+          "name": "List All Tenders (Paginated & Filtered)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tenders?page=1&limit=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tenders"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number",
+                  "disabled": false
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "Rows per page",
+                  "disabled": false
+                },
+                {
+                  "key": "category",
+                  "value": "general_mha",
+                  "description": "Filter by 'general_mha', 'pq', or 'other'",
+                  "disabled": true
+                },
+                {
+                  "key": "status",
+                  "value": "under_preparation",
+                  "description": "Filter by tender status",
+                  "disabled": true
+                },
+                {
+                  "key": "search",
+                  "value": "CRPF",
+                  "description": "Search text in tender no, org, or requirement",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Fetches tenders list scoped to the logged-in user's role."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Filter Tenders Closing Soon (Within 7 Days)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tenders?closingSoonOnly=true",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tenders"
+              ],
+              "query": [
+                {
+                  "key": "closingSoonOnly",
+                  "value": "true",
+                  "description": "Filters tenders closing within 7 days",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "Critical urgency filter highlighting bids requiring immediate submission."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Tender Pipeline Summary Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tenders/stats",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tenders",
+                "stats"
+              ]
+            },
+            "description": "Aggregated counts by status."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create New Tender (by Tender Lead -> Captures {{sampleTenderId}})",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tenders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tenders"
+              ]
+            },
+            "description": "Registers a new tender and automatically captures ID for subsequent lifecycle calls.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tenderToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tender_no\": \"GEM/2026/B/1d230e63\",\n  \"organisation_id\": \"{{sampleOrgId}}\",\n  \"department\": \"BSF Communications Branch\",\n  \"product_id\": \"{{sampleProductId}}\",\n  \"requirement_text\": \"Procurement of 120 Units Hand Held Metal Detectors as per MHA QR\",\n  \"city\": \"New Delhi\",\n  \"state\": \"Delhi\",\n  \"category\": \"general_mha\",\n  \"quantity\": 120,\n  \"emd_fee\": 150000,\n  \"bid_closing_date\": \"2026-09-28T14:30:00.000Z\",\n  \"status\": \"awaiting_approval\",\n  \"remarks\": \"Priority border security requirements\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201 Created', () => pm.response.to.have.status(201));",
+                  "var res = pm.response.json();",
+                  "if (res && res.id) {",
+                  "    pm.collectionVariables.set('sampleTenderId', res.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Tender by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tenders/{{sampleTenderId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tenders",
+                "{{sampleTenderId}}"
+              ]
+            },
+            "description": "Fetches full details of the created/selected tender."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Edit Tender Details (Corrigendum / Extension)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tenders/{{sampleTenderId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tenders",
+                "{{sampleTenderId}}"
+              ]
+            },
+            "description": "Updates deadlines and corrigendum modifications on GeM.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bid_closing_date\": \"2026-10-05T14:30:00.000Z\",\n  \"corrigendum_date\": \"2026-09-16\",\n  \"remarks\": \"Corrigendum-1 issued: Bid submission extended by 7 days\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Approve Tender Participation (Independent Management Review)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tenders/{{sampleTenderId}}/approve",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tenders",
+                "{{sampleTenderId}}",
+                "approve"
+              ]
+            },
+            "description": "Sign-off by Management or Regional Manager. Enforces non-self-approval rule.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{mgmtToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"decision\": \"approved\",\n  \"remarks\": \"Approved by management. Ensure EMD bank guarantee is ready.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200/201 OK', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Tender Status to 'submitted'",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tenders/{{sampleTenderId}}/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tenders",
+                "{{sampleTenderId}}",
+                "status"
+              ]
+            },
+            "description": "Advances the tender status in the pipeline.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"submitted\",\n  \"remarks\": \"Technical and financial bids uploaded on GeM portal.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Record Tender Outcome (Win/Loss Intelligence)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tenders/{{sampleTenderId}}/outcome",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tenders",
+                "{{sampleTenderId}}",
+                "outcome"
+              ]
+            },
+            "description": "Records post-bid result, competitor intelligence, and root cause.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"result\": \"lost\",\n  \"reason\": \"L1 quoted 7% lower price on sensor module replacement warranty\",\n  \"competitor\": \"Smiths Detection India Ltd\",\n  \"value_lakh\": 182.5,\n  \"result_date\": \"2026-09-16T11:00:00.000Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200/201 OK', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "4. Field Visits & Planning",
+      "item": [
+        {
+          "name": "List Visits",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/visits?page=1&limit=20",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "visits"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "",
+                  "disabled": false
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "",
+                  "disabled": false
+                },
+                {
+                  "key": "status",
+                  "value": "planned",
+                  "description": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Lists planned and completed visits."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Planned Visit (Captures {{sampleVisitId}})",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/visits",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "visits"
+              ]
+            },
+            "description": "Creates a field visit itinerary and captures sampleVisitId.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"organisation_id\": \"{{sampleOrgId}}\",\n  \"location\": \"Force HQ BSF, CGO Complex, Lodhi Road, New Delhi\",\n  \"planned_date\": \"2026-09-21T10:30:00.000Z\",\n  \"purpose\": \"Presentation on Hand Held Metal Detector MHA QR Compliance\",\n  \"demo_required\": true,\n  \"travel_required\": false,\n  \"expected_outcome\": \"Demo trial date finalisation\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201 Created', () => pm.response.to.have.status(201));",
+                  "var res = pm.response.json();",
+                  "if (res && res.id) { pm.collectionVariables.set('sampleVisitId', res.id); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Visit by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/visits/{{sampleVisitId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "visits",
+                "{{sampleVisitId}}"
+              ]
+            },
+            "description": "Fetches visit details including manager interventions."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Add Manager 'Also-Meet' Directive (Section 10)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/visits/{{sampleVisitId}}/intervention",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "visits",
+                "{{sampleVisitId}}",
+                "intervention"
+              ]
+            },
+            "description": "Regional Manager instructs employee to meet another prospect during the same trip.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"instructions\": \"Since you are already at CGO Complex, also meet DIG Provisioning at CISF HQ (Room 304) regarding pending baggage scanner tender.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200/201 OK', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Submit Post-Visit Completion Report (Section 12)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/visits/{{sampleVisitId}}/update",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "visits",
+                "{{sampleVisitId}}",
+                "update"
+              ]
+            },
+            "description": "Submits the debrief report after completing the visit.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"met_completed\": true,\n  \"person_met\": \"Shri V.K. Singh, Commandant (Telecom)\",\n  \"discussion\": \"Demonstrated sensitivity of detector. Discussed RF immunity features.\",\n  \"product_discussed\": \"HHMD-MHA-V2\",\n  \"outcome\": \"Successful meeting. Requested formal demonstration next week.\",\n  \"opportunity\": \"Trial procurement for 80 units\",\n  \"tender_opportunity\": \"Expected GeM bid in October 2026\",\n  \"next_action\": \"Coordinate with Demo team for depot unit allocation\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200/201 OK', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reschedule Visit",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/visits/{{sampleVisitId}}/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "visits",
+                "{{sampleVisitId}}",
+                "status"
+              ]
+            },
+            "description": "Reschedules visit and records reason into audit trail.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"rescheduled\",\n  \"change_reason\": \"Officer travelling on border inspection\",\n  \"rescheduled_to\": \"2026-09-25T11:00:00.000Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "5. Demos & Equipment Fleet",
+      "item": [
+        {
+          "name": "Check Demo Equipment Fleet Matrix (Tri-City)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/demos/equipment",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "demos",
+                "equipment"
+              ],
+              "query": [
+                {
+                  "key": "location",
+                  "value": "Delhi",
+                  "description": "Filter by depot: Delhi, Patna, Kolkata",
+                  "disabled": true
+                },
+                {
+                  "key": "status",
+                  "value": "available",
+                  "description": "Filter by availability status",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Lists all demo units across Delhi, Patna, and Kolkata depots."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Register Demo Equipment Unit (Captures {{sampleEquipmentId}})",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/demos/equipment",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "demos",
+                "equipment"
+              ]
+            },
+            "description": "Adds a unit to the equipment depot inventory (Demo Team).",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{demoToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"product_id\": \"{{sampleProductId}}\",\n  \"model\": \"HHMD Ultra 3000\",\n  \"serial_no\": \"HHMD-DEL-519C69\",\n  \"current_location\": \"Delhi\",\n  \"condition\": \"Excellent\",\n  \"remarks\": \"Brand new demo unit with IP67 casing\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201 Created', () => pm.response.to.have.status(201));",
+                  "var res = pm.response.json();",
+                  "if (res && res.id) { pm.collectionVariables.set('sampleEquipmentId', res.id); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Request a Demonstration (Captures {{sampleDemoId}})",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/demos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "demos"
+              ]
+            },
+            "description": "Salesperson submits a demonstration request.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"organisation_id\": \"{{sampleOrgId}}\",\n  \"product_id\": \"{{sampleProductId}}\",\n  \"location\": \"Delhi\",\n  \"requested_date\": \"2026-09-24T10:00:00.000Z\",\n  \"purpose\": \"Field demonstration before technical committee\",\n  \"expected_audience\": \"Commandant, Dy Commandant, 4 Technical Inspectors\",\n  \"equipment_required\": \"1x HHMD Demo Unit with test targets\",\n  \"special_requirements\": \"Outdoor testing in rain simulation\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201 Created', () => pm.response.to.have.status(201));",
+                  "var res = pm.response.json();",
+                  "if (res && res.id) { pm.collectionVariables.set('sampleDemoId', res.id); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Demo Details by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/demos/{{sampleDemoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "demos",
+                "{{sampleDemoId}}"
+              ]
+            },
+            "description": "Fetches demo request and equipment allocation details."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reserve Equipment for Demo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/demos/{{sampleDemoId}}/reserve",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "demos",
+                "{{sampleDemoId}}",
+                "reserve"
+              ]
+            },
+            "description": "Locks equipment unit using exact schema fields (reserved_from, reserved_to).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"equipment_id\": \"{{sampleEquipmentId}}\",\n  \"reserved_from\": \"2026-09-24T09:00:00.000Z\",\n  \"reserved_to\": \"2026-09-24T17:00:00.000Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200/201 OK', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Record Demo Outcome (Success)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/demos/{{sampleDemoId}}/outcome",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "demos",
+                "{{sampleDemoId}}",
+                "outcome"
+              ]
+            },
+            "description": "Records trial success using exact schema field names.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"completed\": true,\n  \"result\": \"success\",\n  \"customer_response\": \"Technical committee fully satisfied with detection range\",\n  \"technical_performance\": \"100% detection rate on copper and composite targets\",\n  \"product_suitability\": \"Ideal for border outpost gate control\",\n  \"decision_maker_present\": true,\n  \"next_step\": \"Submit formal commercial quotation\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200/201 OK', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Record Demo Outcome (Failure & Root Cause Analysis)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/demos/{{sampleDemoId}}/outcome",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "demos",
+                "{{sampleDemoId}}",
+                "outcome"
+              ]
+            },
+            "description": "Records root-cause failure analysis (Section 17).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"completed\": true,\n  \"result\": \"fail\",\n  \"failure_reason\": \"customer_requirement_mismatch\",\n  \"customer_response\": \"Client requires wireless PC logging dock which is an optional add-on\",\n  \"technical_performance\": \"Met all hardware requirements\",\n  \"decision_maker_present\": true,\n  \"next_step\": \"Submit commercial proposal for wireless dock upgrade\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200/201 OK', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "6. Two-Stage Expense Approvals",
+      "item": [
+        {
+          "name": "List Expenses (Filter by Approval Status)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/expenses",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "expenses"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "submitted",
+                  "description": "submitted, manager_approved, accounts_processed, rejected",
+                  "disabled": true
+                },
+                {
+                  "key": "category",
+                  "value": "travel",
+                  "description": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Fetches expense claims."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Submit Expense Claim (by Sales Rep -> Captures {{sampleExpenseId}})",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/expenses",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "expenses"
+              ]
+            },
+            "description": "Employee submits a new standardized expense claim.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{salesToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"visit_id\": \"{{sampleVisitId}}\",\n  \"organisation_id\": \"{{sampleOrgId}}\",\n  \"expense_date\": \"2026-09-16\",\n  \"category\": \"travel\",\n  \"amount\": 3850,\n  \"purpose\": \"Cab and metro conveyance for client demonstration at BSF HQ\",\n  \"receipt_url\": \"https://arihant-storage.com/receipts/cab_claim_0916.pdf\",\n  \"remarks\": \"Attached Uber business invoices\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201 Created', () => pm.response.to.have.status(201));",
+                  "var res = pm.response.json();",
+                  "if (res && res.id) { pm.collectionVariables.set('sampleExpenseId', res.id); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Expense by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/expenses/{{sampleExpenseId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "expenses",
+                "{{sampleExpenseId}}"
+              ]
+            },
+            "description": "Fetches detailed claim with receipt URL."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Stage 1: Regional Manager Approval",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/expenses/{{sampleExpenseId}}/manager-approve",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "expenses",
+                "{{sampleExpenseId}}",
+                "manager-approve"
+              ]
+            },
+            "description": "Regional Manager approves claim.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{rmToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"decision\": \"manager_approved\",\n  \"manager_remarks\": \"Verified against visit itinerary. Legitimate claim.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Stage 2: Accounts Head Final Disbursement",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/expenses/{{sampleExpenseId}}/accounts-process",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "expenses",
+                "{{sampleExpenseId}}",
+                "accounts-process"
+              ]
+            },
+            "description": "Corporate Accounts marks processed with Tally voucher reference.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accountsToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"decision\": \"accounts_processed\",\n  \"remarks\": \"Reimbursed via IMPS. Tally Voucher Ref: BKP-2026-9812\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "7. Tasks & Blocker Escalation",
+      "item": [
+        {
+          "name": "List Tasks",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tasks",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tasks"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "in_progress",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "priority",
+                  "value": "high",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "overdue_only",
+                  "value": "true",
+                  "description": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Lists tasks across departments."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Milestone Task (Captures {{sampleTaskId}})",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tasks",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tasks"
+              ]
+            },
+            "description": "Assigns a task and captures sampleTaskId.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Complete Pre-Bid Technical Compliance for CRPF Tender\",\n  \"description\": \"Cross-reference MHA QRs clause by clause with OEM datasheet\",\n  \"priority\": \"critical\",\n  \"deadline\": \"2026-09-20T17:00:00.000Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201 Created', () => pm.response.to.have.status(201));",
+                  "var res = pm.response.json();",
+                  "if (res && res.id) { pm.collectionVariables.set('sampleTaskId', res.id); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Task by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tasks/{{sampleTaskId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tasks",
+                "{{sampleTaskId}}"
+              ]
+            },
+            "description": "Fetches task details and active blockers."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Raise Blocker Dependency (Captures {{sampleBlockerId}})",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tasks/{{sampleTaskId}}/blockers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tasks",
+                "{{sampleTaskId}}",
+                "blockers"
+              ]
+            },
+            "description": "Raises a blocker using valid enum ('vendor', 'customer', 'portal', etc.).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"blocker_type\": \"vendor\",\n  \"description\": \"OEM Technical team in Germany has not provided environmental testing certificate (MIL-STD-810H). Awaiting response.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201 Created', () => pm.response.to.have.status(201));",
+                  "var res = pm.response.json();",
+                  "if (res && res.id) { pm.collectionVariables.set('sampleBlockerId', res.id); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Resolve Blocker (Decision: Accepted + New Deadline)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tasks/{{sampleTaskId}}/blockers/{{sampleBlockerId}}/resolve",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tasks",
+                "{{sampleTaskId}}",
+                "blockers",
+                "{{sampleBlockerId}}",
+                "resolve"
+              ]
+            },
+            "description": "Manager resolves blocker using valid DTO fields.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"decision\": \"accepted\",\n  \"new_deadline\": \"2026-09-22T18:00:00.000Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Mark Task as Completed (Close Task Lifecycle)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tasks/{{sampleTaskId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tasks",
+                "{{sampleTaskId}}"
+              ]
+            },
+            "description": "Closes the task lifecycle.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"completed\",\n  \"evidence_url\": \"https://arihant-storage.com/evidence/task_completion_0916.pdf\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "8. Service & Breakdown Desk",
+      "item": [
+        {
+          "name": "List Service Tickets",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/service/tickets",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "service",
+                "tickets"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "assigned",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "priority",
+                  "value": "critical",
+                  "description": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Lists breakdown complaints."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Log Service Breakdown Complaint (Captures {{sampleTicketId}})",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/service/tickets",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "service",
+                "tickets"
+              ]
+            },
+            "description": "Logs an after-sales breakdown complaint using exact schema fields.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"organisation_id\": \"{{sampleOrgId}}\",\n  \"product_id\": \"{{sampleProductId}}\",\n  \"equipment_serial\": \"SN-DSMD-2024-110\",\n  \"complaint\": \"Search head sensitivity drifting during wet ground calibration\",\n  \"priority\": \"high\",\n  \"warranty_status\": \"in_warranty\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201 Created', () => pm.response.to.have.status(201));",
+                  "var res = pm.response.json();",
+                  "if (res && res.id) { pm.collectionVariables.set('sampleTicketId', res.id); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Ticket by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/service/tickets/{{sampleTicketId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "service",
+                "tickets",
+                "{{sampleTicketId}}"
+              ]
+            },
+            "description": "Fetches ticket history."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Progress Ticket Status ('in_progress')",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/service/tickets/{{sampleTicketId}}/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "service",
+                "tickets",
+                "{{sampleTicketId}}",
+                "status"
+              ]
+            },
+            "description": "Transitions ticket lifecycle toward rectification.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"in_progress\",\n  \"planned_visit_date\": \"2026-09-17T09:00:00.000Z\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Submit Service Rectification Report (Closes Ticket)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/service/tickets/{{sampleTicketId}}/report",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "service",
+                "tickets",
+                "{{sampleTicketId}}",
+                "report"
+              ]
+            },
+            "description": "Service engineer files formal report using exact DTO fields.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{serviceToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"problem_identified\": \"Water ingress into coil connector seal causing impedance mismatch\",\n  \"action_taken\": \"Replaced weatherproof O-ring seal, cleaned contacts with isopropyl alcohol, recalibrated coil balance\",\n  \"parts_replaced\": \"Coil Seal Kit (Part #ATC-SK-11)\",\n  \"warranty_status\": \"in_warranty\",\n  \"customer_confirmation\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200/201 OK', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "9. Commercial Proposals",
+      "item": [
+        {
+          "name": "List Proposals",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/proposals",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "proposals"
+              ]
+            },
+            "description": "Lists quotations and proposals sent."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Proposal Record (Captures {{sampleProposalId}})",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/proposals",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "proposals"
+              ]
+            },
+            "description": "Registers a commercial proposal.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"organisation_id\": \"{{sampleOrgId}}\",\n  \"product_id\": \"{{sampleProductId}}\",\n  \"sector\": \"paramilitary\",\n  \"version\": \"v1.0\",\n  \"reference\": \"ATC/PROP/2026/089\",\n  \"status\": \"requested\",\n  \"required_date\": \"2026-09-25\",\n  \"next_followup\": \"2026-09-22\",\n  \"remarks\": \"Formal commercial offer for 120 units HHMD with 3-year AMC\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201 Created', () => pm.response.to.have.status(201));",
+                  "var res = pm.response.json();",
+                  "if (res && res.id) { pm.collectionVariables.set('sampleProposalId', res.id); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Proposal by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/proposals/{{sampleProposalId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "proposals",
+                "{{sampleProposalId}}"
+              ]
+            },
+            "description": "Fetches proposal record."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Proposal Status & Follow-Up (Section 30)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/proposals/{{sampleProposalId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "proposals",
+                "{{sampleProposalId}}"
+              ]
+            },
+            "description": "Updates proposal follow-up tracking.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"followup_required\",\n  \"next_followup\": \"2026-09-23\",\n  \"remarks\": \"Called Procurement Officer. Technical committee review scheduled for Friday.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "10. Organisations & Contacts (Module 1)",
+      "item": [
+        {
+          "name": "List Organisations",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/organisations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "organisations"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "Police",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "sector",
+                  "value": "defense",
+                  "description": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Lists central client organisations."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Check Duplicate Organisation (Duplicate Prevention)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/organisations/check-duplicate?name=Border Security Force",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "organisations",
+                "check-duplicate"
+              ],
+              "query": [
+                {
+                  "key": "name",
+                  "value": "Border Security Force",
+                  "description": "",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "Checks if an organisation already exists to prevent duplicate entries."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Organisation (Captures {{sampleOrgId}})",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/organisations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "organisations"
+              ]
+            },
+            "description": "Creates an organisation and automatically updates {{sampleOrgId}}.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Central Reserve Police Force HQ - Division b09dd4\",\n  \"sector\": \"paramilitary\",\n  \"is_govt\": true,\n  \"city\": \"New Delhi\",\n  \"state\": \"Delhi\",\n  \"address\": \"Block 1, CGO Complex, Lodhi Road, New Delhi\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201 Created', () => pm.response.to.have.status(201));",
+                  "var res = pm.response.json();",
+                  "if (res && res.id) { pm.collectionVariables.set('sampleOrgId', res.id); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Organisation by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/organisations/{{sampleOrgId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "organisations",
+                "{{sampleOrgId}}"
+              ]
+            },
+            "description": "Fetches organisation profile."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Add Contact Person (Captures {{sampleContactId}})",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/contacts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "contacts"
+              ]
+            },
+            "description": "Adds a contact person using exact schema column full_name.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"organisation_id\": \"{{sampleOrgId}}\",\n  \"full_name\": \"Shri Ashok Kumar\",\n  \"designation\": \"Deputy Inspector General (Procurement)\",\n  \"mobile\": \"+919871100223\",\n  \"email\": \"dig.procure.a89365@bsf.gov.in\",\n  \"is_primary\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201 Created', () => pm.response.to.have.status(201));",
+                  "var res = pm.response.json();",
+                  "if (res && res.id) { pm.collectionVariables.set('sampleContactId', res.id); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Contacts of Organisation",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/contacts?organisation_id={{sampleOrgId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "contacts"
+              ],
+              "query": [
+                {
+                  "key": "organisation_id",
+                  "value": "{{sampleOrgId}}",
+                  "description": "",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "Lists contacts for the organisation."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "11. Customer Interaction Timeline",
+      "item": [
+        {
+          "name": "Log Customer Interaction (Call / Visit / Demo)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/interactions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "interactions"
+              ]
+            },
+            "description": "Appends an interaction using exact DTO fields (type, remarks, outcome, next_action).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"organisation_id\": \"{{sampleOrgId}}\",\n  \"type\": \"physical_visit\",\n  \"remarks\": \"Technical Committee Pre-Bid Discussion at CGO Complex\",\n  \"outcome\": \"Discussed clauses 4.2 and 4.7 of MHA specification. Client agreed to accept OEM test certificates.\",\n  \"next_action\": \"Submit bid documents before closing deadline\",\n  \"followup_date\": \"2026-09-22\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201 Created', () => pm.response.to.have.status(201));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Organisation Interaction History Timeline",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/interactions?organisation_id={{sampleOrgId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "interactions"
+              ],
+              "query": [
+                {
+                  "key": "organisation_id",
+                  "value": "{{sampleOrgId}}",
+                  "description": "",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "Returns unified chronological history."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "12. Sales Leads & Funnel",
+      "item": [
+        {
+          "name": "Create Sales Lead (Captures {{sampleLeadId}})",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/leads",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "leads"
+              ]
+            },
+            "description": "Registers an active lead using exact DTO fields.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"organisation_id\": \"{{sampleOrgId}}\",\n  \"product_id\": \"{{sampleProductId}}\",\n  \"category\": \"active\",\n  \"probability\": \"high\",\n  \"channel\": \"direct\",\n  \"value_lakh\": 48.5,\n  \"status\": \"qualified\",\n  \"next_followup_date\": \"2026-10-15\",\n  \"remarks\": \"Annual Metal Detector Fleet Modernisation Opportunity\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201 Created', () => pm.response.to.have.status(201));",
+                  "var res = pm.response.json();",
+                  "if (res && res.id) { pm.collectionVariables.set('sampleLeadId', res.id); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Lead by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/leads/{{sampleLeadId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "leads",
+                "{{sampleLeadId}}"
+              ]
+            },
+            "description": "Fetches lead details."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Lead Status & Value (Funnel Progression)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/leads/{{sampleLeadId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "leads",
+                "{{sampleLeadId}}"
+              ]
+            },
+            "description": "Transitions lead in sales funnel.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"proposal_submitted\",\n  \"value_lakh\": 52.0,\n  \"probability\": \"high\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "13. Master Records & Metadata",
+      "item": [
+        {
+          "name": "Get Zones",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/masters/zones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "masters",
+                "zones"
+              ]
+            },
+            "description": "Lists operational zones (North, East, North East, South, West)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Regions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/masters/regions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "masters",
+                "regions"
+              ]
+            },
+            "description": "Lists states/regions mapped under zones."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Products Catalog",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/masters/products",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "masters",
+                "products"
+              ]
+            },
+            "description": "Lists security and surveillance equipment catalog."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Product (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/masters/products",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "masters",
+                "products"
+              ]
+            },
+            "description": "Adds product using exact SQL columns (make, is_mha_qr, spec_ref).",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Underwater Metal Detector (UWMD-600) - f4c2\",\n  \"category\": \"Demining & Diving\",\n  \"make\": \"CEIA SpA\",\n  \"is_mha_qr\": true,\n  \"spec_ref\": \"MHA/QR/WTMD/2026-REV3\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200/201 OK', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                  "var res = pm.response.json();",
+                  "if (res && res.id) { pm.collectionVariables.set('sampleProductId', res.id); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "14. Users & Access Management",
+      "item": [
+        {
+          "name": "List All Users Across Hierarchy",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users"
+              ],
+              "query": [
+                {
+                  "key": "role",
+                  "value": "sales",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "is_active",
+                  "value": "true",
+                  "description": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Lists users with roles and manager reporting chain."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create User (Admin Only)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users"
+              ]
+            },
+            "description": "Provisions a new user account.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"Rohan Gupta\",\n  \"email\": \"rohan.sales.edc150@arihant.com\",\n  \"phone\": \"+919811009988\",\n  \"role\": \"sales\",\n  \"password\": \"password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201 Created', () => pm.response.to.have.status(201));",
+                  "var res = pm.response.json();",
+                  "if (res && res.id) { pm.collectionVariables.set('sampleUserId', res.id); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Deactivate User (Admin Action - Employee Teardown)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/{{sampleUserId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "{{sampleUserId}}"
+              ]
+            },
+            "description": "Deactivates user account to revoke access.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"is_active\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "15. Uploads & Attachments",
+      "item": [
+        {
+          "name": "Generate Upload Signature",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/uploads/sign",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "uploads",
+                "sign"
+              ]
+            },
+            "description": "Generates signed parameters for secure direct file uploads.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"folder\": \"receipts\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200/201 OK', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Attach File to Entity (Tender / Expense / Report)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/uploads/attach",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "uploads",
+                "attach"
+              ]
+            },
+            "description": "Links an uploaded document to any BOS entity.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"entity_type\": \"tender\",\n  \"entity_id\": \"{{sampleTenderId}}\",\n  \"file_name\": \"Tender_Specification_MHA.pdf\",\n  \"file_url\": \"https://arihant-storage.com/files/tender_mha_spec.pdf\",\n  \"file_size\": 2048576,\n  \"mime_type\": \"application/pdf\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 201 Created', () => pm.response.to.have.status(201));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Attachments for Entity",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/uploads/attachments?entity_type=tender&entity_id={{sampleTenderId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "uploads",
+                "attachments"
+              ],
+              "query": [
+                {
+                  "key": "entity_type",
+                  "value": "tender",
+                  "description": "",
+                  "disabled": false
+                },
+                {
+                  "key": "entity_id",
+                  "value": "{{sampleTenderId}}",
+                  "description": "",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "Retrieves attached documents."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "16. Notifications & Audit Trail",
+      "item": [
+        {
+          "name": "Get My Notifications Inbox",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/notifications",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notifications"
+              ]
+            },
+            "description": "Returns real-time notifications for the logged-in user."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Unread Notification Count",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/notifications/unread-count",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notifications",
+                "unread-count"
+              ]
+            },
+            "description": "Returns total number of unread alerts."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Mark All Notifications as Read",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/notifications/read-all",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notifications",
+                "read-all"
+              ]
+            },
+            "description": "Marks all notifications as read."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Audit Trail (Admin / Management)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/audit",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "audit"
+              ],
+              "query": [
+                {
+                  "key": "entity_type",
+                  "value": "tender",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "action",
+                  "value": "status_changed",
+                  "description": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "System-wide audit trail recording who changed what and when.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{mgmtToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "17. Edge Cases, RBAC Denials & Validations",
+      "item": [
+        {
+          "name": "Negative Auth: Wrong Password -> 401 Unauthorized",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Validates that incorrect credentials return 401.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"mgmt@arihant.com\",\n  \"password\": \"WrongPassword123!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 401 Unauthorized', () => pm.response.to.have.status(401));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Negative Auth: Missing Bearer Token -> 401 Unauthorized",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/dashboard/metrics",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "dashboard",
+                "metrics"
+              ]
+            },
+            "description": "Validates that protected endpoints reject requests without a JWT token.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 401 Unauthorized', () => pm.response.to.have.status(401));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "RBAC Negative: Sales Rep Tries to Approve Tender -> 403 Forbidden",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tenders/{{sampleTenderId}}/approve",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tenders",
+                "{{sampleTenderId}}",
+                "approve"
+              ]
+            },
+            "description": "Ensures Sales role is denied tender approval privileges.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{salesToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"decision\": \"approved\",\n  \"remarks\": \"Unauthorized sales approval attempt\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 403 Forbidden', () => pm.response.to.have.status(403));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "RBAC Negative: Sales Rep Tries to Access Audit Trail -> 403 Forbidden",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/audit",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "audit"
+              ]
+            },
+            "description": "Ensures Sales role cannot inspect compliance audit logs.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{salesToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 403 Forbidden', () => pm.response.to.have.status(403));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "RBAC Negative: Service Tech Tries to Approve Expenses -> 403 Forbidden",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/expenses/{{sampleExpenseId}}/manager-approve",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "expenses",
+                "{{sampleExpenseId}}",
+                "manager-approve"
+              ]
+            },
+            "description": "Ensures Service role cannot approve expense disbursements.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{serviceToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"decision\": \"manager_approved\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 403 Forbidden', () => pm.response.to.have.status(403));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "RBAC Negative: Sales Rep Tries to Provision User -> 403 Forbidden",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users"
+              ]
+            },
+            "description": "Ensures non-admin roles cannot create users.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{salesToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"full_name\": \"Hacker User\",\n  \"email\": \"hacker@arihant.com\",\n  \"role\": \"admin\",\n  \"password\": \"password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 403 Forbidden', () => pm.response.to.have.status(403));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Validation Negative: Negative Expense Amount -> 400 Bad Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/expenses",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "expenses"
+              ]
+            },
+            "description": "Validates class-validator rejects negative amounts with 400.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"expense_date\": \"2026-09-16\",\n  \"category\": \"travel\",\n  \"amount\": -500,\n  \"purpose\": \"Invalid negative claim\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400 Bad Request', () => pm.response.to.have.status(400));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Validation Negative: Missing Required Tender Number -> 400 Bad Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tenders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tenders"
+              ]
+            },
+            "description": "Validates that omitting required fields returns 400.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"department\": \"BSF\",\n  \"remarks\": \"Missing tender_no\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400 Bad Request', () => pm.response.to.have.status(400));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Validation Negative: Invalid Blocker Enum Type -> 400 Bad Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tasks/{{sampleTaskId}}/blockers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tasks",
+                "{{sampleTaskId}}",
+                "blockers"
+              ]
+            },
+            "description": "Validates enum validation rejects unknown types with 400.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"blocker_type\": \"invalid_blocker_type_xyz\",\n  \"description\": \"Testing invalid enum validation\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 400 Bad Request', () => pm.response.to.have.status(400));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Entity Lookup: Non-Existent UUID -> 404 Not Found",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tenders/00000000-0000-0000-0000-000000000000",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tenders",
+                "00000000-0000-0000-0000-000000000000"
+              ]
+            },
+            "description": "Validates lookup of a non-existent UUID returns 404.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status is 404 Not Found', () => pm.response.to.have.status(404));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

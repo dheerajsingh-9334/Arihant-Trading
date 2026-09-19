@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: arihant_bos_app
+    restart: always
+    ports:
+      - "3000:3000"
+    env_file:
+      - apps/api/.env
+    environment:
+      - NODE_ENV=production
+      - PORT=4000
+      - WEB_PORT=3000
