@@ -7,8 +7,12 @@ import type {
   TenderCategory,
   TenderStatus,
   VisitStatus,
+  TripStatus,
   DemoStatus,
   DemoEquipmentAvailability,
+  DemoResult,
+  DemoFailureReason,
+  DemoCancellationReason,
   ProposalStatus,
   ServiceTicketStatus,
   ServicePriority,
@@ -119,6 +123,8 @@ export interface InteractionsTable {
   organisation_id: string;
   contact_id: string | null;
   lead_id: string | null;
+  visit_id: string | null;
+  demo_id: string | null;
   type: string;
   employee_id: string | null;
   occurred_on: Generated<string>;
@@ -129,16 +135,34 @@ export interface InteractionsTable {
   created_at: Generated<Date>;
 }
 
+export interface TripsTable {
+  id: Generated<string>;
+  employee_id: string;
+  trip_date: string;
+  base_location: string;
+  status: Generated<TripStatus>;
+  notes: string | null;
+  created_by: string | null;
+  created_at: Generated<Date>;
+  updated_at: Generated<Date>;
+}
+
 export interface VisitsTable {
   id: Generated<string>;
+  trip_id: string | null;
   organisation_id: string;
   contact_id: string | null;
   product_id: string | null;
   planned_by: string | null;
   assigned_to: string | null;
   assigned_by_manager: string | null;
+  manager_assigned: Generated<boolean>;
   location: string | null;
+  latitude: number | null;
+  longitude: number | null;
   planned_date: string; // date
+  start_time: string | null;
+  end_time: string | null;
   purpose: string | null;
   demo_required: Generated<boolean>;
   travel_required: Generated<boolean>;
@@ -147,6 +171,8 @@ export interface VisitsTable {
   change_reason: string | null;
   rescheduled_from: string | null;
   remarks: string | null;
+  contact_person: string | null;
+  version: Generated<number>;
   created_at: Generated<Date>;
   updated_at: Generated<Date>;
 }
@@ -169,6 +195,22 @@ export interface VisitUpdatesTable {
   created_at: Generated<Date>;
 }
 
+export interface EmployeeActivitiesTable {
+  id: Generated<string>;
+  employee_id: string;
+  activity_type: Generated<string>;
+  entity_type: Generated<string>;
+  entity_id: string;
+  activity_date: string;
+  title: string;
+  status: string;
+  outcome: string | null;
+  next_action: string | null;
+  followup_date: string | null;
+  details: unknown | null;
+  created_at: Generated<Date>;
+}
+
 export interface DemoEquipmentTable {
   id: Generated<string>;
   product_id: string | null;
@@ -186,6 +228,7 @@ export interface DemoEquipmentTable {
 
 export interface DemosTable {
   id: Generated<string>;
+  demo_no: Generated<string>;
   organisation_id: string;
   lead_id: string | null;
   product_id: string | null;
@@ -199,6 +242,18 @@ export interface DemosTable {
   equipment_required: string | null;
   special_requirements: string | null;
   status: Generated<DemoStatus>;
+  purpose: string | null;
+  remarks: string | null;
+  visit_id: string | null;
+  reschedule_reason: string | null;
+  rescheduled_from: string | null;
+  cancellation_reason: string | null;
+  travel_required: Generated<boolean>;
+  travel_from: string | null;
+  travel_to: string | null;
+  travel_date: string | null;
+  travel_remarks: string | null;
+  version: Generated<number>;
   created_at: Generated<Date>;
   updated_at: Generated<Date>;
 }
@@ -211,7 +266,11 @@ export interface DemoReservationsTable {
   reserved_to: string | null;
   status: Generated<string>;
   approved_by: string | null;
+  alternative_equipment_id: string | null;
+  alternative_reason: string | null;
+  remarks: string | null;
   created_at: Generated<Date>;
+  updated_at: Generated<Date>;
 }
 
 export interface DemoOutcomesTable {
@@ -228,8 +287,20 @@ export interface DemoOutcomesTable {
   result: string | null; // success / fail
   failure_reason: string | null;
   remarks: string | null;
+  submitted_by: string | null;
   created_at: Generated<Date>;
 }
+
+export interface DemoRescheduleHistoryTable {
+  id: Generated<string>;
+  demo_id: string;
+  old_date: string | null;
+  new_date: string;
+  reason: string;
+  changed_by: string | null;
+  created_at: Generated<Date>;
+}
+
 
 export interface TendersTable {
   id: Generated<string>;
@@ -467,12 +538,15 @@ export interface Database {
   contacts: ContactsTable;
   leads: LeadsTable;
   interactions: InteractionsTable;
+  trips: TripsTable;
   visits: VisitsTable;
   visit_updates: VisitUpdatesTable;
+  employee_activities: EmployeeActivitiesTable;
   demo_equipment: DemoEquipmentTable;
   demos: DemosTable;
   demo_reservations: DemoReservationsTable;
   demo_outcomes: DemoOutcomesTable;
+  demo_reschedule_history: DemoRescheduleHistoryTable;
   tenders: TendersTable;
   tender_status_history: TenderStatusHistoryTable;
   tender_outcomes: TenderOutcomesTable;

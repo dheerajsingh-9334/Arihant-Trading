@@ -21,12 +21,18 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { api } from '@/lib/api';
-import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
-import { Modal } from '@/components/ui/Modal';
-import { Input } from '@/components/ui/Input';
-import { Select } from '@/components/ui/Select';
-import { Tabs } from '@/components/ui/Tabs';
+import {
+  Button,
+  Badge,
+  Card,
+  Modal,
+  Input,
+  Select,
+  Tabs,
+  PageContainer,
+  PageHeader,
+  EmptyState,
+} from '@/components/ui';
 import { formatINR } from '@arihant/shared';
 
 export default function ExpensesPage() {
@@ -170,28 +176,24 @@ export default function ExpensesPage() {
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-200">
+    <PageContainer>
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-extrabold text-[#1A1A1A] tracking-tight flex items-center gap-2">
-            <Receipt className="h-6 w-6 text-[#223FA7]" />
-            <span>Two-Stage Expense Reimbursements</span>
-          </h1>
-          <p className="text-xs text-[#5871A5] mt-1">
-            Stage 1: Regional Manager verification &bull; Stage 2: Corporate Accounts disbursement.
-          </p>
-        </div>
-
-        <Button
-          onClick={() => setIsSubmitOpen(true)}
-          variant="primary"
-          className="shadow-xs"
-        >
-          <Plus className="h-4 w-4 mr-1.5" />
-          <span>Submit Reimbursement</span>
-        </Button>
-      </div>
+      <PageHeader
+        badge="Module 7 — Travel & Reimbursements"
+        title="Two-Stage Expense Reimbursements"
+        subtitle="Stage 1: Regional Manager verification • Stage 2: Corporate Accounts disbursement."
+        icon={<Receipt className="h-5 w-5 text-[#223FA7]" />}
+        actions={
+          <Button
+            onClick={() => setIsSubmitOpen(true)}
+            variant="primary"
+            className="shadow-xs"
+          >
+            <Plus className="h-4 w-4 mr-1.5" />
+            <span>Submit Reimbursement</span>
+          </Button>
+        }
+      />
 
       {/* Tabs */}
       <Tabs
@@ -210,15 +212,20 @@ export default function ExpensesPage() {
         {isLoading ? (
           <div className="p-8 text-center text-xs text-[#5871A5] bg-white border border-[#D6E3F5] rounded-xl">Loading claims...</div>
         ) : expenses.length === 0 ? (
-          <div className="p-8 text-center text-xs text-[#5871A5] bg-white border border-[#D6E3F5] rounded-xl">No expense claims in this stage.</div>
+          <EmptyState
+            icon={Receipt}
+            title="No expense claims in this stage"
+            description="There are currently no reimbursement claims filed or awaiting action."
+          />
         ) : (
           expenses.map((exp) => {
             const isSubmitter = user && (exp.employee_id === user.id || exp.user_id === user.id);
 
             return (
-              <div
+              <Card
                 key={exp.id}
-                className="p-4 rounded-xl border border-[#D6E3F5] bg-white hover:border-[#3770E3] transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xs"
+                padding="sm"
+                className="flex flex-col md:flex-row md:items-center justify-between gap-4"
               >
                 <div className="space-y-1.5 flex-1">
                   <div className="flex items-center space-x-2.5">
@@ -244,15 +251,15 @@ export default function ExpensesPage() {
                     </Badge>
                   </div>
 
-                  <p className="text-xs text-gray-800 font-medium">{exp.purpose}</p>
+                  <p className="text-xs text-[#1A1A1A] font-medium">{exp.purpose}</p>
 
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-[#5871A5]">
                     <span>Officer: <strong className="text-[#1A1A1A]">{exp.employee_name || exp.user_name || 'Staff'}</strong></span>
                     <span>Date: {new Date(exp.expense_date).toLocaleDateString('en-IN')}</span>
                     {(exp.organisation_name || exp.visit_purpose) && (
-                      <span className="flex items-center gap-1 text-gray-700">
+                      <span className="flex items-center gap-1 text-[#5871A5]">
                         <MapPin className="h-3 w-3 text-[#223FA7]" />
-                        Tour: <strong className="text-gray-900">{exp.organisation_name || exp.visit_purpose}</strong>
+                        Tour: <strong className="text-[#1A1A1A]">{exp.organisation_name || exp.visit_purpose}</strong>
                       </span>
                     )}
                     {exp.receipt_url && (
@@ -327,7 +334,7 @@ export default function ExpensesPage() {
                     </span>
                   )}
                 </div>
-              </div>
+              </Card>
             );
           })
         )}
@@ -538,6 +545,6 @@ export default function ExpensesPage() {
           </div>
         </form>
       </Modal>
-    </div>
+    </PageContainer>
   );
 }

@@ -1,8 +1,9 @@
 import React, { useEffect } from 'react';
 import { X } from 'lucide-react';
 import { twMerge } from 'tailwind-merge';
+import { IconButton } from './Button';
 
-interface ModalProps {
+export interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   title: string;
@@ -56,30 +57,32 @@ export const Modal: React.FC<ModalProps> = ({
         onClick={onClose}
       />
 
-      {/* CoachAssist White Dialog Container */}
+      {/* Light Executive Modal Container */}
       <div
         className={twMerge(
-          'relative w-full rounded-xl bg-white border border-[#D6E3F5] shadow-2xl overflow-hidden z-10 animate-in zoom-in-95 duration-150 text-gray-900',
+          'relative w-full rounded-xl bg-white border border-[#D6E3F5] shadow-2xl overflow-hidden z-10 animate-in zoom-in-95 duration-150 text-[#1A1A1A]',
           maxWidths[maxWidth],
         )}
       >
         {/* Dialog Header */}
         <div className="px-5 py-4 border-b border-[#F0F5FC] bg-white flex items-center justify-between shrink-0">
           <div>
-            <h3 className="text-[15px] font-extrabold text-gray-950 tracking-tight">
+            <h3 className="text-[15px] font-extrabold text-[#1A1A1A] tracking-tight">
               {title}
             </h3>
             {description && (
-              <p className="text-xs text-[#5871A5] font-normal mt-0.5">{description}</p>
+              <p className="text-xs text-[#5871A5] font-normal mt-0.5 leading-relaxed">
+                {description}
+              </p>
             )}
           </div>
-          <button
-            onClick={onClose}
-            className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-[#F7FBFF] text-gray-400 hover:text-[#223FA7] transition-colors border border-transparent hover:border-[#D6E3F5] shrink-0"
+          <IconButton
+            icon={<X className="h-4 w-4" />}
             aria-label="Close modal"
-          >
-            <X className="h-4 w-4" />
-          </button>
+            onClick={onClose}
+            size="sm"
+            variant="ghost"
+          />
         </div>
 
         {/* Dialog Body with custom-scrollbar */}

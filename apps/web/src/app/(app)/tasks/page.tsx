@@ -14,12 +14,18 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { api } from '@/lib/api';
-import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
-import { Modal } from '@/components/ui/Modal';
-import { Input } from '@/components/ui/Input';
-import { Select } from '@/components/ui/Select';
-import { Tabs } from '@/components/ui/Tabs';
+import {
+  Button,
+  Badge,
+  Card,
+  Modal,
+  Input,
+  Select,
+  Tabs,
+  PageContainer,
+  PageHeader,
+  EmptyState,
+} from '@/components/ui';
 
 export default function TasksPage() {
   const { user, hasRole } = useAuth();
@@ -179,28 +185,24 @@ export default function TasksPage() {
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-200">
+    <PageContainer>
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-extrabold text-[#1A1A1A] tracking-tight flex items-center gap-2">
-            <CheckSquare className="h-6 w-6 text-[#223FA7]" />
-            <span>Action Deliverables & Blocker Management</span>
-          </h1>
-          <p className="text-xs text-[#5871A5] mt-1">
-            Track operational milestones, bid submissions, and unblock cross-functional dependencies.
-          </p>
-        </div>
-
-        <Button
-          onClick={() => setIsCreateOpen(true)}
-          variant="primary"
-          className="shadow-xs"
-        >
-          <Plus className="h-4 w-4 mr-1.5" />
-          <span>New Action Task</span>
-        </Button>
-      </div>
+      <PageHeader
+        badge="Task Execution Hub"
+        title="Action Deliverables & Blocker Management"
+        subtitle="Track operational milestones, bid submissions, and unblock cross-functional dependencies."
+        icon={<CheckSquare className="h-5 w-5 text-[#223FA7]" />}
+        actions={
+          <Button
+            onClick={() => setIsCreateOpen(true)}
+            variant="primary"
+            className="shadow-xs"
+          >
+            <Plus className="h-4 w-4 mr-1.5" />
+            <span>New Action Task</span>
+          </Button>
+        }
+      />
 
       {/* Tabs */}
       <Tabs
@@ -219,20 +221,22 @@ export default function TasksPage() {
         {isLoading ? (
           <div className="p-8 text-center text-xs text-[#5871A5] bg-white border border-[#D6E3F5] rounded-xl">Loading tasks...</div>
         ) : tasks.length === 0 ? (
-          <div className="p-8 text-center text-xs text-[#5871A5] bg-white border border-[#D6E3F5] rounded-xl">No tasks in this category.</div>
+          <EmptyState
+            icon={CheckSquare}
+            title="No tasks in this category"
+            description="All operational tasks and action deliverables are currently up to date."
+          />
         ) : (
           tasks.map((task) => {
             const isBlocked = task.status === 'blocked' || !!task.blocker_reason;
             const isCompleted = task.status === 'completed';
 
             return (
-              <div
+              <Card
                 key={task.id}
-                className={`p-4 rounded-xl border transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xs ${
-                  isBlocked
-                    ? 'border-amber-300 bg-amber-50/40'
-                    : 'border-[#D6E3F5] bg-white hover:border-[#3770E3]'
-                }`}
+                padding="sm"
+                accent={isBlocked ? 'amber' : 'none'}
+                className="flex flex-col md:flex-row md:items-center justify-between gap-4"
               >
                 <div className="space-y-1.5 flex-1">
                   <div className="flex items-center space-x-2">
@@ -253,14 +257,14 @@ export default function TasksPage() {
                     <span className="font-bold text-[#1A1A1A] text-sm">{task.title}</span>
                   </div>
 
-                  <p className="text-xs text-gray-800 font-medium">{task.description}</p>
+                  <p className="text-xs text-[#1A1A1A] font-medium">{task.description}</p>
 
                   <div className="flex flex-wrap items-center gap-x-4 text-[11px] text-[#5871A5]">
-                    <span className="flex items-center gap-1 text-gray-700">
+                    <span className="flex items-center gap-1 text-[#5871A5]">
                       <User className="h-3.5 w-3.5 text-[#5871A5]" />
                       Assignee: {task.assignee_name || 'Self'}
                     </span>
-                    <span className="flex items-center gap-1 font-mono text-gray-700">
+                    <span className="flex items-center gap-1 font-mono text-[#5871A5]">
                       <Calendar className="h-3.5 w-3.5 text-[#5871A5]" />
                       Deadline: {new Date(task.deadline).toLocaleDateString('en-IN')}
                     </span>
@@ -322,7 +326,7 @@ export default function TasksPage() {
                     </Button>
                   )}
                 </div>
-              </div>
+              </Card>
             );
           })
         )}
@@ -511,6 +515,6 @@ export default function TasksPage() {
           </div>
         </form>
       </Modal>
-    </div>
+    </PageContainer>
   );
 }

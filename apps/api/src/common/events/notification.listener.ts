@@ -154,6 +154,115 @@ export class NotificationListener {
     });
   }
 
+  @OnEvent(AppEvents.TRIP_VISIT_ADDED)
+  async handleTripVisitAdded(payload: {
+    tripId: string;
+    visitId: string;
+    employeeId: string;
+    managerName: string;
+    organisationName: string;
+    location?: string;
+    instructions?: string;
+  }) {
+    await this.createAndPushNotification({
+      userId: payload.employeeId,
+      type: 'trip_visit_added',
+      title: 'New Customer Visit Added to Your Trip Plan',
+      body: `${payload.managerName} added a visit to ${payload.organisationName} (${payload.location || 'Site'}) to your trip.${payload.instructions ? ` Note: ${payload.instructions}` : ''}`,
+      entityType: 'trip',
+      entityId: payload.tripId,
+    });
+  }
+
+  @OnEvent(AppEvents.VISIT_CANCELLED)
+  async handleVisitCancelled(payload: {
+    visitId: string;
+    employeeId: string;
+    employeeName: string;
+    organisationName: string;
+    plannedDate: string;
+    reason: string;
+    managerId?: string;
+  }) {
+    if (payload.managerId && payload.managerId !== payload.employeeId) {
+      await this.createAndPushNotification({
+        userId: payload.managerId,
+        type: 'visit_cancelled',
+        title: 'Field Visit Cancelled by Employee',
+        body: `${payload.employeeName} cancelled visit to ${payload.organisationName} on ${payload.plannedDate}. Reason: "${payload.reason}"`,
+        entityType: 'visit',
+        entityId: payload.visitId,
+      });
+    }
+  }
+
+  @OnEvent(AppEvents.VISIT_RESCHEDULED)
+  async handleVisitRescheduled(payload: {
+    visitId: string;
+    employeeId: string;
+    employeeName: string;
+    organisationName: string;
+    oldDate: string;
+    newDate: string;
+    reason: string;
+    managerId?: string;
+  }) {
+    if (payload.managerId && payload.managerId !== payload.employeeId) {
+      await this.createAndPushNotification({
+        userId: payload.managerId,
+        type: 'visit_rescheduled',
+        title: 'Field Visit Rescheduled by Employee',
+        body: `${payload.employeeName} rescheduled visit to ${payload.organisationName} from ${payload.oldDate} to ${payload.newDate}. Reason: "${payload.reason}"`,
+        entityType: 'visit',
+        entityId: payload.visitId,
+      });
+    }
+  }
+
+  @OnEvent(AppEvents.VISIT_MODIFIED)
+  async handleVisitModified(payload: {
+    visitId: string;
+    employeeId: string;
+    employeeName: string;
+    organisationName: string;
+    changeDetails: string;
+    reason?: string;
+    managerId?: string;
+  }) {
+    if (payload.managerId && payload.managerId !== payload.employeeId) {
+      await this.createAndPushNotification({
+        userId: payload.managerId,
+        type: 'visit_modified',
+        title: 'Field Visit Modified by Employee',
+        body: `${payload.employeeName} updated visit to ${payload.organisationName}: ${payload.changeDetails}.${payload.reason ? ` Reason: "${payload.reason}"` : ''}`,
+        entityType: 'visit',
+        entityId: payload.visitId,
+      });
+    }
+  }
+
+  @OnEvent(AppEvents.VISIT_COMPLETED)
+  async handleVisitCompleted(payload: {
+    visitId: string;
+    employeeId: string;
+    employeeName: string;
+    organisationName: string;
+    outcome?: string;
+    personMet?: string;
+    managerId?: string;
+  }) {
+    if (payload.managerId && payload.managerId !== payload.employeeId) {
+      await this.createAndPushNotification({
+        userId: payload.managerId,
+        type: 'visit_completed',
+        title: 'Field Visit Completed',
+        body: `${payload.employeeName} completed visit to ${payload.organisationName}. Outcome: ${payload.outcome || 'Completed'}. Person met: ${payload.personMet || 'N/A'}.`,
+        entityType: 'visit',
+        entityId: payload.visitId,
+      });
+    }
+  }
+
   @OnEvent(AppEvents.TASK_ASSIGNED)
   async handleTaskAssigned(payload: { taskId: string; title: string; assignedTo: string; deadline?: string }) {
     await this.createAndPushNotification({
@@ -197,5 +306,172 @@ export class NotificationListener {
         entityId: payload.tenderId,
       });
     }
+  }
+
+  @OnEvent(AppEvents.DEMO_REQUESTED)
+  async handleDemoRequested(payload: {
+    demoId: string;
+    demoNo: string;
+    organisationName: string;
+    requestedBy: string;
+    requestedByName: string;
+    location?: string;
+  }) {
+    // Notify demo coordinators (demo_team & management)
+    const coordinators = await this.db
+      .selectFrom('users')
+      .select('id')
+      .where('role', 'in', ['demo_team', 'management'])
+      .where('is_active', '=', true)
+      .execute();
+
+    for (const u of coordinators) {
+      if (u.id !== payload.requestedBy) {
+        await this.createAndPushNotification({
+          userId: u.id,
+          type: 'demo_requested',
+          title: `New Demo Request: ${payload.demoNo}`,
+          body: `${payload.requestedByName} requested a client demonstration for ${payload.organisationName} (${payload.location || 'Site'}).`,
+          entityType: 'demo',
+          entityId: payload.demoId,
+        });
+      }
+    }
+    this.eventsGateway.sendToRole('demo_team', 'demo:requested', payload);
+  }
+
+  @OnEvent(AppEvents.DEMO_TEAM_ASSIGNED)
+  async handleDemoTeamAssigned(payload: {
+    demoId: string;
+    demoNo: string;
+    assignedToId: string;
+    organisationName: string;
+    demoDate?: string;
+    location?: string;
+  }) {
+    await this.createAndPushNotification({
+      userId: payload.assignedToId,
+      type: 'demo_assigned',
+      title: `Assigned to Client Demo: ${payload.demoNo}`,
+      body: `You have been assigned to conduct demonstration for ${payload.organisationName} on ${payload.demoDate || 'TBD'} at ${payload.location || 'Site'}.`,
+      entityType: 'demo',
+      entityId: payload.demoId,
+    });
+    this.eventsGateway.sendToUser(payload.assignedToId, 'demo:assigned', payload);
+  }
+
+  @OnEvent(AppEvents.DEMO_EQUIPMENT_RESERVED)
+  async handleDemoEquipmentReserved(payload: {
+    demoId: string;
+    demoNo: string;
+    equipmentModel: string;
+    serialNo?: string;
+    salespersonId?: string;
+    assignedToId?: string;
+  }) {
+    const recipients = new Set<string>();
+    if (payload.salespersonId) recipients.add(payload.salespersonId);
+    if (payload.assignedToId) recipients.add(payload.assignedToId);
+
+    for (const userId of recipients) {
+      await this.createAndPushNotification({
+        userId,
+        type: 'demo_equipment_reserved',
+        title: `Demo Unit Reserved: ${payload.demoNo}`,
+        body: `Equipment unit ${payload.equipmentModel} (${payload.serialNo || 'Standard'}) reserved for demo ${payload.demoNo}.`,
+        entityType: 'demo',
+        entityId: payload.demoId,
+      });
+    }
+  }
+
+  @OnEvent(AppEvents.DEMO_CONFIRMED)
+  async handleDemoConfirmed(payload: {
+    demoId: string;
+    demoNo: string;
+    organisationName: string;
+    confirmedDate: string;
+    salespersonId?: string;
+    assignedToId?: string;
+  }) {
+    const recipients = new Set<string>();
+    if (payload.salespersonId) recipients.add(payload.salespersonId);
+    if (payload.assignedToId) recipients.add(payload.assignedToId);
+
+    for (const userId of recipients) {
+      await this.createAndPushNotification({
+        userId,
+        type: 'demo_confirmed',
+        title: `Demo Confirmed: ${payload.demoNo}`,
+        body: `Demonstration for ${payload.organisationName} confirmed for ${payload.confirmedDate}.`,
+        entityType: 'demo',
+        entityId: payload.demoId,
+      });
+    }
+  }
+
+  @OnEvent(AppEvents.DEMO_RESCHEDULED)
+  async handleDemoRescheduled(payload: {
+    demoId: string;
+    demoNo: string;
+    organisationName: string;
+    oldDate?: string;
+    newDate: string;
+    reason: string;
+    salespersonId?: string;
+    assignedToId?: string;
+  }) {
+    const recipients = new Set<string>();
+    if (payload.salespersonId) recipients.add(payload.salespersonId);
+    if (payload.assignedToId) recipients.add(payload.assignedToId);
+
+    for (const userId of recipients) {
+      await this.createAndPushNotification({
+        userId,
+        type: 'demo_rescheduled',
+        title: `Demo Rescheduled: ${payload.demoNo}`,
+        body: `Demonstration for ${payload.organisationName} moved to ${payload.newDate}. Reason: "${payload.reason}".`,
+        entityType: 'demo',
+        entityId: payload.demoId,
+      });
+    }
+  }
+
+  @OnEvent(AppEvents.DEMO_CANCELLED)
+  async handleDemoCancelled(payload: {
+    demoId: string;
+    demoNo: string;
+    organisationName: string;
+    reason: string;
+    salespersonId?: string;
+    assignedToId?: string;
+  }) {
+    const recipients = new Set<string>();
+    if (payload.salespersonId) recipients.add(payload.salespersonId);
+    if (payload.assignedToId) recipients.add(payload.assignedToId);
+
+    for (const userId of recipients) {
+      await this.createAndPushNotification({
+        userId,
+        type: 'demo_cancelled',
+        title: `Demo Cancelled: ${payload.demoNo}`,
+        body: `Demonstration for ${payload.organisationName} has been cancelled. Reason: "${payload.reason}". Equipment and personnel reservations released.`,
+        entityType: 'demo',
+        entityId: payload.demoId,
+      });
+    }
+  }
+
+  @OnEvent(AppEvents.DEMO_COMPLETED)
+  async handleDemoCompleted(payload: {
+    demoId: string;
+    demoNo: string;
+    organisationName: string;
+    result: string;
+    failureReason?: string;
+    actorName?: string;
+  }) {
+    this.eventsGateway.sendToRole('demo_team', 'demo:completed', payload);
+    this.eventsGateway.sendToRole('management', 'demo:completed', payload);
   }
 }

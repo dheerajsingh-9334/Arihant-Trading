@@ -28,12 +28,28 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { api } from '@/lib/api';
-import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';
-import { Tabs } from '@/components/ui/Tabs';
-import { Modal } from '@/components/ui/Modal';
-import { Input } from '@/components/ui/Input';
+import {
+  Button,
+  Badge,
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  Tabs,
+  Modal,
+  Input,
+  Select,
+  Table,
+  TableHeader,
+  TableRow,
+  TableHead,
+  TableBody,
+  TableCell,
+  PageContainer,
+  StatCard,
+  StatGrid,
+} from '@/components/ui';
 import { formatLakh, formatINR } from '@arihant/shared';
 
 export default function RegionalPage() {
@@ -120,7 +136,7 @@ export default function RegionalPage() {
   const zoneCode = data?.zone?.code || 'N';
 
   return (
-    <div className="space-y-6 pb-12 animate-in fade-in duration-200">
+    <PageContainer>
       {/* ── TOP HERO BANNER (CoachAssist Modern Header) ── */}
       <div className="relative overflow-hidden rounded-2xl bg-white border border-[#D6E3F5] p-6 lg:p-8 shadow-xs">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -140,19 +156,19 @@ export default function RegionalPage() {
           <div className="flex flex-wrap items-center gap-3">
             {/* Zone Switcher for Management / Admin */}
             {hasRole(['management', 'admin']) && data?.availableZones && (
-              <div className="flex items-center space-x-2 bg-[#F7FBFF] border border-[#D6E3F5] px-3 py-1.5 rounded-lg text-xs">
+              <div className="flex items-center space-x-2 bg-[#F7FBFF] border border-[#D6E3F5] px-3 py-1 rounded-lg text-xs">
                 <span className="text-[10px] font-bold uppercase text-[#5871A5]">Territory:</span>
-                <select
+                <Select
                   value={selectedZoneId}
                   onChange={(e) => setSelectedZoneId(e.target.value)}
-                  className="bg-transparent font-bold text-[#223FA7] focus:outline-none cursor-pointer"
+                  className="h-8 border-0 bg-transparent text-xs font-bold text-[#223FA7] focus:ring-0 p-0"
                 >
                   {data.availableZones.map((z: any) => (
                     <option key={z.id} value={z.id}>
                       {z.name} Zone ({z.code})
                     </option>
                   ))}
-                </select>
+                </Select>
               </div>
             )}
 
@@ -173,101 +189,37 @@ export default function RegionalPage() {
         </div>
       </div>
 
-      {/* ── 4 KEY ACCENT METRIC HUD CARDS (3px Top Border) ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-        {/* Card 1: Regional Sales Pipeline */}
-        <div className="bg-white border border-[#D6E3F5] rounded-xl overflow-hidden relative pt-4 pb-3.5 px-4 text-left transition-all duration-200 hover:shadow-md hover:border-[#3770E3] flex flex-col justify-between min-h-[115px]">
-          <div className="absolute top-0 left-0 right-0 h-[3px] bg-[#223FA7]" />
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[11px] text-[#5871A5] font-bold uppercase tracking-wider">
-                Regional Pipeline
-              </span>
-              <div className="w-7 h-7 bg-[#EAF2FF] text-[#223FA7] rounded-lg flex items-center justify-center shrink-0 border border-[#D6E3F5]">
-                <Target size={14} />
-              </div>
-            </div>
-            <div className="text-2xl lg:text-3xl font-black text-[#1A1A1A] tracking-tight leading-none mb-1">
-              {formatLakh(data?.sales?.totalPipelineValueLakh ?? 0)}
-            </div>
-          </div>
-          <div className="text-[11px] font-medium mt-2 pt-2 border-t border-[#F0F5FC] text-[#5871A5] flex items-center justify-between">
-            <span>{data?.sales?.totalLeads ?? 0} Opportunities</span>
-            <span className="text-[#223FA7] font-semibold">{data?.sales?.activeCount ?? 0} Active</span>
-          </div>
-        </div>
-
-        {/* Card 2: GeM Tenders in Zone */}
-        <div className="bg-white border border-[#D6E3F5] rounded-xl overflow-hidden relative pt-4 pb-3.5 px-4 text-left transition-all duration-200 hover:shadow-md hover:border-red-300 flex flex-col justify-between min-h-[115px]">
-          <div className="absolute top-0 left-0 right-0 h-[3px] bg-red-500" />
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[11px] text-[#5871A5] font-bold uppercase tracking-wider">
-                Territory GeM Bids
-              </span>
-              <div className="w-7 h-7 bg-red-50 text-red-600 rounded-lg flex items-center justify-center shrink-0 border border-red-100">
-                <FileText size={14} />
-              </div>
-            </div>
-            <div className="text-2xl lg:text-3xl font-black text-[#1A1A1A] tracking-tight leading-none mb-1">
-              {data?.tenders?.total ?? 0} Bids
-            </div>
-          </div>
-          <div className="text-[11px] font-medium mt-2 pt-2 border-t border-red-50 text-red-600 flex items-center justify-between">
-            <span className="flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse shrink-0" />
-              {data?.tenders?.closingSoon ?? 0} Closing &le; 7 Days
-            </span>
-            <span className="font-bold">{data?.tenders?.awaitingApproval ?? 0} Signoff</span>
-          </div>
-        </div>
-
-        {/* Card 3: Field Tours & Client Visits */}
-        <div className="bg-white border border-[#D6E3F5] rounded-xl overflow-hidden relative pt-4 pb-3.5 px-4 text-left transition-all duration-200 hover:shadow-md hover:border-emerald-300 flex flex-col justify-between min-h-[115px]">
-          <div className="absolute top-0 left-0 right-0 h-[3px] bg-emerald-500" />
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[11px] text-[#5871A5] font-bold uppercase tracking-wider">
-                Field Client Visits
-              </span>
-              <div className="w-7 h-7 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center shrink-0 border border-emerald-100">
-                <Calendar size={14} />
-              </div>
-            </div>
-            <div className="text-2xl lg:text-3xl font-black text-[#1A1A1A] tracking-tight leading-none mb-1">
-              {data?.visits?.completed ?? 0} / {data?.visits?.total ?? 0}
-            </div>
-          </div>
-          <div className="text-[11px] font-medium mt-2 pt-2 border-t border-emerald-50 text-emerald-700 flex items-center justify-between">
-            <span>{data?.visits?.completionRate ?? 0}% Delivery Rate</span>
-            <span>{data?.visits?.planned ?? 0} Upcoming</span>
-          </div>
-        </div>
-
-        {/* Card 4: Team Headcount & Compliance */}
-        <div className="bg-white border border-[#D6E3F5] rounded-xl overflow-hidden relative pt-4 pb-3.5 px-4 text-left transition-all duration-200 hover:shadow-md hover:border-amber-300 flex flex-col justify-between min-h-[115px]">
-          <div className="absolute top-0 left-0 right-0 h-[3px] bg-amber-500" />
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[11px] text-[#5871A5] font-bold uppercase tracking-wider">
-                Territory Personnel
-              </span>
-              <div className="w-7 h-7 bg-amber-50 text-amber-800 rounded-lg flex items-center justify-center shrink-0 border border-amber-100">
-                <Users size={14} />
-              </div>
-            </div>
-            <div className="text-2xl lg:text-3xl font-black text-[#1A1A1A] tracking-tight leading-none mb-1">
-              {data?.teamPerformance?.length ?? 0} Reps
-            </div>
-          </div>
-          <div className="text-[11px] font-medium mt-2 pt-2 border-t border-amber-50 text-amber-800 flex items-center justify-between">
-            <span>
-              {data?.teamPerformance?.filter((e: any) => e.complianceRating === 'Excellent' || e.complianceRating === 'Good').length ?? 0} In Good Standing
-            </span>
-            <span className="text-[10px] text-[#5871A5]">Policy §4 Active</span>
-          </div>
-        </div>
-      </div>
+      {/* ── 4 KEY ACCENT METRIC HUD CARDS ── */}
+      <StatGrid cols={4}>
+        <StatCard
+          title="Regional Pipeline"
+          value={formatLakh(data?.sales?.totalPipelineValueLakh ?? 0)}
+          icon={<Target size={16} />}
+          variant="primary"
+          subtext={`${data?.sales?.totalLeads ?? 0} Opportunities • ${data?.sales?.activeCount ?? 0} Active`}
+        />
+        <StatCard
+          title="Territory GeM Bids"
+          value={`${data?.tenders?.total ?? 0} Bids`}
+          icon={<FileText size={16} />}
+          variant="rose"
+          subtext={`${data?.tenders?.closingSoon ?? 0} Closing ≤ 7 Days • ${data?.tenders?.awaitingApproval ?? 0} Signoff`}
+        />
+        <StatCard
+          title="Field Client Visits"
+          value={`${data?.visits?.completed ?? 0} / ${data?.visits?.total ?? 0}`}
+          icon={<Calendar size={16} />}
+          variant="emerald"
+          subtext={`${data?.visits?.completionRate ?? 0}% Delivery Rate • ${data?.visits?.planned ?? 0} Upcoming`}
+        />
+        <StatCard
+          title="Territory Personnel"
+          value={`${data?.teamPerformance?.length ?? 0} Reps`}
+          icon={<Users size={16} />}
+          variant="amber"
+          subtext={`${data?.teamPerformance?.filter((e: any) => e.complianceRating === 'Excellent' || e.complianceRating === 'Good').length ?? 0} In Good Standing`}
+        />
+      </StatGrid>
 
       {/* ── 4 TABS NAVIGATION ── */}
       <Tabs
@@ -292,125 +244,123 @@ export default function RegionalPage() {
               </span>
             </div>
             <div className="flex items-center space-x-2">
-              <input
+              <Input
                 type="text"
                 placeholder="Filter rep by name, territory, email..."
                 value={searchEmployee}
                 onChange={(e) => setSearchEmployee(e.target.value)}
-                className="px-3 py-1.5 rounded-lg bg-white border border-[#D6E3F5] text-xs text-[#1A1A1A] placeholder:text-[#5871A5] focus:outline-none focus:border-[#3770E3] w-64 shadow-xs"
+                className="w-64 h-9"
               />
             </div>
           </div>
 
-          <div className="rounded-xl border border-[#D6E3F5] bg-white overflow-hidden shadow-xs">
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs text-left">
-                <thead className="bg-[#F7FBFF] border-b border-[#D6E3F5] text-[11px] uppercase tracking-wider text-[#5871A5] font-bold">
-                  <tr>
-                    <th className="p-3.5">Representative</th>
-                    <th className="p-3.5">Role & Region</th>
-                    <th className="p-3.5 text-center">Milestones (Done/Total)</th>
-                    <th className="p-3.5 text-center">Overdue</th>
-                    <th className="p-3.5 text-center">Visits Done</th>
-                    <th className="p-3.5 text-right">Pipeline (₹ L)</th>
-                    <th className="p-3.5 text-center">Active Blockers</th>
-                    <th className="p-3.5 text-center">Compliance</th>
-                    <th className="p-3.5 text-right">Evidence</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#D6E3F5]">
-                  {data?.teamPerformance
-                    ?.filter(
-                      (emp: any) =>
-                        !searchEmployee ||
-                        emp.full_name.toLowerCase().includes(searchEmployee.toLowerCase()) ||
-                        emp.email.toLowerCase().includes(searchEmployee.toLowerCase()) ||
-                        emp.region_name.toLowerCase().includes(searchEmployee.toLowerCase()),
-                    )
-                    .map((emp: any) => (
-                      <tr key={emp.id} className="hover:bg-[#F7FBFF] transition-colors">
-                        <td className="p-3.5 font-bold text-[#1A1A1A] whitespace-nowrap">
-                          {emp.full_name}
-                          <div className="text-[10px] text-[#5871A5] font-mono font-normal">
-                            {emp.email}
-                          </div>
-                        </td>
-                        <td className="p-3.5 whitespace-nowrap">
-                          <span className="font-semibold text-gray-800 capitalize">
-                            {emp.role.replace('_', ' ')}
+          <Card>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Representative</TableHead>
+                  <TableHead>Role & Region</TableHead>
+                  <TableHead className="text-center">Milestones (Done/Total)</TableHead>
+                  <TableHead className="text-center">Overdue</TableHead>
+                  <TableHead className="text-center">Visits Done</TableHead>
+                  <TableHead className="text-right">Pipeline (₹ L)</TableHead>
+                  <TableHead className="text-center">Active Blockers</TableHead>
+                  <TableHead className="text-center">Compliance</TableHead>
+                  <TableHead className="text-right">Evidence</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {data?.teamPerformance
+                  ?.filter(
+                    (emp: any) =>
+                      !searchEmployee ||
+                      emp.full_name.toLowerCase().includes(searchEmployee.toLowerCase()) ||
+                      emp.email.toLowerCase().includes(searchEmployee.toLowerCase()) ||
+                      emp.region_name.toLowerCase().includes(searchEmployee.toLowerCase()),
+                  )
+                  .map((emp: any) => (
+                    <TableRow key={emp.id}>
+                      <TableCell className="font-bold text-[#1A1A1A] whitespace-nowrap">
+                        {emp.full_name}
+                        <div className="text-[10px] text-[#5871A5] font-mono font-normal">
+                          {emp.email}
+                        </div>
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap">
+                        <span className="font-semibold text-[#1A1A1A] text-xs">
+                          {emp.role.replace('_', ' ').toUpperCase()}
+                        </span>
+                        <div className="text-[10px] text-[#5871A5]">
+                          {emp.region_name}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-center whitespace-nowrap">
+                        <span className="font-mono font-bold text-[#1A1A1A]">
+                          {emp.tasks.completed} / {emp.tasks.total}
+                        </span>
+                        <div className="text-[10px] text-[#5871A5]">
+                          {emp.tasks.completionRate}%
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-center whitespace-nowrap">
+                        {emp.tasks.overdue > 0 ? (
+                          <span className="text-[11px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded">
+                            {emp.tasks.overdue}
                           </span>
-                          <div className="text-[10px] text-[#5871A5]">
-                            {emp.region_name}
-                          </div>
-                        </td>
-                        <td className="p-3.5 text-center font-mono whitespace-nowrap">
-                          <span className="font-bold text-[#1A1A1A]">
-                            {emp.tasks.completed}/{emp.tasks.total}
+                        ) : (
+                          <span className="text-[11px] text-emerald-700 font-medium">0</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-center font-mono font-bold text-[#1A1A1A] whitespace-nowrap">
+                        {emp.visits.completed} / {emp.visits.total}
+                      </TableCell>
+                      <TableCell className="text-right font-mono font-bold text-[#223FA7] whitespace-nowrap">
+                        {formatLakh(emp.leads.valueLakh || 0)}
+                      </TableCell>
+                      <TableCell className="text-center whitespace-nowrap">
+                        {emp.activeBlockers.length > 0 ? (
+                          <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 font-bold text-[10px]">
+                            {emp.activeBlockers.length} BLOCKED
                           </span>
-                          <span className="text-[10px] text-[#5871A5] ml-1">
-                            ({emp.tasks.completionRate}%)
-                          </span>
-                        </td>
-                        <td className="p-3.5 text-center whitespace-nowrap">
-                          {emp.tasks.overdue > 0 ? (
-                            <span className="px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-bold text-[10px]">
-                              {emp.tasks.overdue} OVERDUE
-                            </span>
-                          ) : (
-                            <span className="text-[11px] text-emerald-700 font-medium">0</span>
-                          )}
-                        </td>
-                        <td className="p-3.5 text-center font-mono font-bold text-gray-800 whitespace-nowrap">
-                          {emp.visits.completed} / {emp.visits.total}
-                        </td>
-                        <td className="p-3.5 text-right font-mono font-bold text-[#223FA7] whitespace-nowrap">
-                          {formatLakh(emp.leads.valueLakh || 0)}
-                        </td>
-                        <td className="p-3.5 text-center whitespace-nowrap">
-                          {emp.activeBlockers.length > 0 ? (
-                            <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 font-bold text-[10px]">
-                              {emp.activeBlockers.length} BLOCKED
-                            </span>
-                          ) : (
-                            <span className="text-[11px] text-[#5871A5]">None</span>
-                          )}
-                        </td>
-                        <td className="p-3.5 text-center whitespace-nowrap">
-                          <Badge
-                            variant={
-                              emp.complianceRating === 'Excellent'
-                                ? 'success'
-                                : emp.complianceRating === 'Good'
-                                ? 'default'
-                                : emp.complianceRating === 'Needs Attention'
-                                ? 'warning'
-                                : 'danger'
-                            }
-                            size="sm"
-                          >
-                            {emp.complianceRating.toUpperCase()}
-                          </Badge>
-                        </td>
-                        <td className="p-3.5 text-right whitespace-nowrap">
-                          <Button
-                            size="sm"
-                            variant="secondary"
-                            onClick={() => {
-                              setSelectedEmployee(emp);
-                              setIsEvidenceModalOpen(true);
-                            }}
-                            className="shadow-xs text-xs text-[#223FA7]"
-                          >
-                            <span>Inspect</span>
-                            <ChevronRight className="ml-1 h-3.5 w-3.5" />
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+                        ) : (
+                          <span className="text-[11px] text-[#5871A5]">None</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-center whitespace-nowrap">
+                        <Badge
+                          variant={
+                            emp.complianceRating === 'Excellent'
+                              ? 'success'
+                              : emp.complianceRating === 'Good'
+                              ? 'default'
+                              : emp.complianceRating === 'Needs Attention'
+                              ? 'warning'
+                              : 'danger'
+                          }
+                          size="sm"
+                        >
+                          {emp.complianceRating.toUpperCase()}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right whitespace-nowrap">
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => {
+                            setSelectedEmployee(emp);
+                            setIsEvidenceModalOpen(true);
+                          }}
+                          className="shadow-xs text-xs text-[#223FA7]"
+                        >
+                          <span>Inspect</span>
+                          <ChevronRight className="ml-1 h-3.5 w-3.5" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+              </TableBody>
+            </Table>
+          </Card>
 
           <div className="p-3 rounded-lg bg-[#F7FBFF] border border-[#D6E3F5] text-[11px] text-[#5871A5] flex items-center justify-between">
             <span>
@@ -456,11 +406,16 @@ export default function RegionalPage() {
             </div>
           </div>
 
-          <div className="rounded-xl border border-[#D6E3F5] bg-white overflow-hidden shadow-xs">
+          <Card>
             <div className="p-4 border-b border-[#D6E3F5] bg-[#F7FBFF] flex items-center justify-between">
-              <span className="text-xs font-bold text-[#1A1A1A]">
-                Regional Leads Register ({data?.sales?.recentLeads?.length || 0})
-              </span>
+              <div>
+                <span className="text-xs font-bold text-[#1A1A1A]">
+                  Active Territory Opportunities in {zoneName} Zone ({data?.sales?.total || 0})
+                </span>
+                <p className="text-[11px] text-[#5871A5]">
+                  Live sales pipeline value: <strong>{formatLakh(data?.sales?.pipelineValueLakh || 0)}</strong> across key security accounts.
+                </p>
+              </div>
               <Link href="/leads">
                 <Button size="sm" variant="outline" className="text-xs text-[#223FA7]">
                   View All in CRM <ArrowUpRight className="ml-1 h-3.5 w-3.5" />
@@ -468,68 +423,72 @@ export default function RegionalPage() {
               </Link>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs text-left">
-                <thead className="bg-[#F7FBFF] border-b border-[#D6E3F5] text-[11px] uppercase tracking-wider text-[#5871A5] font-bold">
-                  <tr>
-                    <th className="p-3.5">Organisation & City</th>
-                    <th className="p-3.5">Product Category</th>
-                    <th className="p-3.5">Category</th>
-                    <th className="p-3.5">Probability</th>
-                    <th className="p-3.5 text-right">Value (₹ Lakh)</th>
-                    <th className="p-3.5">Territory Rep</th>
-                    <th className="p-3.5">Follow-Up Due</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#D6E3F5]">
-                  {data?.sales?.recentLeads?.map((ld: any) => (
-                    <tr key={ld.id} className="hover:bg-[#F7FBFF] transition-colors">
-                      <td className="p-3.5 font-bold text-[#1A1A1A]">
-                        {ld.organisation_name}
-                        <div className="text-[10px] text-[#5871A5] font-normal">{ld.city || 'North Zone'}</div>
-                      </td>
-                      <td className="p-3.5 text-gray-800">{ld.product_name || 'Security Scanning Hardware'}</td>
-                      <td className="p-3.5">
-                        <Badge variant="outline" size="sm" className="uppercase font-bold">
-                          {ld.category}
-                        </Badge>
-                      </td>
-                      <td className="p-3.5">
-                        <Badge
-                          variant={ld.probability === 'high' ? 'success' : ld.probability === 'medium' ? 'default' : 'warning'}
-                          size="sm"
-                          className="uppercase font-bold"
-                        >
-                          {ld.probability}
-                        </Badge>
-                      </td>
-                      <td className="p-3.5 text-right font-mono font-bold text-[#223FA7]">
-                        {formatLakh(ld.value_lakh || 0)}
-                      </td>
-                      <td className="p-3.5 text-gray-700">{ld.assigned_rep_name || 'Territory Rep'}</td>
-                      <td className="p-3.5 font-mono text-gray-700">
-                        {ld.next_followup_date ? new Date(ld.next_followup_date).toLocaleDateString('en-IN') : '-'}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Organisation & City</TableHead>
+                  <TableHead>Product Category</TableHead>
+                  <TableHead>Category</TableHead>
+                  <TableHead>Probability</TableHead>
+                  <TableHead className="text-right">Value (₹ Lakh)</TableHead>
+                  <TableHead>Territory Rep</TableHead>
+                  <TableHead>Follow-Up Due</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {data?.sales?.recentLeads?.map((ld: any) => (
+                  <TableRow key={ld.id}>
+                    <TableCell className="font-bold text-[#1A1A1A]">
+                      {ld.organisation_name}
+                      <div className="text-[10px] text-[#5871A5] font-normal">{ld.city || 'North Zone'}</div>
+                    </TableCell>
+                    <TableCell className="text-[#1A1A1A]">{ld.product_name || 'Security Scanning Hardware'}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline" size="sm" className="uppercase font-bold">
+                        {ld.category}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={
+                          ld.probability === 'high'
+                            ? 'success'
+                            : ld.probability === 'medium'
+                            ? 'warning'
+                            : 'default'
+                        }
+                        size="sm"
+                        className="uppercase font-bold"
+                      >
+                        {ld.probability}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right font-mono font-bold text-[#223FA7]">
+                      {formatLakh(ld.value_lakh || 0)}
+                    </TableCell>
+                    <TableCell className="text-[#5871A5]">{ld.assigned_rep_name || 'Territory Rep'}</TableCell>
+                    <TableCell className="font-mono text-[#5871A5]">
+                      {ld.next_followup_date ? new Date(ld.next_followup_date).toLocaleDateString('en-IN') : '-'}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Card>
         </div>
       )}
 
       {/* ── TAB 3: FIELD VISITS & TOUR PLANNING ── */}
       {activeTab === 'visits' && (
         <div className="space-y-4">
-          <div className="rounded-xl border border-[#D6E3F5] bg-white overflow-hidden shadow-xs">
+          <Card>
             <div className="p-4 border-b border-[#D6E3F5] bg-[#F7FBFF] flex items-center justify-between">
               <div>
                 <span className="text-xs font-bold text-[#1A1A1A]">
-                  Scheduled Client Tours & Interventions
+                  Field Visit Logs & Customer Encounters ({data?.visits?.total || 0})
                 </span>
                 <p className="text-[11px] text-[#5871A5]">
-                  Regional Managers can attach &quot;Also Meet&quot; stops or directive instructions onto active salesperson trip itineraries.
+                  Field representatives deploying across state police lines, high-security prisons, and defence outposts.
                 </p>
               </div>
               <Link href="/visits">
@@ -539,73 +498,71 @@ export default function RegionalPage() {
               </Link>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs text-left">
-                <thead className="bg-[#F7FBFF] border-b border-[#D6E3F5] text-[11px] uppercase tracking-wider text-[#5871A5] font-bold">
-                  <tr>
-                    <th className="p-3.5">Planned Date</th>
-                    <th className="p-3.5">Organisation & Location</th>
-                    <th className="p-3.5">Purpose</th>
-                    <th className="p-3.5">Field Rep</th>
-                    <th className="p-3.5">Tour Status</th>
-                    <th className="p-3.5">Manager Directive</th>
-                    <th className="p-3.5 text-right">Intervention</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#D6E3F5]">
-                  {data?.visits?.recentVisits?.map((v: any) => (
-                    <tr key={v.id} className="hover:bg-[#F7FBFF] transition-colors">
-                      <td className="p-3.5 font-mono font-bold text-[#1A1A1A] whitespace-nowrap">
-                        {new Date(v.planned_date).toLocaleDateString('en-IN')}
-                      </td>
-                      <td className="p-3.5 font-bold text-[#1A1A1A]">
-                        {v.organisation_name}
-                        <div className="text-[10px] text-[#5871A5] font-normal flex items-center gap-1">
-                          <MapPin className="h-3 w-3 text-[#223FA7]" />
-                          <span>{v.location || 'Client HQ'}</span>
-                        </div>
-                      </td>
-                      <td className="p-3.5 text-gray-800 max-w-[200px] truncate">{v.purpose || 'Technical brief'}</td>
-                      <td className="p-3.5 text-gray-700 whitespace-nowrap">{v.assigned_rep_name || 'Territory Rep'}</td>
-                      <td className="p-3.5 whitespace-nowrap">
-                        <Badge
-                          variant={v.status === 'completed' ? 'success' : v.status === 'planned' ? 'default' : 'warning'}
-                          size="sm"
-                          className="uppercase font-bold"
-                        >
-                          {v.status}
-                        </Badge>
-                      </td>
-                      <td className="p-3.5 text-gray-600 max-w-[180px] truncate font-italic">
-                        {v.remarks ? (
-                          <span className="text-purple-800 font-medium">{v.remarks}</span>
-                        ) : (
-                          <span className="text-gray-400">None attached</span>
-                        )}
-                      </td>
-                      <td className="p-3.5 text-right whitespace-nowrap">
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => handleOpenIntervention(v)}
-                          className="text-xs text-[#223FA7] hover:bg-[#EAF2FF]"
-                        >
-                          + Add Stop / Also Meet
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Planned Date</TableHead>
+                  <TableHead>Organisation & Location</TableHead>
+                  <TableHead>Purpose</TableHead>
+                  <TableHead>Field Rep</TableHead>
+                  <TableHead>Tour Status</TableHead>
+                  <TableHead>Manager Directive</TableHead>
+                  <TableHead className="text-right">Intervention</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {data?.visits?.recentVisits?.map((v: any) => (
+                  <TableRow key={v.id}>
+                    <TableCell className="font-mono font-bold text-[#1A1A1A] whitespace-nowrap">
+                      {new Date(v.planned_date).toLocaleDateString('en-IN')}
+                    </TableCell>
+                    <TableCell className="font-bold text-[#1A1A1A]">
+                      {v.organisation_name}
+                      <div className="text-[10px] text-[#5871A5] font-normal flex items-center gap-1">
+                        <MapPin className="h-3 w-3 text-[#223FA7]" />
+                        <span>{v.location || 'Client HQ'}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-[#1A1A1A] max-w-[200px] truncate">{v.purpose || 'Technical brief'}</TableCell>
+                    <TableCell className="text-[#5871A5] whitespace-nowrap">{v.assigned_rep_name || 'Territory Rep'}</TableCell>
+                    <TableCell className="whitespace-nowrap">
+                      <Badge
+                        variant={v.status === 'completed' ? 'success' : v.status === 'planned' ? 'default' : 'warning'}
+                        size="sm"
+                        className="uppercase font-bold"
+                      >
+                        {v.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-[#5871A5] max-w-[180px] truncate font-italic">
+                      {v.remarks ? (
+                        <span className="text-purple-800 font-medium">{v.remarks}</span>
+                      ) : (
+                        <span className="text-[#7D92B5]">None attached</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right whitespace-nowrap">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleOpenIntervention(v)}
+                        className="text-xs text-[#223FA7] hover:bg-[#EAF2FF]"
+                      >
+                        + Add Stop / Also Meet
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Card>
         </div>
       )}
 
       {/* ── TAB 4: TERRITORY GeM TENDERS ── */}
       {activeTab === 'tenders' && (
         <div className="space-y-4">
-          <div className="rounded-xl border border-[#D6E3F5] bg-white overflow-hidden shadow-xs">
+          <Card>
             <div className="p-4 border-b border-[#D6E3F5] bg-[#F7FBFF] flex items-center justify-between">
               <div>
                 <span className="text-xs font-bold text-[#1A1A1A]">
@@ -622,80 +579,78 @@ export default function RegionalPage() {
               </Link>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs text-left">
-                <thead className="bg-[#F7FBFF] border-b border-[#D6E3F5] text-[11px] uppercase tracking-wider text-[#5871A5] font-bold">
-                  <tr>
-                    <th className="p-3.5">Tender Reference No.</th>
-                    <th className="p-3.5">Department / Buyer</th>
-                    <th className="p-3.5">Requirement Details</th>
-                    <th className="p-3.5">Category</th>
-                    <th className="p-3.5">Bid Closing Date</th>
-                    <th className="p-3.5">Status</th>
-                    <th className="p-3.5 text-right">Inspect</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#D6E3F5]">
-                  {data?.tenders?.regionalTendersList?.map((t: any) => {
-                    const closing = t.bid_closing_date ? new Date(t.bid_closing_date) : null;
-                    const diffDays = closing
-                      ? Math.ceil((closing.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
-                      : 0;
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Tender Reference No.</TableHead>
+                  <TableHead>Department / Buyer</TableHead>
+                  <TableHead>Requirement Details</TableHead>
+                  <TableHead>Category</TableHead>
+                  <TableHead>Bid Closing Date</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Inspect</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {data?.tenders?.regionalTendersList?.map((t: any) => {
+                  const closing = t.bid_closing_date ? new Date(t.bid_closing_date) : null;
+                  const diffDays = closing
+                    ? Math.ceil((closing.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
+                    : 0;
 
-                    return (
-                      <tr key={t.id} className="hover:bg-[#F7FBFF] transition-colors">
-                        <td className="p-3.5 font-bold text-[#1A1A1A] whitespace-nowrap">
-                          <span className="font-mono text-[#223FA7]">{t.tender_no}</span>
-                        </td>
-                        <td className="p-3.5 text-gray-800">
-                          <div className="font-semibold text-gray-900">{t.department || 'Government Buyer'}</div>
-                          <div className="text-[10px] text-[#5871A5]">{t.city}, {t.state}</div>
-                        </td>
-                        <td className="p-3.5 text-gray-700 max-w-[240px] truncate">{t.requirement_text}</td>
-                        <td className="p-3.5 whitespace-nowrap">
-                          <Badge variant="outline" size="sm" className="uppercase font-bold">
-                            {t.category}
-                          </Badge>
-                        </td>
-                        <td className="p-3.5 font-mono whitespace-nowrap">
-                          {closing ? closing.toLocaleDateString('en-IN') : '-'}
-                          {diffDays <= 7 && diffDays >= 0 && (
-                            <div className="text-[10px] font-bold text-red-600">
-                              {diffDays === 0 ? 'CLOSING TODAY' : `${diffDays} DAYS LEFT`}
-                            </div>
-                          )}
-                        </td>
-                        <td className="p-3.5 whitespace-nowrap">
-                          <Badge
-                            variant={
-                              t.status === 'won'
-                                ? 'success'
-                                : t.status === 'awaiting_approval'
-                                ? 'warning'
-                                : t.status === 'under_preparation'
-                                ? 'default'
-                                : 'outline'
-                            }
-                            size="sm"
-                            className="uppercase font-bold"
-                          >
-                            {t.status.replace('_', ' ')}
-                          </Badge>
-                        </td>
-                        <td className="p-3.5 text-right whitespace-nowrap">
-                          <Link href={`/tenders?highlight=${t.id}`}>
-                            <Button size="sm" variant="secondary" className="shadow-xs text-xs">
-                              Inspect <ChevronRight className="ml-1 h-3.5 w-3.5" />
-                            </Button>
-                          </Link>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </div>
+                  return (
+                    <TableRow key={t.id}>
+                      <TableCell className="font-bold text-[#1A1A1A] whitespace-nowrap">
+                        <span className="font-mono text-[#223FA7]">{t.tender_no}</span>
+                      </TableCell>
+                      <TableCell className="text-[#1A1A1A]">
+                        <div className="font-semibold text-[#1A1A1A]">{t.department || 'Government Buyer'}</div>
+                        <div className="text-[10px] text-[#5871A5]">{t.city}, {t.state}</div>
+                      </TableCell>
+                      <TableCell className="text-[#5871A5] max-w-[240px] truncate">{t.requirement_text}</TableCell>
+                      <TableCell className="whitespace-nowrap">
+                        <Badge variant="outline" size="sm" className="uppercase font-bold">
+                          {t.category}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="font-mono whitespace-nowrap">
+                        {closing ? closing.toLocaleDateString('en-IN') : '-'}
+                        {diffDays <= 7 && diffDays >= 0 && (
+                          <div className="text-[10px] font-bold text-red-600">
+                            {diffDays === 0 ? 'CLOSING TODAY' : `${diffDays} DAYS LEFT`}
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap">
+                        <Badge
+                          variant={
+                            t.status === 'won'
+                              ? 'success'
+                              : t.status === 'awaiting_approval'
+                              ? 'warning'
+                              : t.status === 'under_preparation'
+                              ? 'default'
+                              : 'outline'
+                          }
+                          size="sm"
+                          className="uppercase font-bold"
+                        >
+                          {t.status.replace('_', ' ')}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right whitespace-nowrap">
+                        <Link href={`/tenders?highlight=${t.id}`}>
+                          <Button size="sm" variant="secondary" className="shadow-xs text-xs">
+                            Inspect <ChevronRight className="ml-1 h-3.5 w-3.5" />
+                          </Button>
+                        </Link>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </Card>
         </div>
       )}
 
@@ -837,6 +792,6 @@ export default function RegionalPage() {
           </div>
         </form>
       </Modal>
-    </div>
+    </PageContainer>
   );
 }

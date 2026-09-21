@@ -8,9 +8,10 @@ import {
   Clock,
   ShieldCheck,
 } from 'lucide-react';
-import { useAuth, PRESET_ROLE_USERS } from '@/lib/auth-context';
+import { useAuth } from '@/lib/auth-context';
 import { getSocket } from '@/lib/socket';
 import { api } from '@/lib/api';
+import { Kbd } from '@/components/ui';
 
 export const Navbar: React.FC<{ onOpenCommand?: () => void }> = ({
   onOpenCommand,
@@ -67,23 +68,20 @@ export const Navbar: React.FC<{ onOpenCommand?: () => void }> = ({
     }
   }, [user]);
 
-  const roleInfo = user ? PRESET_ROLE_USERS[user.role] : null;
-
   return (
     <header className="h-[64px] border-b border-[#D6E3F5] bg-white/95 backdrop-blur-md px-6 flex items-center justify-between sticky top-0 z-30 select-none text-[#1A1A1A]">
       {/* Search / Cmd+K Trigger */}
       <div className="flex items-center space-x-4 flex-1 max-w-md">
         <button
+          type="button"
           onClick={onOpenCommand}
-          className="w-full flex items-center justify-between px-3.5 py-1.5 rounded-lg bg-[#F7FBFF] border border-[#D6E3F5] hover:border-[#9FC0F5] text-gray-500 text-xs transition-colors"
+          className="w-full flex items-center justify-between px-3.5 py-1.5 rounded-lg bg-[#F7FBFF] border border-[#D6E3F5] hover:border-[#9FC0F5] text-[#5871A5] text-xs transition-colors cursor-pointer"
         >
           <div className="flex items-center space-x-2">
-            <Search className="h-3.5 w-3.5 text-gray-400" />
+            <Search className="h-3.5 w-3.5 text-[#5871A5]" />
             <span className="text-[13px]">Search tenders, leads, accounts...</span>
           </div>
-          <kbd className="px-1.5 py-0.2 text-[10px] font-mono bg-white text-[#223FA7] rounded border border-[#D6E3F5] font-semibold">
-            ⌘K
-          </kbd>
+          <Kbd>⌘K</Kbd>
         </button>
       </div>
 
@@ -116,27 +114,6 @@ export const Navbar: React.FC<{ onOpenCommand?: () => void }> = ({
             </span>
           )}
         </Link>
-
-        {/* User Pill */}
-        {user && (
-          <div className="flex items-center space-x-2 pl-2 border-l border-[#D6E3F5]">
-            <div className="h-8 w-8 rounded-lg bg-[#223FA7] flex items-center justify-center text-white font-bold text-xs shadow-xs">
-              {user.full_name
-                .split(' ')
-                .map((n) => n[0])
-                .join('')
-                .slice(0, 2)}
-            </div>
-            <div className="hidden md:block text-left">
-              <div className="text-xs font-semibold text-[#1A1A1A] leading-tight">
-                {user.full_name}
-              </div>
-              <div className="text-[11px] text-[#5871A5] leading-tight">
-                {roleInfo?.title || user.role}
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </header>
   );

@@ -61,6 +61,30 @@ async function runMigration() {
     await client.query(m2Sql);
     console.log('   ✓ db/migrations/002_stage0_foundation.sql executed successfully.');
 
+    // 3.5. Migration 003 - Module 2 Trips, Employee Activities & Visits Enhancement
+    console.log('📜 [3.5/5] Executing db/migrations/003_module2_trips_and_activities.sql...');
+    const m3Sql = fs.readFileSync(path.join(rootDir, 'db/migrations/003_module2_trips_and_activities.sql'), 'utf8');
+    await client.query(m3Sql);
+    console.log('   ✓ db/migrations/003_module2_trips_and_activities.sql executed successfully.');
+
+    // 3.6. Migration 004 - Module 2 Contact Person
+    const m4Path = path.join(rootDir, 'db/migrations/004_visit_contact_person.sql');
+    if (fs.existsSync(m4Path)) {
+      console.log('📜 [3.6/5] Executing db/migrations/004_visit_contact_person.sql...');
+      const m4Sql = fs.readFileSync(m4Path, 'utf8');
+      await client.query(m4Sql);
+      console.log('   ✓ db/migrations/004_visit_contact_person.sql executed successfully.');
+    }
+
+    // 3.7. Migration 005 - Module 3 Demo Management
+    const m5Path = path.join(rootDir, 'db/migrations/005_module3_demo_management.sql');
+    if (fs.existsSync(m5Path)) {
+      console.log('📜 [3.7/5] Executing db/migrations/005_module3_demo_management.sql...');
+      const m5Sql = fs.readFileSync(m5Path, 'utf8');
+      await client.query(m5Sql);
+      console.log('   ✓ db/migrations/005_module3_demo_management.sql executed successfully.');
+    }
+
     // 4. Baseline Zones & Regions (Essential Master References)
     console.log('🌍 [4/5] Seeding baseline Zones & Regions masters...');
     const zonesRes = await client.query(`

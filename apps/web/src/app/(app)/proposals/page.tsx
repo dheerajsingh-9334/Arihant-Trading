@@ -13,11 +13,17 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { api } from '@/lib/api';
-import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
-import { Modal } from '@/components/ui/Modal';
-import { Input } from '@/components/ui/Input';
-import { Select } from '@/components/ui/Select';
+import {
+  Button,
+  Badge,
+  Card,
+  Modal,
+  Input,
+  Select,
+  PageContainer,
+  PageHeader,
+  EmptyState,
+} from '@/components/ui';
 import { formatLakh } from '@arihant/shared';
 
 export default function ProposalsPage() {
@@ -96,38 +102,42 @@ export default function ProposalsPage() {
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-200">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-extrabold text-[#1A1A1A] tracking-tight flex items-center gap-2">
-            <FileSpreadsheet className="h-6 w-6 text-[#223FA7]" />
-            <span>Commercial Proposals & Quotations</span>
-          </h1>
-          <p className="text-xs text-[#5871A5] mt-1">
-            Tracking commercial quotes submitted to state police, paramilitary forces, and private security agencies.
-          </p>
-        </div>
-
-        <Button
-          onClick={() => setIsCreateOpen(true)}
-          variant="primary"
-          className="shadow-xs"
-        >
-          <Plus className="h-4 w-4 mr-1.5" />
-          <span>Draft Quotation</span>
-        </Button>
-      </div>
+    <PageContainer>
+      <PageHeader
+        title="Commercial Proposals & Quotations"
+        description="Tracking commercial quotes submitted to state police, paramilitary forces, and private security agencies."
+        icon={<FileSpreadsheet className="h-6 w-6 text-[#223FA7]" />}
+        actions={
+          <Button
+            onClick={() => setIsCreateOpen(true)}
+            variant="primary"
+            className="shadow-xs"
+          >
+            <Plus className="h-4 w-4 mr-1.5" />
+            <span>Draft Quotation</span>
+          </Button>
+        }
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {isLoading ? (
-          <div className="col-span-full p-8 text-center text-xs text-[#5871A5] bg-white border border-[#D6E3F5] rounded-xl">Loading quotations...</div>
+          <div className="col-span-full p-8 text-center text-xs text-[#5871A5] bg-white border border-[#D6E3F5] rounded-xl">
+            Loading quotations...
+          </div>
         ) : proposals.length === 0 ? (
-          <div className="col-span-full p-8 text-center text-xs text-[#5871A5] bg-white border border-[#D6E3F5] rounded-xl">No proposals generated yet.</div>
+          <div className="col-span-full">
+            <EmptyState
+              icon={FileSpreadsheet}
+              title="No proposals generated yet"
+              description="Create a new commercial quote or pricing tender to get started."
+            />
+          </div>
         ) : (
           proposals.map((p) => (
-            <div
+            <Card
               key={p.id}
-              className="p-5 rounded-xl border border-[#D6E3F5] bg-white hover:border-[#3770E3] transition-all flex flex-col justify-between space-y-4 shadow-xs"
+              padding="md"
+              className="flex flex-col justify-between space-y-4"
             >
               <div>
                 <div className="flex items-start justify-between">
@@ -171,7 +181,7 @@ export default function ProposalsPage() {
                 <span>Valid: {new Date(p.valid_until).toLocaleDateString('en-IN')}</span>
                 <span>By: {p.created_by_name || 'Sales Staff'}</span>
               </div>
-            </div>
+            </Card>
           ))
         )}
       </div>
@@ -249,6 +259,6 @@ export default function ProposalsPage() {
           </div>
         </form>
       </Modal>
-    </div>
+    </PageContainer>
   );
 }

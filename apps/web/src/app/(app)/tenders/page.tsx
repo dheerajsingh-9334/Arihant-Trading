@@ -21,12 +21,15 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { api } from '@/lib/api';
-import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
-import { Card } from '@/components/ui/Card';
-import { Modal } from '@/components/ui/Modal';
-import { Input } from '@/components/ui/Input';
-import { Select } from '@/components/ui/Select';
+import {
+  Button,
+  Badge,
+  Card,
+  Modal,
+  Input,
+  Select,
+  FilterBar,
+} from '@/components/ui';
 import { formatINR } from '@arihant/shared';
 
 export default function TendersPage() {
@@ -235,25 +238,25 @@ export default function TendersPage() {
       </div>
 
       {/* Filter & Search Bar */}
-      <Card className="p-4 bg-white border border-[#D6E3F5] rounded-xl shadow-xs">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+      <FilterBar>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-center">
           {/* Search box */}
           <div className="relative lg:col-span-2">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-[#5871A5]" />
-            <input
+            <Search className="absolute left-3 top-3 h-4 w-4 text-[#5871A5] z-10" />
+            <Input
               type="text"
               placeholder="Search tender no, requirement, buyer..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 rounded-lg bg-[#F7FBFF] border border-[#D6E3F5] text-xs text-[#1A1A1A] placeholder:text-[#5871A5] focus:border-[#3770E3] focus:bg-white focus:outline-none"
+              className="pl-9 h-10"
             />
           </div>
 
           {/* Status filter */}
-          <select
+          <Select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="bg-[#F7FBFF] border border-[#D6E3F5] text-xs text-[#1A1A1A] rounded-lg px-3 py-2 focus:border-[#3770E3] focus:bg-white focus:outline-none"
+            className="h-10"
           >
             <option value="">All Bid Statuses</option>
             <option value="under_preparation">Under Preparation</option>
@@ -261,34 +264,33 @@ export default function TendersPage() {
             <option value="submitted">Submitted</option>
             <option value="won">Won</option>
             <option value="lost">Lost</option>
-          </select>
+          </Select>
 
           {/* Category filter */}
-          <select
+          <Select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
-            className="bg-[#F7FBFF] border border-[#D6E3F5] text-xs text-[#1A1A1A] rounded-lg px-3 py-2 focus:border-[#3770E3] focus:bg-white focus:outline-none"
+            className="h-10"
           >
             <option value="">All Categories</option>
             <option value="general_mha">General MHA</option>
             <option value="pq">Pre-Qualification (PQ)</option>
             <option value="other">Other Defence/Govt</option>
-          </select>
+          </Select>
 
           {/* Closing soon quick toggle */}
-          <button
+          <Button
+            type="button"
+            variant={closingSoonOnly ? 'danger' : 'outline'}
             onClick={() => setClosingSoonOnly(!closingSoonOnly)}
-            className={`px-3 py-2 rounded-lg text-xs font-bold border transition-colors flex items-center justify-center gap-1.5 ${
-              closingSoonOnly
-                ? 'bg-red-50 text-red-700 border-red-200 shadow-xs'
-                : 'bg-white text-[#5871A5] border-[#D6E3F5] hover:text-[#1A1A1A] hover:bg-[#F7FBFF]'
-            }`}
+            leftIcon={<Clock className="h-3.5 w-3.5" />}
+            size="md"
+            className="h-10 w-full"
           >
-            <Clock className="h-3.5 w-3.5" />
             <span>Closing ≤ 7d Only</span>
-          </button>
+          </Button>
         </div>
-      </Card>
+      </FilterBar>
 
       {/* Tenders Table */}
       <div className="rounded-xl border border-[#D6E3F5] bg-white overflow-hidden shadow-xs">

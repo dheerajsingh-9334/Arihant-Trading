@@ -169,34 +169,56 @@ create index on interactions(occurred_on);
 -- =====================================================================
 -- 3. VISIT & FIELD PLANNING  (Module 2)
 -- =====================================================================
+create table trips (
+  id            uuid primary key default gen_random_uuid(),
+  employee_id   uuid not null references users(id),
+  trip_date     date not null,
+  base_location text not null,
+  status        text not null default 'planned',   -- planned, active, completed, cancelled
+  notes         text,
+  created_by    uuid references users(id),
+  created_at    timestamptz not null default now(),
+  updated_at    timestamptz not null default now()
+);
+create index on trips(employee_id, trip_date);
+create index on trips(status);
+
 create table visits (
   id                 uuid primary key default gen_random_uuid(),
+  trip_id            uuid references trips(id) on delete set null,
   organisation_id    uuid not null references organisations(id),
   contact_id         uuid references contacts(id),
   product_id         uuid references products(id),
   planned_by         uuid references users(id),
   assigned_to        uuid references users(id),
   assigned_by_manager uuid references users(id),   -- manager "also meet X" intervention
+  manager_assigned   boolean default false,
   location           text,
+  latitude           numeric,
+  longitude          numeric,
   planned_date       date not null,
+  start_time         text,
+  end_time           text,
   purpose            text,
   demo_required      boolean default false,
   travel_required    boolean default false,
   expected_outcome   text,
-  status             text default 'planned',   -- planned/completed/cancelled/rescheduled
-  change_reason      text,                     -- required on cancel/reschedule
+  status             text default 'planned',   -- planned/modified/cancelled/completed/not_completed/rescheduled
+  change_reason      text,                     -- required on cancel/reschedule/modify
   rescheduled_from   date,
   remarks            text,
+  version            integer not null default 1,
   created_at         timestamptz not null default now(),
   updated_at         timestamptz not null default now()
 );
 create index on visits(assigned_to);
 create index on visits(planned_date);
 create index on visits(status);
+create index on visits(trip_id);
 
 create table visit_updates (               -- post-visit
   id                uuid primary key default gen_random_uuid(),
-  visit_id          uuid not null references visits(id) on delete cascade,
+  visit_id          uuid not null unique references visits(id) on delete cascade,
   met_completed     boolean default true,
   person_met        text,
   discussion        text,
@@ -211,6 +233,25 @@ create table visit_updates (               -- post-visit
   updated_by        uuid references users(id),
   created_at        timestamptz not null default now()
 );
+
+create table employee_activities (
+  id            uuid primary key default gen_random_uuid(),
+  employee_id   uuid not null references users(id) on delete cascade,
+  activity_type text not null default 'field_visit',
+  entity_type   text not null default 'visit',
+  entity_id     uuid not null,
+  activity_date date not null,
+  title         text not null,
+  status        text not null,
+  outcome       text,
+  next_action   text,
+  followup_date date,
+  details       jsonb,
+  created_at    timestamptz not null default now(),
+  constraint uq_employee_activity unique (employee_id, entity_type, entity_id)
+);
+create index on employee_activities(employee_id, activity_date desc);
+create index on employee_activities(activity_date desc);
 
 -- =====================================================================
 -- 4. DEMO MANAGEMENT  (Module 3)
@@ -517,7 +558,7 @@ do $$
 declare t text;
 begin
   foreach t in array array[
-    'products','users','organisations','contacts','leads','visits',
+    'products','users','organisations','contacts','leads','visits','trips',
     'demo_equipment','demos','tenders','proposals','service_tickets',
     'expenses','tasks'] loop
     execute format(

@@ -17,13 +17,10 @@ import {
   LogOut,
   Compass,
   Activity,
-  UserCheck,
   Shield,
   ShieldCheck,
-  MapPin,
-  Check,
 } from 'lucide-react';
-import { useAuth, PRESET_ROLE_USERS } from '@/lib/auth-context';
+import { useAuth } from '@/lib/auth-context';
 import { ROLE_PROFILES, type UserRole, type BosModuleKey } from '@arihant/shared';
 
 interface NavItem {
@@ -684,29 +681,13 @@ function getRoleNavGroups(role: UserRole): NavGroup[] {
   }
 }
 
-/**
- * Role-specific key operational capabilities chips displayed on HUD card
- */
-const ROLE_CAPABILITY_TAGS: Record<UserRole, string[]> = {
-  management: ['All-India Scope', 'Tender Signoff', 'Stage 1 & 2 Payouts'],
-  regional_manager: ['North Zone Command', 'Stage-1 Endorse', 'Also-Meet Directives'],
-  sales: ['Delhi NCR Pipeline', 'Tour Itinerary', 'Quotation Prep'],
-  tender_team: ['National GeM Cell', 'Bid Prep & PQ', 'EMD Tracking'],
-  demo_team: ['North Depot Fleet', 'Trials Dispatch', 'Gate-Pass Handover'],
-  service_team: ['National Service Desk', 'Breakdown SLAs', 'Spares Coordination'],
-  accounts: ['Corporate Accounts', 'Stage-2 Payouts', 'GST & Bank Audit'],
-  admin: ['Platform Admin', 'User Provisioning', 'Master Data & RBAC'],
-};
-
 export const Sidebar: React.FC = () => {
   const pathname = usePathname();
-  const { user, logout, switchRole } = useAuth();
+  const { user, logout } = useAuth();
 
   const role = user?.role || 'management';
   const roleProfile = ROLE_PROFILES[role];
   const navGroups = getRoleNavGroups(role);
-  const capabilityTags = ROLE_CAPABILITY_TAGS[role] || [];
-  const presetInfo = user ? PRESET_ROLE_USERS[user.role] : null;
 
   // RBAC clearance validation
   const isModuleAllowed = (moduleKey: BosModuleKey | 'reports') => {
@@ -746,77 +727,8 @@ export const Sidebar: React.FC = () => {
             </span>
           </div>
         </div>
-
-        {/* User Card HUD — Persona & Role Territory */}
-        {user && (
-          <div className="m-3 p-3 rounded-lg bg-[#F7FBFF] border border-[#D6E3F5] text-xs shrink-0 max-w-full overflow-hidden">
-            <div className="flex items-center justify-between mb-1.5">
-              <span className="text-[10px] font-semibold text-[#5871A5] uppercase tracking-wider">
-                Persona Clearance
-              </span>
-              <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded border truncate max-w-[140px] ${presetInfo?.color || 'bg-[#EAF2FF] text-[#223FA7] border-[#D6E3F5]'}`}>
-                {user.role.toUpperCase().replace('_', ' ')}
-              </span>
-            </div>
-
-            <div className="font-bold text-[#1A1A1A] truncate text-[13px]">{user.full_name}</div>
-            <div className="text-[11px] text-[#5871A5] truncate">{user.email}</div>
-
-            {/* Territory / Zone Tag */}
-            {presetInfo?.zone && (
-              <div className="mt-1.5 flex items-center text-[10px] font-medium text-[#223FA7] gap-1 bg-white border border-[#D6E3F5] rounded px-1.5 py-0.5 min-w-0">
-                <MapPin className="w-3 h-3 text-[#223FA7] shrink-0" />
-                <span className="truncate">{presetInfo.zone}</span>
-              </div>
-            )}
-
-            {/* Scope Summary Quote */}
-            {roleProfile && (
-              <div className="mt-1.5 text-[10px] text-gray-700 bg-white/70 border border-[#D6E3F5] rounded px-1.5 py-1 leading-snug font-medium italic">
-                &ldquo;{roleProfile.scopeSummary}&rdquo;
-              </div>
-            )}
-
-            {/* Role Capabilities Chips */}
-            {capabilityTags.length > 0 && (
-              <div className="mt-2 flex flex-wrap gap-1">
-                {capabilityTags.map((cap, idx) => (
-                  <span
-                    key={idx}
-                    className="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-semibold bg-[#EAF2FF] text-[#223FA7] border border-[#D6E3F5]/80"
-                  >
-                    <Check className="w-2.5 h-2.5 mr-0.5 text-[#223FA7]" />
-                    {cap}
-                  </span>
-                ))}
-              </div>
-            )}
-
-            {/* Quick Switch Dropdown - Stacked & Full Width */}
-            <div className="mt-2.5 pt-2 border-t border-[#D6E3F5] space-y-1">
-              <div className="flex items-center justify-between text-[10px] font-semibold text-[#5871A5]">
-                <span className="flex items-center gap-1">
-                  <UserCheck className="w-3 h-3 text-[#223FA7]" /> Persona Switcher
-                </span>
-                <span className="text-[9px] text-[#223FA7] font-bold">8 Roles</span>
-              </div>
-              <select
-                value={user.role}
-                onChange={(e) => switchRole(e.target.value as UserRole)}
-                className="w-full bg-white text-[#1A1A1A] text-[11px] rounded-lg border border-[#D6E3F5] px-2.5 py-1 font-medium focus:border-[#3770E3] focus:ring-1 focus:ring-[#3770E3] focus:outline-none truncate cursor-pointer shadow-2xs"
-              >
-                {Object.entries(PRESET_ROLE_USERS).map(([roleKey, info]) => (
-                  <option key={roleKey} value={roleKey}>
-                    {info.title}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-        )}
-
         {/* Dynamic Role Navigation Items */}
-        <nav className="px-2 py-1 space-y-4 overflow-y-auto custom-scrollbar flex-1">
+        <nav className="px-2 py-3 space-y-4 overflow-y-auto custom-scrollbar flex-1">
           {navGroups.map((group) => {
             // Filter strictly by RBAC module permission
             const visibleItems = group.items.filter((item) => isModuleAllowed(item.moduleKey));

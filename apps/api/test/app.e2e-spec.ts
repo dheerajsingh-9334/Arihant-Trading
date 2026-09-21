@@ -3,6 +3,9 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
 
+import { Kysely } from 'kysely';
+import { DB } from '@arihant/shared';
+
 describe('Arihant BOS API E2E Suite', () => {
   let app: INestApplication;
   let mgmtToken: string;
@@ -30,6 +33,15 @@ describe('Arihant BOS API E2E Suite', () => {
       }),
     );
     await app.init();
+
+    const db = moduleFixture.get<Kysely<DB>>('KYSELY_DB');
+    await db.deleteFrom('demo_reservations').execute();
+    await db.deleteFrom('demos').execute();
+    await db.deleteFrom('employee_activities').execute();
+    await db.deleteFrom('visit_updates').execute();
+    await db.deleteFrom('interactions').where('visit_id', 'is not', null).execute();
+    await db.deleteFrom('visits').execute();
+    await db.deleteFrom('trips').execute();
   });
 
   afterAll(async () => {

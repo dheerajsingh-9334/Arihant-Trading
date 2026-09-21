@@ -10,8 +10,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { useAuth, PRESET_ROLE_USERS } from '@/lib/auth-context';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
+import { Button, Input, Card } from '@/components/ui';
 import type { UserRole } from '@arihant/shared';
 
 export default function LoginPage() {
@@ -151,15 +150,13 @@ export default function LoginPage() {
                   const isSelected = activeRoleKey === roleKey;
 
                   return (
-                    <button
+                    <Card
                       key={roleKey}
-                      type="button"
+                      variant="interactive"
+                      selected={isSelected}
+                      padding="xs"
                       onClick={() => handleQuickRoleSelect(roleKey)}
-                      className={`p-3 rounded-lg border text-left transition-colors flex flex-col justify-between ${
-                        isSelected
-                          ? 'bg-[#EAF2FF] border-[#223FA7] shadow-xs'
-                          : 'bg-[#F7FBFF] border-[#D6E3F5] hover:bg-[#EAF2FF]/50 hover:border-[#9FC0F5]'
-                      }`}
+                      className="text-left flex flex-col justify-between cursor-pointer"
                     >
                       <div>
                         <div className="flex items-center justify-between mb-0.5">
@@ -176,14 +173,14 @@ export default function LoginPage() {
                       </div>
 
                       <div className="mt-2.5 pt-1.5 border-t border-[#D6E3F5]/60 flex items-center justify-between">
-                        <span className="text-[10px] text-gray-500 truncate">
+                        <span className="text-[10px] text-[#5871A5] truncate">
                           {info.zone}
                         </span>
                         <span className="text-[9px] font-bold px-1.5 py-0.2 rounded uppercase tracking-wider bg-white text-[#223FA7] border border-[#D6E3F5]">
                           {roleKey.replace('_', ' ')}
                         </span>
                       </div>
-                    </button>
+                    </Card>
                   );
                 })}
               </div>

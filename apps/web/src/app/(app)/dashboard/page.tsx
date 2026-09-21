@@ -34,9 +34,16 @@ import {
 } from 'lucide-react';
 import { useAuth, PRESET_ROLE_USERS } from '@/lib/auth-context';
 import { api } from '@/lib/api';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  Badge,
+  Button,
+  PageContainer,
+} from '@/components/ui';
 import { formatINR, formatLakh, ROLE_PROFILES, type UserRole } from '@arihant/shared';
 import type { DashboardMetricsDto } from '@arihant/shared';
 
@@ -131,7 +138,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="space-y-6 pb-12 animate-in fade-in duration-200">
+    <PageContainer>
       {/* ── TOP HERO BANNER: PERSONA-SPECIFIC WORKBENCH ── */}
       <div className="relative overflow-hidden rounded-2xl bg-white border border-[#D6E3F5] p-6 lg:p-8 shadow-xs">
         <div className="relative z-10 flex flex-col xl:flex-row xl:items-center justify-between gap-5">
@@ -142,7 +149,7 @@ export default function DashboardPage() {
                 {roleProfile?.department || 'Defence Operations'} · {roleInfo?.title || role.toUpperCase()}
               </span>
             </div>
-            <h1 className="text-2xl lg:text-3xl font-extrabold text-gray-950 tracking-tight">
+            <h1 className="text-2xl lg:text-3xl font-extrabold text-[#1A1A1A] tracking-tight">
               {getWorkbenchTitle()}
             </h1>
             <p className="text-xs lg:text-sm text-[#5871A5] font-normal leading-relaxed">
@@ -1288,6 +1295,6 @@ export default function DashboardPage() {
           </div>
         </>
       )}
-    </div>
+    </PageContainer>
   );
 }

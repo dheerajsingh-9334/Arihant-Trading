@@ -41,18 +41,25 @@ To maintain uniform architecture, reliability, and code quality across all ~15 m
 
 ## 3. Frontend Views & Components
 
-1. **List View (`page.tsx`)**:
-   - Render dense, high-performance data table using shadcn primitives.
-   - Search input, column sort, and role-appropriate filter dropdowns.
-   - Inline status badges with contextual colors.
+All views must strictly follow the **Arihant BOS Design System** (documented in `docs/DESIGN_SYSTEM.md` and `.agent/rules/design-system.md`). Dark or black backgrounds are strictly prohibited. Always consume standardized components from `@/components/ui`:
+
+1. **Page Architecture (`page.tsx`)**:
+   - Wrap the entire page with `<PageContainer>` (`space-y-6 pb-12 animate-in fade-in duration-200`).
+   - Top of page must use `<PageHeader>` with `title`, `description`, `moduleBadge`, and primary action buttons.
+   - Key metrics must use `<StatGrid>` and `<StatCard>` with standard semantic variants (`primary`, `emerald`, `amber`, `rose`).
+   - Major functional sections must use `<SectionHeader>` with title, subtitle, and badges.
+   - Search/filter controls must be wrapped in `<FilterBar>`.
+   - Render dense, high-performance data table using `<Table>` and `<Badge>`.
    - Highlight critical deadlines (e.g. red pulsing badge for tender bids closing in <= 7 days).
-   - Empty state inviting user action when no records exist.
+   - Empty state must use `<EmptyState>` with appropriate icon, title, description, and action button.
    - Loading skeleton state during fetch.
 
-2. **Detail & Create/Edit (`[id]/page.tsx`, `new/page.tsx` or modal dialog)**:
-   - Clean form with proper validation (Indian phone `+91`, email, required fields).
-   - Formatted numbers in Indian format (`₹ 1,00,000`, Lakh, Crore).
+2. **Detail & Create/Edit (`[id]/page.tsx`, `new/page.tsx` or `<Modal>`)**:
+   - Clean form built with `<Input>`, `<Select>`, and `<Textarea>`.
+   - Proper validation (Indian phone `+91`, email, required fields).
+   - Formatted numbers in Indian format (`₹ 1,00,000`, Lakh, Crore via `@arihant/shared`).
    - Formatted dates in IST (`Asia/Kolkata`).
+   - Action buttons using `<Button>` with variants (`primary`, `secondary`, `outline`).
    - Guarded status transition controls (only allowable next states visible to authorized roles).
    - History / audit trail timeline tab showing who changed what.
 

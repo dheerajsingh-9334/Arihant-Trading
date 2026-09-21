@@ -18,10 +18,20 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { api } from '@/lib/api';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
-import { Tabs } from '@/components/ui/Tabs';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  Badge,
+  Button,
+  Tabs,
+  PageContainer,
+  PageHeader,
+  StatGrid,
+  StatCard,
+} from '@/components/ui';
 import { formatLakh, formatINR } from '@arihant/shared';
 
 export default function ConsolidatedReportsPage() {
@@ -165,99 +175,82 @@ export default function ConsolidatedReportsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <PageContainer>
       {/* Top Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white border border-[#D6E3F5] p-6 rounded-2xl shadow-xs">
-        <div>
-          <div className="flex items-center space-x-2">
-            <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-[#EAF2FF] text-[#223FA7] border border-[#D6E3F5] uppercase tracking-wide">
-              Module 15 — Corporate Intelligence
-            </span>
+      <PageHeader
+        badge="Module 15 — Corporate Intelligence"
+        title="Consolidated Operational Reports"
+        subtitle="Enterprise cross-module data aggregates with direct CSV spreadsheet exports."
+        icon={<FileText className="w-5 h-5 text-[#223FA7]" />}
+        actions={
+          <div className="flex items-center space-x-3">
+            {activeTab === 'tenders' && (
+              <Button variant="outline" onClick={handleExportTenders}>
+                <Download className="h-4 w-4 mr-2" />
+                Export Tenders CSV
+              </Button>
+            )}
+            {activeTab === 'leads' && (
+              <Button variant="outline" onClick={handleExportLeads}>
+                <Download className="h-4 w-4 mr-2" />
+                Export Funnel CSV
+              </Button>
+            )}
+            {activeTab === 'visits' && (
+              <Button variant="outline" onClick={handleExportVisits}>
+                <Download className="h-4 w-4 mr-2" />
+                Export Visits CSV
+              </Button>
+            )}
+            {activeTab === 'expenses' && (
+              <Button variant="outline" onClick={handleExportExpenses}>
+                <Download className="h-4 w-4 mr-2" />
+                Export Expenses CSV
+              </Button>
+            )}
+            {activeTab === 'service' && (
+              <Button variant="outline" onClick={handleExportService}>
+                <Download className="h-4 w-4 mr-2" />
+                Export Service CSV
+              </Button>
+            )}
           </div>
-          <h1 className="text-2xl font-bold text-[#1A1A1A] mt-2">
-            Consolidated Operational Reports
-          </h1>
-          <p className="text-xs text-[#5871A5] mt-1">
-            Enterprise cross-module data aggregates with direct CSV spreadsheet exports.
-          </p>
-        </div>
-
-        <div className="flex items-center space-x-3">
-          {activeTab === 'tenders' && (
-            <Button variant="outline" onClick={handleExportTenders}>
-              <Download className="h-4 w-4 mr-2" />
-              Export Tenders CSV
-            </Button>
-          )}
-          {activeTab === 'leads' && (
-            <Button variant="outline" onClick={handleExportLeads}>
-              <Download className="h-4 w-4 mr-2" />
-              Export Funnel CSV
-            </Button>
-          )}
-          {activeTab === 'visits' && (
-            <Button variant="outline" onClick={handleExportVisits}>
-              <Download className="h-4 w-4 mr-2" />
-              Export Visits CSV
-            </Button>
-          )}
-          {activeTab === 'expenses' && (
-            <Button variant="outline" onClick={handleExportExpenses}>
-              <Download className="h-4 w-4 mr-2" />
-              Export Expenses CSV
-            </Button>
-          )}
-          {activeTab === 'service' && (
-            <Button variant="outline" onClick={handleExportService}>
-              <Download className="h-4 w-4 mr-2" />
-              Export Service CSV
-            </Button>
-          )}
-        </div>
-      </div>
+        }
+      />
 
       {/* KPI Highlights Bar */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-        <div className="bg-white border border-[#D6E3F5] rounded-xl p-4 shadow-xs">
-          <div className="flex items-center justify-between text-xs text-[#5871A5]">
-            <span>Live GeM Bids</span>
-            <FileText className="h-3.5 w-3.5 text-[#223FA7]" />
-          </div>
-          <p className="text-xl font-bold text-[#1A1A1A] mt-1">{tenders.length}</p>
-        </div>
-
-        <div className="bg-white border border-[#D6E3F5] rounded-xl p-4 shadow-xs">
-          <div className="flex items-center justify-between text-xs text-[#5871A5]">
-            <span>Active Leads</span>
-            <Target className="h-3.5 w-3.5 text-blue-600" />
-          </div>
-          <p className="text-xl font-bold text-[#1A1A1A] mt-1">{leads.length}</p>
-        </div>
-
-        <div className="bg-white border border-[#D6E3F5] rounded-xl p-4 shadow-xs">
-          <div className="flex items-center justify-between text-xs text-[#5871A5]">
-            <span>Field Visits</span>
-            <Calendar className="h-3.5 w-3.5 text-purple-600" />
-          </div>
-          <p className="text-xl font-bold text-[#1A1A1A] mt-1">{visits.length}</p>
-        </div>
-
-        <div className="bg-white border border-[#D6E3F5] rounded-xl p-4 shadow-xs">
-          <div className="flex items-center justify-between text-xs text-[#5871A5]">
-            <span>Expense Claims</span>
-            <Receipt className="h-3.5 w-3.5 text-amber-600" />
-          </div>
-          <p className="text-xl font-bold text-[#1A1A1A] mt-1">{expenses.length}</p>
-        </div>
-
-        <div className="bg-white border border-[#D6E3F5] rounded-xl p-4 shadow-xs">
-          <div className="flex items-center justify-between text-xs text-[#5871A5]">
-            <span>Service Tickets</span>
-            <Wrench className="h-3.5 w-3.5 text-cyan-600" />
-          </div>
-          <p className="text-xl font-bold text-[#1A1A1A] mt-1">{tickets.length}</p>
-        </div>
-      </div>
+      <StatGrid cols={5}>
+        <StatCard
+          title="Live GeM Bids"
+          value={tenders.length}
+          icon={<FileText className="h-4 w-4" />}
+          variant="primary"
+        />
+        <StatCard
+          title="Active Leads"
+          value={leads.length}
+          icon={<Target className="h-4 w-4" />}
+          variant="primary"
+        />
+        <StatCard
+          title="Field Visits"
+          value={visits.length}
+          icon={<Calendar className="h-4 w-4" />}
+          variant="primary"
+        />
+        <StatCard
+          title="Expense Claims"
+          value={expenses.length}
+          icon={<Receipt className="h-4 w-4" />}
+          variant="amber"
+        />
+        <StatCard
+          title="Service Tickets"
+          value={tickets.length}
+          icon={<Wrench className="h-4 w-4" />}
+          variant="emerald"
+        />
+      </StatGrid>
 
       {/* Tabs */}
       <Tabs
@@ -479,6 +472,6 @@ export default function ConsolidatedReportsPage() {
           )}
         </div>
       )}
-    </div>
+    </PageContainer>
   );
 }

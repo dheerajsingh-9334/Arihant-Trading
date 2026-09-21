@@ -18,13 +18,17 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { api } from '@/lib/api';
-import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
-import { Card, CardContent } from '@/components/ui/Card';
-import { Modal } from '@/components/ui/Modal';
-import { Input } from '@/components/ui/Input';
-import { Select } from '@/components/ui/Select';
-import { Tabs } from '@/components/ui/Tabs';
+import {
+  Button,
+  Badge,
+  Card,
+  CardContent,
+  Modal,
+  Input,
+  Select,
+  Tabs,
+  EmptyState,
+} from '@/components/ui';
 import { formatLakh } from '@arihant/shared';
 
 export default function LeadsPage() {
@@ -231,13 +235,13 @@ export default function LeadsPage() {
         />
 
         <div className="relative w-full sm:w-72">
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-[#5871A5]" />
-          <input
+          <Search className="absolute left-3 top-3 h-4 w-4 text-[#5871A5] z-10" />
+          <Input
             type="text"
             placeholder="Search leads, clients, contacts..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 rounded-lg bg-white border border-[#D6E3F5] text-xs text-[#1A1A1A] placeholder:text-[#5871A5] focus:border-[#3770E3] focus:outline-none shadow-xs"
+            className="pl-9 h-10"
           />
         </div>
       </div>
@@ -249,15 +253,21 @@ export default function LeadsPage() {
             Loading opportunities...
           </div>
         ) : leads.length === 0 ? (
-          <div className="col-span-full p-8 text-center text-xs text-[#5871A5] bg-white border border-[#D6E3F5] rounded-xl">
-            No leads found for this stage.
+          <div className="col-span-full">
+            <EmptyState
+              icon={Target}
+              title="No leads found"
+              description="No business opportunities or client leads match your active filters."
+            />
           </div>
         ) : (
           leads.map((lead) => (
-            <div
+            <Card
               key={lead.id}
+              variant="interactive"
+              padding="md"
               onClick={() => handleOpenLead(lead)}
-              className="p-5 rounded-xl border border-[#D6E3F5] bg-white hover:border-[#3770E3] transition-all cursor-pointer flex flex-col justify-between space-y-4 group shadow-xs"
+              className="flex flex-col justify-between space-y-4 group"
             >
               <div>
                 <div className="flex items-start justify-between gap-2">
@@ -319,7 +329,7 @@ export default function LeadsPage() {
                   </Badge>
                 </div>
               </div>
-            </div>
+            </Card>
           ))
         )}
       </div>

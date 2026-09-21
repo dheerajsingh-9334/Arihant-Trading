@@ -3,26 +3,40 @@ import {
   IsNotEmpty,
   IsOptional,
   IsBoolean,
-  IsUUID,
   IsDateString,
   IsEnum,
+  IsIn,
+  IsNumber,
+  Matches,
 } from 'class-validator';
-import type { DemoStatus, DemoEquipmentAvailability } from '@arihant/shared';
+import type {
+  DemoStatus,
+  DemoEquipmentAvailability,
+  DemoResult,
+  DemoFailureReason,
+  DemoCancellationReason,
+} from '@arihant/shared';
+
+const UUID_PATTERN = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
 
 export class CreateDemoDto {
-  @IsUUID('all')
+  @Matches(UUID_PATTERN, { message: 'organisation_id must be a valid UUID' })
   @IsNotEmpty({ message: 'Organisation is required' })
   organisation_id!: string;
 
-  @IsUUID('all')
+  @Matches(UUID_PATTERN, { message: 'lead_id must be a valid UUID' })
   @IsOptional()
   lead_id?: string;
 
-  @IsUUID('all')
+  @Matches(UUID_PATTERN, { message: 'product_id must be a valid UUID' })
   @IsOptional()
   product_id?: string;
 
-  @IsUUID('all')
+  @Matches(UUID_PATTERN, { message: 'visit_id must be a valid UUID' })
+  @IsOptional()
+  visit_id?: string;
+
+  @Matches(UUID_PATTERN, { message: 'assigned_to must be a valid UUID' })
   @IsOptional()
   assigned_to?: string;
 
@@ -31,12 +45,16 @@ export class CreateDemoDto {
   location?: string;
 
   @IsDateString()
-  @IsOptional()
-  requested_date?: string;
+  @IsNotEmpty({ message: 'Requested date is required' })
+  requested_date!: string;
 
   @IsDateString()
   @IsOptional()
   confirmed_date?: string;
+
+  @IsString()
+  @IsOptional()
+  purpose?: string;
 
   @IsString()
   @IsOptional()
@@ -49,26 +67,184 @@ export class CreateDemoDto {
   @IsString()
   @IsOptional()
   special_requirements?: string;
+
+  @IsString()
+  @IsOptional()
+  remarks?: string;
+
+  @IsBoolean()
+  @IsOptional()
+  travel_required?: boolean;
+
+  @IsString()
+  @IsOptional()
+  travel_from?: string;
+
+  @IsString()
+  @IsOptional()
+  travel_to?: string;
+
+  @IsDateString()
+  @IsOptional()
+  travel_date?: string;
+
+  @IsString()
+  @IsOptional()
+  travel_remarks?: string;
+}
+
+export class UpdateDemoDto {
+  @IsString()
+  @IsOptional()
+  location?: string;
+
+  @IsDateString()
+  @IsOptional()
+  requested_date?: string;
+
+  @IsString()
+  @IsOptional()
+  purpose?: string;
+
+  @IsString()
+  @IsOptional()
+  expected_audience?: string;
+
+  @IsString()
+  @IsOptional()
+  equipment_required?: string;
+
+  @IsString()
+  @IsOptional()
+  special_requirements?: string;
+
+  @IsString()
+  @IsOptional()
+  remarks?: string;
+
+  @IsNumber()
+  @IsOptional()
+  version?: number;
+}
+
+export class AssignTeamDto {
+  @Matches(UUID_PATTERN, { message: 'assigned_to must be a valid UUID' })
+  @IsNotEmpty({ message: 'Team member selection is required' })
+  assigned_to!: string;
+
+  @IsDateString()
+  @IsOptional()
+  confirmed_date?: string;
+
+  @IsBoolean()
+  @IsOptional()
+  travel_required?: boolean;
+
+  @IsString()
+  @IsOptional()
+  travel_from?: string;
+
+  @IsString()
+  @IsOptional()
+  travel_to?: string;
+
+  @IsDateString()
+  @IsOptional()
+  travel_date?: string;
+
+  @IsString()
+  @IsOptional()
+  travel_remarks?: string;
+
+  @IsString()
+  @IsOptional()
+  remarks?: string;
+}
+
+export class ConfirmDemoDto {
+  @IsDateString()
+  @IsNotEmpty({ message: 'Confirmed date is required' })
+  confirmed_date!: string;
+
+  @IsString()
+  @IsOptional()
+  remarks?: string;
+}
+
+export class RescheduleDemoDto {
+  @IsDateString()
+  @IsNotEmpty({ message: 'New demo date is required' })
+  new_date!: string;
+
+  @IsString()
+  @IsNotEmpty({ message: 'Rescheduling reason is required' })
+  reason!: string;
+}
+
+export class CancelDemoDto {
+  @IsString()
+  @IsNotEmpty({ message: 'Cancellation reason is required' })
+  @IsIn([
+    'customer_cancelled',
+    'equipment_unavailable',
+    'team_unavailable',
+    'date_conflict',
+    'commercial_issue',
+    'other',
+  ], {
+    message:
+      'Cancellation reason must be one of: customer_cancelled, equipment_unavailable, team_unavailable, date_conflict, commercial_issue, other',
+  })
+  cancellation_reason!: DemoCancellationReason;
+
+  @IsString()
+  @IsOptional()
+  remarks?: string;
 }
 
 export class ReserveEquipmentDto {
-  @IsUUID('all')
-  @IsNotEmpty()
+  @Matches(UUID_PATTERN, { message: 'equipment_id must be a valid UUID' })
+  @IsNotEmpty({ message: 'Equipment selection is required' })
   equipment_id!: string;
 
   @IsDateString()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'Reservation start date is required' })
   reserved_from!: string;
 
   @IsDateString()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'Reservation end date is required' })
   reserved_to!: string;
+
+  @IsString()
+  @IsOptional()
+  remarks?: string;
+}
+
+export class SuggestAlternativeDto {
+  @Matches(UUID_PATTERN, { message: 'alternative_equipment_id must be a valid UUID' })
+  @IsNotEmpty({ message: 'Alternative equipment ID is required' })
+  alternative_equipment_id!: string;
+
+  @IsString()
+  @IsNotEmpty({ message: 'Reason for alternative suggestion is required' })
+  alternative_reason!: string;
 }
 
 export class SubmitDemoOutcomeDto {
   @IsBoolean()
   @IsOptional()
   completed?: boolean;
+
+  @IsString()
+  @IsNotEmpty({ message: 'Result (success, fail, or partial) is required' })
+  @IsIn(['success', 'fail', 'partial'], {
+    message: 'Result must be success, fail, or partial',
+  })
+  result!: 'success' | 'fail' | 'partial';
+
+  @IsString()
+  @IsOptional()
+  failure_reason?: DemoFailureReason;
 
   @IsString()
   @IsOptional()
@@ -95,12 +271,8 @@ export class SubmitDemoOutcomeDto {
   next_step?: string;
 
   @IsString()
-  @IsNotEmpty({ message: 'Result (success or fail) is required' })
-  result!: 'success' | 'fail';
-
-  @IsString()
   @IsOptional()
-  failure_reason?: string;
+  opportunity_stage?: string;
 
   @IsString()
   @IsOptional()
@@ -108,27 +280,58 @@ export class SubmitDemoOutcomeDto {
 }
 
 export class CreateEquipmentDto {
-  @IsUUID('all')
-  @IsNotEmpty()
+  @Matches(UUID_PATTERN, { message: 'product_id must be a valid UUID' })
+  @IsNotEmpty({ message: 'Product is required' })
   product_id!: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'Model is required' })
   model!: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'Serial number is required' })
   serial_no!: string;
 
   @IsString()
-  @IsNotEmpty({ message: 'Location (Patna/Delhi/Kolkata) is required' })
+  @IsNotEmpty({ message: 'Location (Delhi/Patna/Kolkata/etc.) is required' })
   current_location!: string;
 
-  @IsUUID('all')
+  @Matches(UUID_PATTERN, { message: 'responsible_person must be a valid UUID' })
   @IsOptional()
   responsible_person?: string;
 
   @IsString()
   @IsOptional()
   condition?: string;
+
+  @IsString()
+  @IsOptional()
+  remarks?: string;
+}
+
+export class UpdateEquipmentDto {
+  @IsString()
+  @IsOptional()
+  model?: string;
+
+  @IsString()
+  @IsOptional()
+  current_location?: string;
+
+  @Matches(UUID_PATTERN, { message: 'responsible_person must be a valid UUID' })
+  @IsOptional()
+  responsible_person?: string;
+
+  @IsString()
+  @IsOptional()
+  @IsIn(['available', 'reserved', 'in_use', 'maintenance'])
+  availability_status?: DemoEquipmentAvailability;
+
+  @IsString()
+  @IsOptional()
+  condition?: string;
+
+  @IsString()
+  @IsOptional()
+  remarks?: string;
 }

@@ -31,10 +31,22 @@ import {
 } from 'lucide-react';
 import { useAuth, PRESET_ROLE_USERS } from '@/lib/auth-context';
 import { api } from '@/lib/api';
-import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
-import { Tabs } from '@/components/ui/Tabs';
-import { Card, CardContent } from '@/components/ui/Card';
+import {
+  Button,
+  Badge,
+  Tabs,
+  Card,
+  CardContent,
+  PageContainer,
+  PageHeader,
+  Input,
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '@/components/ui';
 import { ROLE_PROFILES, USER_ROLES, type UserRole, type RolePermissionProfile } from '@arihant/shared';
 
 const DEPARTMENT_NAMES: Record<UserRole, string> = {
@@ -255,23 +267,14 @@ export default function AdminPage() {
   const activeRoleCaps = permissionsState[selectedRoleForConfig];
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-200">
+    <PageContainer>
       {/* ── HEADER ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="inline-flex items-center space-x-2 px-3 py-0.5 rounded-full bg-[#EAF2FF] border border-[#D6E3F5] text-[11px] font-bold text-[#223FA7] uppercase tracking-wider mb-2">
-            <Shield className="h-3.5 w-3.5" />
-            <span>Master Administration & Security Controls</span>
-          </div>
-          <h1 className="text-2xl font-extrabold text-[#1A1A1A] tracking-tight flex items-center gap-2">
-            <Settings className="h-6 w-6 text-[#223FA7]" />
-            <span>Enterprise Administration & System Masters</span>
-          </h1>
-          <p className="text-xs text-[#5871A5] mt-1">
-            Role-Based Access Control (RBAC), personnel directory by department, equipment & MHA QRs, zones, and immutable security audit trails.
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        badge="Master Administration & Security Controls"
+        title="Enterprise Administration & System Masters"
+        subtitle="Role-Based Access Control (RBAC), personnel directory by department, equipment & MHA QRs, zones, and immutable security audit trails."
+        icon={<Settings className="h-5 w-5 text-[#223FA7]" />}
+      />
 
       <Tabs
         tabs={[
@@ -317,19 +320,18 @@ export default function AdminPage() {
               const profile = ROLE_PROFILES[r];
               const isSelected = selectedRoleForConfig === r;
               return (
-                <button
+                <Card
                   key={r}
+                  variant="interactive"
+                  selected={isSelected}
+                  padding="xs"
                   onClick={() => setSelectedRoleForConfig(r)}
-                  className={`p-3 rounded-xl border text-left transition-all relative flex flex-col justify-between ${
-                    isSelected
-                      ? 'border-[#223FA7] bg-[#EAF2FF] shadow-xs'
-                      : 'border-[#D6E3F5] bg-white hover:border-[#223FA7]/40 hover:bg-[#F7FBFF]'
-                  }`}
+                  className="text-left flex flex-col justify-between cursor-pointer"
                 >
                   <div className="text-[10px] font-bold uppercase tracking-wider text-[#5871A5] truncate">
                     {DEPARTMENT_NAMES[r]}
                   </div>
-                  <div className={`text-xs font-black mt-1 truncate ${isSelected ? 'text-[#223FA7]' : 'text-gray-900'}`}>
+                  <div className={`text-xs font-bold mt-1 truncate ${isSelected ? 'text-[#223FA7]' : 'text-[#1A1A1A]'}`}>
                     {profile.title}
                   </div>
                   <div className="mt-2 flex items-center gap-1">
@@ -342,11 +344,11 @@ export default function AdminPage() {
                           : 'bg-emerald-600'
                       }`}
                     />
-                    <span className="text-[9px] font-bold text-gray-600 uppercase">
+                    <span className="text-[9px] font-bold text-[#5871A5] uppercase">
                       {profile.territorialScope.replace('_', ' ')}
                     </span>
                   </div>
-                </button>
+                </Card>
               );
             })}
           </div>
@@ -495,58 +497,56 @@ export default function AdminPage() {
               </div>
 
               {/* Comparative Matrix Table across all 8 Roles */}
-              <div className="rounded-xl border border-[#D6E3F5] bg-white overflow-hidden shadow-xs">
+              <Card>
                 <div className="p-4 border-b border-[#D6E3F5] bg-[#F7FBFF]">
-                  <h4 className="text-xs font-bold text-gray-950 uppercase tracking-wider">
+                  <h4 className="text-xs font-bold text-[#1A1A1A] uppercase tracking-wider">
                     8-Persona Governance Cross-Audit Matrix
                   </h4>
                 </div>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs">
-                    <thead className="bg-[#F7FBFF] border-b border-[#D6E3F5] text-[10px] uppercase font-bold text-[#5871A5]">
-                      <tr>
-                        <th className="p-3">Enterprise Persona</th>
-                        <th className="p-3">Territory</th>
-                        <th className="p-3 text-center">All-India</th>
-                        <th className="p-3 text-center">Tender Signoff</th>
-                        <th className="p-3 text-center">Bid Submit</th>
-                        <th className="p-3 text-center">Demos</th>
-                        <th className="p-3 text-center">Service</th>
-                        <th className="p-3 text-center">Stage 1 Exp</th>
-                        <th className="p-3 text-center">Stage 2 Payout</th>
-                        <th className="p-3 text-center">RBAC Admin</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-[#D6E3F5]">
-                      {USER_ROLES.map((r) => {
-                        const caps = permissionsState[r];
-                        const prof = ROLE_PROFILES[r];
-                        return (
-                          <tr key={r} className="hover:bg-[#F7FBFF] transition-colors">
-                            <td className="p-3 font-bold text-gray-900 whitespace-nowrap">
-                              <div>{prof.title}</div>
-                              <span className="text-[10px] text-[#5871A5] font-normal">{DEPARTMENT_NAMES[r]}</span>
-                            </td>
-                            <td className="p-3 whitespace-nowrap">
-                              <span className="text-[10px] font-bold uppercase text-gray-700">
-                                {prof.territorialScope.replace('_', ' ')}
-                              </span>
-                            </td>
-                            <td className="p-3 text-center">{caps.canViewAllIndia ? <Check className="w-4 h-4 text-emerald-600 inline" /> : <span className="text-gray-300">-</span>}</td>
-                            <td className="p-3 text-center">{caps.canApproveTenders ? <Check className="w-4 h-4 text-emerald-600 inline" /> : <span className="text-gray-300">-</span>}</td>
-                            <td className="p-3 text-center">{caps.canSubmitTenderBids ? <Check className="w-4 h-4 text-emerald-600 inline" /> : <span className="text-gray-300">-</span>}</td>
-                            <td className="p-3 text-center">{caps.canManageDemos ? <Check className="w-4 h-4 text-emerald-600 inline" /> : <span className="text-gray-300">-</span>}</td>
-                            <td className="p-3 text-center">{caps.canManageService ? <Check className="w-4 h-4 text-emerald-600 inline" /> : <span className="text-gray-300">-</span>}</td>
-                            <td className="p-3 text-center">{caps.canEndorseExpensesStage1 ? <Check className="w-4 h-4 text-emerald-600 inline" /> : <span className="text-gray-300">-</span>}</td>
-                            <td className="p-3 text-center">{caps.canDisburseExpensesStage2 ? <Check className="w-4 h-4 text-emerald-600 inline" /> : <span className="text-gray-300">-</span>}</td>
-                            <td className="p-3 text-center">{caps.canManageUsersAndMasters ? <Check className="w-4 h-4 text-emerald-600 inline" /> : <span className="text-gray-300">-</span>}</td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Enterprise Persona</TableHead>
+                      <TableHead>Territory</TableHead>
+                      <TableHead className="text-center">All-India</TableHead>
+                      <TableHead className="text-center">Tender Signoff</TableHead>
+                      <TableHead className="text-center">Bid Submit</TableHead>
+                      <TableHead className="text-center">Demos</TableHead>
+                      <TableHead className="text-center">Service</TableHead>
+                      <TableHead className="text-center">Stage 1 Exp</TableHead>
+                      <TableHead className="text-center">Stage 2 Payout</TableHead>
+                      <TableHead className="text-center">RBAC Admin</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {USER_ROLES.map((r) => {
+                      const caps = permissionsState[r];
+                      const prof = ROLE_PROFILES[r];
+                      return (
+                        <TableRow key={r}>
+                          <TableCell className="font-bold text-[#1A1A1A] whitespace-nowrap">
+                            <div>{prof.title}</div>
+                            <span className="text-[10px] text-[#5871A5] font-normal">{DEPARTMENT_NAMES[r]}</span>
+                          </TableCell>
+                          <TableCell className="whitespace-nowrap">
+                            <span className="text-[10px] font-bold uppercase text-[#5871A5]">
+                              {prof.territorialScope.replace('_', ' ')}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-center">{caps.canViewAllIndia ? <Check className="w-4 h-4 text-emerald-600 inline" /> : <span className="text-gray-300">-</span>}</TableCell>
+                          <TableCell className="text-center">{caps.canApproveTenders ? <Check className="w-4 h-4 text-emerald-600 inline" /> : <span className="text-gray-300">-</span>}</TableCell>
+                          <TableCell className="text-center">{caps.canSubmitTenderBids ? <Check className="w-4 h-4 text-emerald-600 inline" /> : <span className="text-gray-300">-</span>}</TableCell>
+                          <TableCell className="text-center">{caps.canManageDemos ? <Check className="w-4 h-4 text-emerald-600 inline" /> : <span className="text-gray-300">-</span>}</TableCell>
+                          <TableCell className="text-center">{caps.canManageService ? <Check className="w-4 h-4 text-emerald-600 inline" /> : <span className="text-gray-300">-</span>}</TableCell>
+                          <TableCell className="text-center">{caps.canEndorseExpensesStage1 ? <Check className="w-4 h-4 text-emerald-600 inline" /> : <span className="text-gray-300">-</span>}</TableCell>
+                          <TableCell className="text-center">{caps.canDisburseExpensesStage2 ? <Check className="w-4 h-4 text-emerald-600 inline" /> : <span className="text-gray-300">-</span>}</TableCell>
+                          <TableCell className="text-center">{caps.canManageUsersAndMasters ? <Check className="w-4 h-4 text-emerald-600 inline" /> : <span className="text-gray-300">-</span>}</TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </Card>
             </div>
           </div>
         </div>
@@ -557,115 +557,110 @@ export default function AdminPage() {
         <div className="space-y-4">
           {/* Department Breakdown Chips */}
           <div className="flex flex-wrap items-center gap-2">
-            <button
+            <Button
+              size="xs"
+              variant={selectedDept === 'all' ? 'primary' : 'outline'}
               onClick={() => setSelectedDept('all')}
-              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
-                selectedDept === 'all'
-                  ? 'bg-[#223FA7] text-white shadow-xs'
-                  : 'bg-white border border-[#D6E3F5] text-gray-700 hover:bg-[#F7FBFF]'
-              }`}
             >
               All Departments ({usersList.length})
-            </button>
+            </Button>
             {USER_ROLES.map((r) => {
               const count = usersList.filter((u) => u.role === r).length;
               return (
-                <button
+                <Button
                   key={r}
+                  size="xs"
+                  variant={selectedDept === r ? 'primary' : 'outline'}
                   onClick={() => setSelectedDept(r)}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
-                    selectedDept === r
-                      ? 'bg-[#223FA7] text-white shadow-xs'
-                      : 'bg-white border border-[#D6E3F5] text-gray-700 hover:bg-[#F7FBFF]'
-                  }`}
+                  className="gap-1.5"
                 >
                   <span>{DEPARTMENT_NAMES[r]}</span>
-                  <span className="ml-1.5 px-1.5 py-0.2 rounded-full text-[10px] bg-black/10">
+                  <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-black/10">
                     {count}
                   </span>
-                </button>
+                </Button>
               );
             })}
           </div>
 
-          <div className="rounded-xl border border-[#D6E3F5] bg-white overflow-hidden shadow-xs">
+          <Card>
             <div className="p-4 border-b border-[#D6E3F5] bg-[#F7FBFF] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <span className="text-xs font-bold text-[#1A1A1A]">
                 Active Personnel Directory ({filteredUsers.length} of {usersList.length})
               </span>
-              <input
-                type="text"
-                placeholder="Filter by name, email, role..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="px-3 py-1.5 rounded-lg bg-white border border-[#D6E3F5] text-xs text-[#1A1A1A] placeholder:text-[#5871A5] focus:outline-none focus:border-[#3770E3] w-full sm:w-72 shadow-xs"
-              />
+              <div className="w-full sm:w-72">
+                <Input
+                  type="text"
+                  placeholder="Filter by name, email, role..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="h-9"
+                />
+              </div>
             </div>
 
-            <div className="overflow-x-auto max-h-[600px]">
-              <table className="w-full text-xs text-left">
-                <thead className="bg-[#F7FBFF] border-b border-[#D6E3F5] text-[11px] uppercase tracking-wider text-[#5871A5] font-bold sticky top-0">
-                  <tr>
-                    <th className="p-3.5">Name & Email</th>
-                    <th className="p-3.5">Department</th>
-                    <th className="p-3.5">Assigned Role</th>
-                    <th className="p-3.5">Phone</th>
-                    <th className="p-3.5">Reporting Manager</th>
-                    <th className="p-3.5">Assigned Territory</th>
-                    <th className="p-3.5 text-center">Status</th>
-                    <th className="p-3.5 text-right">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#D6E3F5]">
-                  {filteredUsers.map((u) => (
-                    <tr key={u.id} className="hover:bg-[#F7FBFF] transition-colors">
-                      <td className="p-3.5 font-bold text-[#1A1A1A] whitespace-nowrap">
-                        {u.full_name}
-                        <div className="text-[10px] text-[#5871A5] font-mono font-normal">
-                          {u.email}
-                        </div>
-                      </td>
-                      <td className="p-3.5 text-gray-700 whitespace-nowrap font-medium">
-                        {DEPARTMENT_NAMES[u.role as UserRole] || 'General'}
-                      </td>
-                      <td className="p-3.5 whitespace-nowrap">
-                        <Badge variant="outline" size="sm" className="uppercase font-bold">
-                          {u.role.replace('_', ' ')}
-                        </Badge>
-                      </td>
-                      <td className="p-3.5 text-gray-700 font-mono whitespace-nowrap">
-                        {u.phone || '-'}
-                      </td>
-                      <td className="p-3.5 text-gray-700 whitespace-nowrap">
-                        {u.manager_name || 'Top Management'}
-                      </td>
-                      <td className="p-3.5 text-gray-700 whitespace-nowrap">
-                        {u.zone_name || 'All India'}
-                      </td>
-                      <td className="p-3.5 text-center whitespace-nowrap">
-                        <Badge
-                          variant={u.is_active ? 'success' : 'danger'}
-                          size="sm"
-                        >
-                          {u.is_active ? 'ACTIVE' : 'DEACTIVATED'}
-                        </Badge>
-                      </td>
-                      <td className="p-3.5 text-right whitespace-nowrap">
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => handleToggleUserActive(u.id, u.is_active)}
-                          className="text-xs text-[#223FA7]"
-                        >
-                          {u.is_active ? 'Deactivate' : 'Activate'}
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name & Email</TableHead>
+                  <TableHead>Department</TableHead>
+                  <TableHead>Assigned Role</TableHead>
+                  <TableHead>Phone</TableHead>
+                  <TableHead>Reporting Manager</TableHead>
+                  <TableHead>Assigned Territory</TableHead>
+                  <TableHead className="text-center">Status</TableHead>
+                  <TableHead className="text-right">Action</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredUsers.map((u) => (
+                  <TableRow key={u.id}>
+                    <TableCell className="font-bold text-[#1A1A1A] whitespace-nowrap">
+                      {u.full_name}
+                      <div className="text-[10px] text-[#5871A5] font-mono font-normal">
+                        {u.email}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-[#1A1A1A] whitespace-nowrap font-medium">
+                      {DEPARTMENT_NAMES[u.role as UserRole] || 'General'}
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap">
+                      <Badge variant="outline" size="sm" className="uppercase font-bold">
+                        {u.role.replace('_', ' ')}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-[#5871A5] font-mono whitespace-nowrap">
+                      {u.phone || '-'}
+                    </TableCell>
+                    <TableCell className="text-[#5871A5] whitespace-nowrap">
+                      {u.manager_name || 'Top Management'}
+                    </TableCell>
+                    <TableCell className="text-[#5871A5] whitespace-nowrap">
+                      {u.zone_name || 'All India'}
+                    </TableCell>
+                    <TableCell className="text-center whitespace-nowrap">
+                      <Badge
+                        variant={u.is_active ? 'success' : 'danger'}
+                        size="sm"
+                      >
+                        {u.is_active ? 'ACTIVE' : 'DEACTIVATED'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right whitespace-nowrap">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleToggleUserActive(u.id, u.is_active)}
+                        className="text-xs text-[#223FA7]"
+                      >
+                        {u.is_active ? 'Deactivate' : 'Activate'}
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Card>
         </div>
       )}
 
@@ -673,9 +668,10 @@ export default function AdminPage() {
       {activeTab === 'products' && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {productsList.map((p) => (
-            <div
+            <Card
               key={p.id}
-              className="p-5 rounded-xl border border-[#D6E3F5] bg-white flex flex-col justify-between space-y-3 shadow-xs hover:border-[#3770E3] transition-all"
+              padding="md"
+              className="flex flex-col justify-between space-y-3"
             >
               <div>
                 <div className="flex items-start justify-between gap-2">
@@ -689,10 +685,10 @@ export default function AdminPage() {
                   )}
                 </div>
                 <div className="mt-2 text-xs text-[#5871A5]">
-                  Category: <strong className="text-gray-800">{p.category}</strong>
+                  Category: <strong className="text-[#1A1A1A]">{p.category}</strong>
                 </div>
                 <div className="text-xs text-[#5871A5]">
-                  Make / OEM: <strong className="text-gray-800">{p.make || 'Arihant Partner'}</strong>
+                  Make / OEM: <strong className="text-[#1A1A1A]">{p.make || 'Arihant Partner'}</strong>
                 </div>
               </div>
 
@@ -701,7 +697,7 @@ export default function AdminPage() {
                   QR Ref: {p.spec_ref}
                 </div>
               )}
-            </div>
+            </Card>
           ))}
         </div>
       )}
@@ -710,9 +706,10 @@ export default function AdminPage() {
       {activeTab === 'zones' && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {zonesList.map((z) => (
-            <div
+            <Card
               key={z.id}
-              className="p-5 rounded-xl border border-[#D6E3F5] bg-white space-y-2 shadow-xs hover:border-[#3770E3] transition-all"
+              padding="md"
+              className="space-y-2"
             >
               <div className="flex items-center justify-between">
                 <span className="font-bold text-[#1A1A1A] text-sm">{z.name} Zone</span>
@@ -721,56 +718,56 @@ export default function AdminPage() {
               <p className="text-xs text-[#5871A5]">
                 Strategic defence & law enforcement operational theater.
               </p>
-            </div>
+            </Card>
           ))}
         </div>
       )}
 
       {/* ── TAB 5: SECURITY AUDIT LOG ── */}
       {activeTab === 'audit' && (
-        <div className="rounded-xl border border-[#D6E3F5] bg-white overflow-hidden shadow-xs">
+        <Card>
           <div className="p-4 border-b border-[#D6E3F5] bg-[#F7FBFF]">
             <span className="text-xs font-bold text-[#1A1A1A]">
               Immutable PostgreSQL Security Audit Trail (Last 50 Entries)
             </span>
           </div>
 
-          <div className="overflow-x-auto max-h-[600px]">
-            <table className="w-full text-xs text-left">
-              <thead className="bg-[#F7FBFF] border-b border-[#D6E3F5] text-[11px] uppercase tracking-wider text-[#5871A5] font-bold sticky top-0">
-                <tr>
-                  <th className="p-3.5">Timestamp (IST)</th>
-                  <th className="p-3.5">Actor</th>
-                  <th className="p-3.5">Action Code</th>
-                  <th className="p-3.5">Entity</th>
-                  <th className="p-3.5">Audit Payload Details</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#D6E3F5] font-mono text-[11px]">
+          <div className="max-h-[600px] overflow-y-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Timestamp (IST)</TableHead>
+                  <TableHead>Actor</TableHead>
+                  <TableHead>Action Code</TableHead>
+                  <TableHead>Entity</TableHead>
+                  <TableHead>Audit Payload Details</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {auditLogs.map((log) => (
-                  <tr key={log.id} className="hover:bg-[#F7FBFF] transition-colors">
-                    <td className="p-3.5 text-[#5871A5] whitespace-nowrap">
+                  <TableRow key={log.id}>
+                    <TableCell className="text-[#5871A5] font-mono text-[11px] whitespace-nowrap">
                       {new Date(log.created_at).toLocaleString('en-IN')}
-                    </td>
-                    <td className="p-3.5 text-[#1A1A1A] font-sans font-semibold whitespace-nowrap">
+                    </TableCell>
+                    <TableCell className="text-[#1A1A1A] font-sans font-semibold whitespace-nowrap">
                       {log.actor_name || 'System Engine'}
-                    </td>
-                    <td className="p-3.5 text-[#223FA7] font-semibold whitespace-nowrap">
+                    </TableCell>
+                    <TableCell className="text-[#223FA7] font-semibold whitespace-nowrap">
                       {log.action}
-                    </td>
-                    <td className="p-3.5 text-gray-700 whitespace-nowrap">
+                    </TableCell>
+                    <TableCell className="text-[#5871A5] whitespace-nowrap">
                       {getEntityLabel(log)}
-                    </td>
-                    <td className="p-3.5 text-[#5871A5] font-sans max-w-xs truncate">
+                    </TableCell>
+                    <TableCell className="text-[#5871A5] font-sans max-w-xs truncate">
                       {getPayloadSummary(log)}
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
-        </div>
+        </Card>
       )}
-    </div>
+    </PageContainer>
   );
 }

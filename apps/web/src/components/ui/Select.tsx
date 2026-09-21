@@ -26,8 +26,8 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
           ref={ref}
           id={selectId}
           className={twMerge(
-            'flex h-10 w-full rounded-lg border border-[#D6E3F5] bg-white px-3.5 py-2 text-xs font-normal text-[#1A1A1A] transition-colors focus:border-[#3770E3] focus:outline-none focus:ring-2 focus:ring-[#3770E3]/15 disabled:cursor-not-allowed disabled:opacity-50',
-            error && 'border-red-500 focus:border-red-500',
+            'flex h-10 w-full rounded-lg border border-[#D6E3F5] bg-white px-3.5 py-2 text-xs font-normal text-[#1A1A1A] transition-colors focus:border-[#223FA7] focus:outline-none focus:ring-2 focus:ring-[#223FA7]/15 disabled:cursor-not-allowed disabled:opacity-50',
+            error && 'border-red-500 focus:border-red-500 focus:ring-red-500/15',
             className,
           )}
           {...props}

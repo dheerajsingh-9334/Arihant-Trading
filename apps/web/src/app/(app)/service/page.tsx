@@ -14,12 +14,18 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { api } from '@/lib/api';
-import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
-import { Modal } from '@/components/ui/Modal';
-import { Input } from '@/components/ui/Input';
-import { Select } from '@/components/ui/Select';
-import { Tabs } from '@/components/ui/Tabs';
+import {
+  Button,
+  Badge,
+  Card,
+  Modal,
+  Input,
+  Select,
+  Tabs,
+  PageContainer,
+  PageHeader,
+  EmptyState,
+} from '@/components/ui';
 
 export default function ServicePage() {
   const { user, hasRole } = useAuth();
@@ -138,27 +144,23 @@ export default function ServicePage() {
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-200">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-extrabold text-[#1A1A1A] tracking-tight flex items-center gap-2">
-            <Wrench className="h-6 w-6 text-[#223FA7]" />
-            <span>Service Desk, Spares & AMC Support</span>
-          </h1>
-          <p className="text-xs text-[#5871A5] mt-1">
-            Breakdown maintenance, on-site engineer deployment, and customer signoff vouchers.
-          </p>
-        </div>
-
-        <Button
-          onClick={() => setIsLogTicketOpen(true)}
-          variant="primary"
-          className="shadow-xs"
-        >
-          <Plus className="h-4 w-4 mr-1.5" />
-          <span>Log Breakdown Ticket</span>
-        </Button>
-      </div>
+    <PageContainer>
+      <PageHeader
+        badge="Module 11 — Maintenance & Support"
+        title="Service Desk, Spares & AMC Support"
+        subtitle="Breakdown maintenance, on-site engineer deployment, and customer signoff vouchers."
+        icon={<Wrench className="h-5 w-5 text-[#223FA7]" />}
+        actions={
+          <Button
+            onClick={() => setIsLogTicketOpen(true)}
+            variant="primary"
+            className="shadow-xs"
+          >
+            <Plus className="h-4 w-4 mr-1.5" />
+            <span>Log Breakdown Ticket</span>
+          </Button>
+        }
+      />
 
       <Tabs
         tabs={[
@@ -175,12 +177,17 @@ export default function ServicePage() {
         {isLoading ? (
           <div className="p-8 text-center text-xs text-[#5871A5] bg-white border border-[#D6E3F5] rounded-xl">Loading service tickets...</div>
         ) : tickets.length === 0 ? (
-          <div className="p-8 text-center text-xs text-[#5871A5] bg-white border border-[#D6E3F5] rounded-xl">No tickets found for this status.</div>
+          <EmptyState
+            icon={Wrench}
+            title="No service tickets found"
+            description="All client equipment and defense units in this filter are currently operating normally."
+          />
         ) : (
           tickets.map((t) => (
-            <div
+            <Card
               key={t.id}
-              className="p-5 rounded-xl border border-[#D6E3F5] bg-white hover:border-[#3770E3] transition-all flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xs"
+              padding="md"
+              className="flex flex-col md:flex-row md:items-center justify-between gap-4"
             >
               <div className="space-y-1.5 flex-1">
                 <div className="flex items-center space-x-2.5">
@@ -211,12 +218,12 @@ export default function ServicePage() {
                   {t.organisation_name || 'Client Agency'}
                 </div>
 
-                <p className="text-xs text-gray-800 font-medium">
+                <p className="text-xs text-[#1A1A1A] font-medium">
                   Complaint: {t.complaint}
                 </p>
 
                 <div className="flex flex-wrap items-center gap-x-4 text-[11px] text-[#5871A5]">
-                  <span>Assigned: <strong className="text-gray-700">{t.assigned_name || 'Chief Service Engineer'}</strong></span>
+                  <span>Assigned: <strong className="text-[#1A1A1A]">{t.assigned_name || 'Chief Service Engineer'}</strong></span>
                   <span>Logged: {new Date(t.created_at).toLocaleDateString('en-IN')}</span>
                   {t.serial_no && <span className="font-mono">S/N: {t.serial_no}</span>}
                 </div>
@@ -238,7 +245,7 @@ export default function ServicePage() {
                   </Button>
                 )}
               </div>
-            </div>
+            </Card>
           ))
         )}
       </div>
@@ -368,6 +375,6 @@ export default function ServicePage() {
           </div>
         </form>
       </Modal>
-    </div>
+    </PageContainer>
   );
 }

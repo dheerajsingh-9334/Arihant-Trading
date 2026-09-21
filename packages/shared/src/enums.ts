@@ -55,7 +55,15 @@ export const TENDER_STATUSES: TenderStatus[] = [
   'on_hold',
 ];
 
-export type VisitStatus = 'planned' | 'completed' | 'cancelled' | 'rescheduled';
+export type VisitStatus =
+  | 'planned'
+  | 'modified'
+  | 'cancelled'
+  | 'completed'
+  | 'not_completed'
+  | 'rescheduled';
+
+export type TripStatus = 'planned' | 'active' | 'completed' | 'cancelled';
 
 export type DemoStatus =
   | 'requested'
@@ -68,6 +76,27 @@ export type DemoStatus =
   | 'rescheduled';
 
 export type DemoEquipmentAvailability = 'available' | 'reserved' | 'in_use' | 'maintenance';
+
+export type DemoResult = 'success' | 'fail' | 'partial';
+
+export type DemoFailureReason =
+  | 'PRODUCT_LIMITATION'
+  | 'EQUIPMENT_ISSUE'
+  | 'TECHNICAL_FAILURE'
+  | 'CUSTOMER_REQUIREMENT_MISMATCH'
+  | 'PRICING_CONCERN'
+  | 'DECISION_MAKER_UNAVAILABLE'
+  | 'COMPETITOR_PREFERENCE'
+  | 'DEMO_PREPARATION_ISSUE'
+  | 'OTHER';
+
+export type DemoCancellationReason =
+  | 'customer_cancelled'
+  | 'equipment_unavailable'
+  | 'team_unavailable'
+  | 'date_conflict'
+  | 'commercial_issue'
+  | 'other';
 
 export type ProposalStatus =
   | 'requested'
