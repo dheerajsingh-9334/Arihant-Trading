@@ -22,6 +22,92 @@ export const USER_ROLES: UserRole[] = [
 export type LeadCategory = 'active' | 'expected' | 'follow_up';
 export type LeadProbability = 'high' | 'medium' | 'low';
 export type ChannelType = 'direct' | 'partner';
+
+export type LeadType = 'fresh' | 're_approached';
+export const LEAD_TYPES: LeadType[] = ['fresh', 're_approached'];
+
+export type LeadStatus =
+  | 'new'
+  | 'contacted'
+  | 'qualified'
+  | 'follow_up'
+  | 'demo'
+  | 'proposal'
+  | 'tender_discussion'
+  | 'negotiation'
+  | 'converted'
+  | 'lost'
+  | 'on_hold'
+  | 'open'
+  | 'quoted'
+  | 'dropped'
+  | 'won';
+
+export const LEAD_STATUSES: LeadStatus[] = [
+  'new',
+  'contacted',
+  'qualified',
+  'follow_up',
+  'demo',
+  'proposal',
+  'tender_discussion',
+  'negotiation',
+  'converted',
+  'lost',
+  'on_hold',
+  'open',
+  'quoted',
+  'dropped',
+  'won',
+];
+
+export type LeadLossReason =
+  | 'price'
+  | 'competitor'
+  | 'no_response'
+  | 'not_interested'
+  | 'eligibility'
+  | 'timing'
+  | 'other';
+
+export const LEAD_LOSS_REASONS: LeadLossReason[] = [
+  'price',
+  'competitor',
+  'no_response',
+  'not_interested',
+  'eligibility',
+  'timing',
+  'other',
+];
+
+export type InteractionType =
+  | 'call'
+  | 'email'
+  | 'whatsapp'
+  | 'physical_visit'
+  | 'demo'
+  | 'proposal'
+  | 'follow_up'
+  | 'tender_discussion'
+  | 'service_discussion'
+  | 'other';
+
+export const INTERACTION_TYPES: InteractionType[] = [
+  'call',
+  'email',
+  'whatsapp',
+  'physical_visit',
+  'demo',
+  'proposal',
+  'follow_up',
+  'tender_discussion',
+  'service_discussion',
+  'other',
+];
+
+export type FollowUpStatus = 'pending' | 'completed' | 'cancelled';
+export const FOLLOW_UP_STATUSES: FollowUpStatus[] = ['pending', 'completed', 'cancelled'];
+
 export type TenderCategory = 'pq' | 'general_mha' | 'other';
 
 export type TenderStatus =
@@ -54,6 +140,72 @@ export const TENDER_STATUSES: TenderStatus[] = [
   'cancelled',
   'on_hold',
 ];
+
+export const TENDER_UPCOMING_DAYS = 7;
+export const TENDER_URGENT_HOURS = 48;
+
+export type TenderPortalIssueStatus = 'OPEN' | 'IN_PROGRESS' | 'ESCALATED' | 'RESOLVED' | 'CLOSED';
+export const TENDER_PORTAL_ISSUE_STATUSES: TenderPortalIssueStatus[] = [
+  'OPEN',
+  'IN_PROGRESS',
+  'ESCALATED',
+  'RESOLVED',
+  'CLOSED',
+];
+
+export type TenderApprovalStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
+export const TENDER_APPROVAL_STATUSES: TenderApprovalStatus[] = [
+  'PENDING',
+  'APPROVED',
+  'REJECTED',
+];
+
+export type TenderLossReason =
+  | 'PRICE'
+  | 'COMPETITOR'
+  | 'TECHNICAL'
+  | 'ELIGIBILITY'
+  | 'DOCUMENTATION'
+  | 'CUSTOMER_DECISION'
+  | 'OTHER';
+export const TENDER_LOSS_REASONS: TenderLossReason[] = [
+  'PRICE',
+  'COMPETITOR',
+  'TECHNICAL',
+  'ELIGIBILITY',
+  'DOCUMENTATION',
+  'CUSTOMER_DECISION',
+  'OTHER',
+];
+
+export const TENDER_STATUS_LABELS: Record<string, string> = {
+  identified: 'Identified',
+  IDENTIFIED: 'Identified',
+  awaiting_approval: 'Awaiting Internal Approval',
+  AWAITING_INTERNAL_APPROVAL: 'Awaiting Internal Approval',
+  rejected_internally: 'Rejected Internally',
+  REJECTED_INTERNALLY: 'Rejected Internally',
+  under_preparation: 'Under Preparation',
+  UNDER_PREPARATION: 'Under Preparation',
+  pq_submitted: 'PQ Submitted',
+  PQ_SUBMITTED: 'PQ Submitted',
+  pq_qualified: 'PQ Qualified',
+  PQ_QUALIFIED: 'PQ Qualified',
+  submitted: 'Tender Submitted',
+  TENDER_SUBMITTED: 'Tender Submitted',
+  technical_eval: 'Technical Evaluation',
+  TECHNICAL_EVALUATION: 'Technical Evaluation',
+  commercial_eval: 'Commercial Evaluation',
+  COMMERCIAL_EVALUATION: 'Commercial Evaluation',
+  won: 'Won',
+  WON: 'Won',
+  lost: 'Lost',
+  LOST: 'Lost',
+  cancelled: 'Cancelled',
+  CANCELLED: 'Cancelled',
+  on_hold: 'On Hold',
+  ON_HOLD: 'On Hold',
+};
 
 export type VisitStatus =
   | 'planned'
@@ -99,6 +251,15 @@ export type DemoCancellationReason =
   | 'other';
 
 export type ProposalStatus =
+  | 'PROPOSAL_REQUESTED'
+  | 'UNDER_PREPARATION'
+  | 'READY_FOR_REVIEW'
+  | 'APPROVED'
+  | 'SENT_TO_CUSTOMER'
+  | 'FOLLOW_UP_REQUIRED'
+  | 'CONVERTED'
+  | 'CLOSED'
+  | 'LOST'
   | 'requested'
   | 'under_preparation'
   | 'ready_for_review'
@@ -108,6 +269,44 @@ export type ProposalStatus =
   | 'converted'
   | 'closed'
   | 'lost';
+
+export const PROPOSAL_STATUS_LABELS: Record<string, string> = {
+  PROPOSAL_REQUESTED: 'Proposal Requested',
+  UNDER_PREPARATION: 'Under Preparation',
+  READY_FOR_REVIEW: 'Ready for Review',
+  APPROVED: 'Approved',
+  SENT_TO_CUSTOMER: 'Sent to Customer',
+  FOLLOW_UP_REQUIRED: 'Follow-up Required',
+  CONVERTED: 'Converted',
+  CLOSED: 'Closed',
+  LOST: 'Lost',
+  requested: 'Proposal Requested',
+  under_preparation: 'Under Preparation',
+  ready_for_review: 'Ready for Review',
+  approved: 'Approved',
+  sent: 'Sent to Customer',
+  followup_required: 'Follow-up Required',
+  converted: 'Converted',
+  closed: 'Closed',
+  lost: 'Lost',
+};
+
+export const PROPOSAL_INACTIVITY_DAYS = 7;
+
+export type ProposalLostReason =
+  | 'Price'
+  | 'Competitor'
+  | 'Customer Cancelled'
+  | 'No Response'
+  | 'Other';
+
+export const PROPOSAL_LOST_REASONS: ProposalLostReason[] = [
+  'Price',
+  'Competitor',
+  'Customer Cancelled',
+  'No Response',
+  'Other',
+];
 
 export type ServiceTicketStatus =
   | 'received'

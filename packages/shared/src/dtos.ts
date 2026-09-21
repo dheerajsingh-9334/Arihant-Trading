@@ -110,3 +110,35 @@ export interface DashboardMetricsDto {
     timestamp: string;
   }>;
 }
+
+export interface ProposalFilterDto extends PaginationQueryDto {
+  status?: string;
+  sector?: string;
+  sectorId?: string;
+  responsible_id?: string;
+  responsiblePersonId?: string;
+  followup_owner_id?: string;
+  followUpOwnerId?: string;
+  followup?: 'all' | 'due_today' | 'overdue' | 'upcoming' | 'no_followup' | 'old_inactivity';
+  followUp?: 'all' | 'due_today' | 'overdue' | 'upcoming' | 'no_followup' | 'old_inactivity';
+  from_date?: string;
+  to_date?: string;
+  date_field?: 'request_date' | 'required_date' | 'sent_date' | 'next_followup';
+}
+
+export interface ProposalDashboardStatsDto {
+  total_proposals: number;
+  proposal_requested: number;
+  pending_preparation: number;
+  ready_for_review: number;
+  approved: number;
+  sent_to_customer: number;
+  followup_required: number;
+  converted: number;
+  closed: number;
+  lost: number;
+  due_today: number;
+  overdue: number;
+  no_followup: number;
+  old_no_movement: number;
+}

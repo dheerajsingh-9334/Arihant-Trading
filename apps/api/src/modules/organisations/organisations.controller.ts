@@ -35,8 +35,18 @@ export class OrganisationsController {
   }
 
   @Get('check-duplicate')
-  async checkDuplicate(@Query('name') name: string) {
-    return this.orgsService.checkDuplicate(name || '');
+  async checkDuplicate(
+    @Query('name') name?: string,
+    @Query('email') email?: string,
+    @Query('phone') phone?: string,
+  ) {
+    return this.orgsService.checkDuplicate({ name, email, phone });
+  }
+
+  @Get(':id/timeline')
+  @Roles('management', 'regional_manager', 'sales', 'tender_team', 'demo_team', 'service_team', 'admin')
+  async getTimeline(@Param('id') id: string) {
+    return this.orgsService.getTimeline(id);
   }
 
   @Get(':id')

@@ -2,25 +2,45 @@ import {
   IsString,
   IsNotEmpty,
   IsOptional,
-  IsUUID,
   IsDateString,
+  IsArray,
+  Matches,
 } from 'class-validator';
 
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export class InteractionAttachmentDto {
+  @IsString()
+  @IsNotEmpty()
+  file_url!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  file_name!: string;
+
+  @IsOptional()
+  file_size?: number;
+
+  @IsString()
+  @IsOptional()
+  mime_type?: string;
+}
+
 export class CreateInteractionDto {
-  @IsUUID('all')
+  @Matches(UUID_PATTERN, { message: 'Organisation ID must be a valid UUID' })
   @IsNotEmpty()
   organisation_id!: string;
 
-  @IsUUID('all')
+  @Matches(UUID_PATTERN, { message: 'Contact ID must be a valid UUID' })
   @IsOptional()
   contact_id?: string;
 
-  @IsUUID('all')
+  @Matches(UUID_PATTERN, { message: 'Lead ID must be a valid UUID' })
   @IsOptional()
   lead_id?: string;
 
   @IsString()
-  @IsNotEmpty({ message: 'Interaction type is required (e.g. call, visit, demo, email)' })
+  @IsNotEmpty({ message: 'Interaction type is required (e.g. call, visit, demo, email, whatsapp, proposal, follow_up, tender_discussion)' })
   type!: string;
 
   @IsDateString()
@@ -42,4 +62,8 @@ export class CreateInteractionDto {
   @IsDateString()
   @IsOptional()
   followup_date?: string;
+
+  @IsArray()
+  @IsOptional()
+  attachments?: InteractionAttachmentDto[];
 }

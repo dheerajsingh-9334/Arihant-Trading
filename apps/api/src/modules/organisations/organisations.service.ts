@@ -33,8 +33,9 @@ export class OrganisationsService {
       baseQuery = baseQuery.where((eb) =>
         eb.or([
           sql<boolean>`lower(organisations.name) like ${s}`,
-          sql<boolean>`lower(organisations.city) like ${s}`,
-          sql<boolean>`lower(organisations.sector) like ${s}`,
+          sql<boolean>`lower(coalesce(organisations.city, '')) like ${s}`,
+          sql<boolean>`lower(coalesce(organisations.state, '')) like ${s}`,
+          sql<boolean>`lower(coalesce(organisations.sector, '')) like ${s}`,
         ]),
       );
     }
@@ -78,7 +79,49 @@ export class OrganisationsService {
       .offset(offset)
       .execute();
 
-    return buildPaginatedResult(orgs, total, page, limit);
+    // Attach primary contact and current lead summary to each org
+    const orgIds = orgs.map((o) => o.id);
+    let primaryContacts: any[] = [];
+    let leadSummaries: any[] = [];
+
+    if (orgIds.length > 0) {
+      primaryContacts = await this.db
+        .selectFrom('contacts')
+        .selectAll()
+        .where('organisation_id', 'in', orgIds)
+        .where('is_primary', '=', true)
+        .execute();
+
+      leadSummaries = await this.db
+        .selectFrom('leads')
+        .leftJoin('users', 'leads.assigned_to', 'users.id')
+        .select([
+          'leads.organisation_id',
+          'leads.lead_status',
+          'leads.status',
+          'leads.last_interaction_at',
+          'leads.next_followup_at',
+          'users.full_name as assigned_salesperson_name',
+        ])
+        .where('leads.organisation_id', 'in', orgIds)
+        .orderBy('leads.created_at', 'desc')
+        .execute();
+    }
+
+    const enrichedOrgs = orgs.map((org) => {
+      const primaryContact = primaryContacts.find((c) => c.organisation_id === org.id);
+      const latestLead = leadSummaries.find((l) => l.organisation_id === org.id);
+      return {
+        ...org,
+        primary_contact: primaryContact || null,
+        current_salesperson: latestLead?.assigned_salesperson_name || null,
+        lead_status: latestLead?.lead_status || latestLead?.status || null,
+        last_interaction_at: latestLead?.last_interaction_at || null,
+        next_followup_at: latestLead?.next_followup_at || null,
+      };
+    });
+
+    return buildPaginatedResult(enrichedOrgs, total, page, limit);
   }
 
   async findOne(id: string) {
@@ -92,7 +135,7 @@ export class OrganisationsService {
       .executeTakeFirst();
 
     if (!org) {
-      throw new NotFoundException('Organisation not found');
+      throw new NotFoundException(`Organisation with id '${id}' not found`);
     }
 
     const contacts = await this.db
@@ -100,6 +143,7 @@ export class OrganisationsService {
       .selectAll()
       .where('organisation_id', '=', id)
       .orderBy('is_primary', 'desc')
+      .orderBy('full_name', 'asc')
       .execute();
 
     const leadsCount = await this.db
@@ -122,22 +166,209 @@ export class OrganisationsService {
     };
   }
 
-  async checkDuplicate(name: string) {
-    const cleanName = name.trim().toLowerCase();
-    if (!cleanName) return { matches: [], isDuplicate: false };
+  async getTimeline(orgId: string) {
+    const org = await this.findOne(orgId);
 
-    const s = `%${cleanName}%`;
-    const matches = await this.db
-      .selectFrom('organisations')
-      .select(['id', 'name', 'city', 'sector'])
-      .where(sql<boolean>`lower(name) like ${s}`)
-      .limit(5)
+    // 1. Fetch all interactions
+    const interactions = await this.db
+      .selectFrom('interactions')
+      .leftJoin('contacts', 'interactions.contact_id', 'contacts.id')
+      .leftJoin('users', 'interactions.employee_id', 'users.id')
+      .leftJoin('leads', 'interactions.lead_id', 'leads.id')
+      .selectAll('interactions')
+      .select([
+        'contacts.full_name as contact_name',
+        'users.full_name as employee_name',
+        'leads.lead_status',
+        'leads.lead_type',
+      ])
+      .where('interactions.organisation_id', '=', orgId)
+      .orderBy('interactions.occurred_on', 'desc')
+      .orderBy('interactions.created_at', 'desc')
+      .execute();
+
+    const interactionIds = interactions.map((i) => i.id);
+    let attachments: any[] = [];
+    if (interactionIds.length > 0) {
+      attachments = await this.db
+        .selectFrom('interaction_attachments')
+        .selectAll()
+        .where('interaction_id', 'in', interactionIds)
+        .execute();
+    }
+
+    const enrichedInteractions = interactions.map((item) => ({
+      ...item,
+      attachments: attachments.filter((a) => a.interaction_id === item.id),
+    }));
+
+    // 2. Fetch all leads under this organisation
+    const leads = await this.db
+      .selectFrom('leads')
+      .leftJoin('products', 'leads.product_id', 'products.id')
+      .leftJoin('users as assignee', 'leads.assigned_to', 'assignee.id')
+      .selectAll('leads')
+      .select([
+        'products.name as product_name',
+        'assignee.full_name as assignee_name',
+      ])
+      .where('leads.organisation_id', '=', orgId)
+      .orderBy('leads.created_at', 'desc')
+      .execute();
+
+    // 3. Fetch salesperson assignment history across all leads of this organisation
+    const leadIds = leads.map((l) => l.id);
+    let assignmentHistory: any[] = [];
+    if (leadIds.length > 0) {
+      assignmentHistory = await this.db
+        .selectFrom('lead_assignment_history')
+        .leftJoin('users as prev_sales', 'lead_assignment_history.previous_salesperson_id', 'prev_sales.id')
+        .leftJoin('users as new_sales', 'lead_assignment_history.new_salesperson_id', 'new_sales.id')
+        .leftJoin('users as changer', 'lead_assignment_history.changed_by', 'changer.id')
+        .selectAll('lead_assignment_history')
+        .select([
+          'prev_sales.full_name as previous_salesperson_name',
+          'new_sales.full_name as new_salesperson_name',
+          'changer.full_name as changed_by_name',
+        ])
+        .where('lead_assignment_history.lead_id', 'in', leadIds)
+        .orderBy('lead_assignment_history.changed_at', 'desc')
+        .execute();
+    }
+
+    // 4. Fetch follow-ups
+    const followUps = await this.db
+      .selectFrom('follow_ups')
+      .leftJoin('users as assignee', 'follow_ups.assigned_to', 'assignee.id')
+      .selectAll('follow_ups')
+      .select('assignee.full_name as assigned_to_name')
+      .where('follow_ups.organisation_id', '=', orgId)
+      .orderBy('follow_ups.due_date', 'asc')
+      .execute();
+
+    // 5. Fetch tenders
+    const tenders = await this.db
+      .selectFrom('tenders')
+      .select(['id', 'tender_no', 'status', 'estimated_value', 'bid_closing_date'])
+      .where('organisation_id', '=', orgId)
+      .orderBy('created_at', 'desc')
+      .execute();
+
+    // 6. Fetch proposals
+    const proposals = await this.db
+      .selectFrom('proposals')
+      .select(['id', 'proposal_number', 'reference', 'status', 'next_followup'])
+      .where('organisation_id', '=', orgId)
+      .where('is_deleted', '=', false)
+      .orderBy('created_at', 'desc')
       .execute();
 
     return {
-      matches,
-      isDuplicate: matches.length > 0,
-      suggestion: matches.length > 0 ? 'Organisation already exists. Consider adding a new lead or interaction rather than creating a duplicate.' : null,
+      organisation: org,
+      contacts: org.contacts,
+      leads,
+      timeline: enrichedInteractions,
+      assignment_history: assignmentHistory,
+      follow_ups: followUps,
+      tenders,
+      proposals,
+    };
+  }
+
+  async checkDuplicate(params: { name?: string; email?: string; phone?: string }) {
+    const matches: any[] = [];
+    const matchedOrgs = new Map<string, any>();
+
+    // 1. Match by name
+    if (params.name && params.name.trim()) {
+      const cleanName = params.name.trim().toLowerCase();
+      const s = `%${cleanName}%`;
+      const nameMatches = await this.db
+        .selectFrom('organisations')
+        .select(['id', 'name', 'city', 'state', 'sector'])
+        .where(sql<boolean>`lower(name) like ${s}`)
+        .limit(5)
+        .execute();
+
+      for (const m of nameMatches) {
+        matchedOrgs.set(m.id, { ...m, matchReason: `Name match (${m.name})` });
+      }
+    }
+
+    // 2. Match by email in contacts
+    if (params.email && params.email.trim()) {
+      const cleanEmail = params.email.trim().toLowerCase();
+      const emailMatches = await this.db
+        .selectFrom('contacts')
+        .innerJoin('organisations', 'contacts.organisation_id', 'organisations.id')
+        .select([
+          'organisations.id',
+          'organisations.name',
+          'organisations.city',
+          'organisations.state',
+          'organisations.sector',
+          'contacts.full_name as contact_name',
+          'contacts.email as contact_email',
+        ])
+        .where(sql<boolean>`lower(contacts.email) = ${cleanEmail}`)
+        .limit(5)
+        .execute();
+
+      for (const m of emailMatches) {
+        if (!matchedOrgs.has(m.id)) {
+          matchedOrgs.set(m.id, {
+            id: m.id,
+            name: m.name,
+            city: m.city,
+            state: m.state,
+            sector: m.sector,
+            matchReason: `Contact email match (${m.contact_email} - ${m.contact_name})`,
+          });
+        }
+      }
+    }
+
+    // 3. Match by phone/mobile in contacts
+    if (params.phone && params.phone.trim()) {
+      const cleanPhone = params.phone.trim();
+      const phoneMatches = await this.db
+        .selectFrom('contacts')
+        .innerJoin('organisations', 'contacts.organisation_id', 'organisations.id')
+        .select([
+          'organisations.id',
+          'organisations.name',
+          'organisations.city',
+          'organisations.state',
+          'organisations.sector',
+          'contacts.full_name as contact_name',
+          'contacts.mobile as contact_mobile',
+        ])
+        .where('contacts.mobile', '=', cleanPhone)
+        .limit(5)
+        .execute();
+
+      for (const m of phoneMatches) {
+        if (!matchedOrgs.has(m.id)) {
+          matchedOrgs.set(m.id, {
+            id: m.id,
+            name: m.name,
+            city: m.city,
+            state: m.state,
+            sector: m.sector,
+            matchReason: `Contact mobile match (${m.contact_mobile} - ${m.contact_name})`,
+          });
+        }
+      }
+    }
+
+    const results = Array.from(matchedOrgs.values());
+    return {
+      matches: results,
+      isDuplicate: results.length > 0,
+      suggestion:
+        results.length > 0
+          ? 'Organisation already exists. Existing account detected. You can link this lead to the existing organisation to preserve historical timeline continuity.'
+          : null,
     };
   }
 

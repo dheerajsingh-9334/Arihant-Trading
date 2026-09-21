@@ -4,6 +4,10 @@ import type {
   LeadCategory,
   LeadProbability,
   ChannelType,
+  LeadType,
+  LeadStatus,
+  FollowUpStatus,
+  InteractionType,
   TenderCategory,
   TenderStatus,
   VisitStatus,
@@ -101,6 +105,11 @@ export interface LeadsTable {
   probability: Generated<LeadProbability>;
   channel: ChannelType | null;
   status: Generated<string>;
+  lead_type: Generated<LeadType>;
+  lead_status: Generated<LeadStatus>;
+  loss_reason: string | null;
+  last_interaction_at: Date | null;
+  next_followup_at: Date | null;
   assigned_to: string | null;
   regional_manager_id: string | null;
   bill_qtr: string | null;
@@ -118,6 +127,53 @@ export interface LeadsTable {
   updated_at: Generated<Date>;
 }
 
+export interface LeadProductInterestsTable {
+  id: Generated<string>;
+  lead_id: string;
+  product_id: string;
+  created_at: Generated<Date>;
+  created_by: string | null;
+}
+
+export interface LeadAssignmentHistoryTable {
+  id: Generated<string>;
+  lead_id: string;
+  previous_salesperson_id: string | null;
+  new_salesperson_id: string;
+  previous_regional_manager_id: string | null;
+  new_regional_manager_id: string | null;
+  changed_by: string;
+  changed_at: Generated<Date>;
+  reason: string | null;
+}
+
+export interface FollowUpsTable {
+  id: Generated<string>;
+  organisation_id: string;
+  contact_id: string | null;
+  lead_id: string | null;
+  interaction_id: string | null;
+  assigned_to: string;
+  due_date: string; // date
+  status: Generated<FollowUpStatus>;
+  remarks: string | null;
+  outcome: string | null;
+  completed_at: Date | null;
+  completed_by: string | null;
+  created_at: Generated<Date>;
+  updated_at: Generated<Date>;
+}
+
+export interface InteractionAttachmentsTable {
+  id: Generated<string>;
+  interaction_id: string;
+  file_url: string;
+  file_name: string;
+  file_size: number | null;
+  mime_type: string | null;
+  created_at: Generated<Date>;
+}
+
 export interface InteractionsTable {
   id: Generated<string>;
   organisation_id: string;
@@ -133,6 +189,7 @@ export interface InteractionsTable {
   next_action: string | null;
   followup_date: string | null;
   created_at: Generated<Date>;
+  updated_at: Generated<Date>;
 }
 
 export interface TripsTable {
@@ -319,17 +376,112 @@ export interface TendersTable {
   oem_turnover: string | null;
   emd_fee: number | null;
   publish_date: string | null;
+  publication_date?: string | null;
   bid_start_date: string | null;
   bid_closing_date: string | null; // timestamptz
+  submission_deadline?: string | null; // timestamptz
   prebid_date: string | null;
   corrigendum_date: string | null;
   participated_date: string | null;
+  department_id?: string | null;
   assigned_to: string | null;
+  assigned_person_id?: string | null;
   tender_owner_id: string | null;
   status: Generated<TenderStatus>;
   remarks: string | null;
+  rejection_reason?: string | null;
+  portal?: string | null;
+  reference_number?: string | null;
+  estimated_value?: number | null;
+  tender_value?: number | null;
+  submission_date?: string | null;
+  result_date?: string | null;
+  loss_reason?: string | null;
+  competitor?: string | null;
+  loss_notes?: string | null;
+  approval_date?: Date | null;
+  internal_approval_by?: string | null;
+  internal_approval_at?: Date | null;
+  is_deleted?: Generated<boolean>;
+  deleted_at?: Date | null;
+  deleted_by?: string | null;
+  created_by?: string | null;
+  updated_by?: string | null;
   created_at: Generated<Date>;
   updated_at: Generated<Date>;
+}
+
+export interface TenderCategoriesTable {
+  id: Generated<string>;
+  code: string;
+  name: string;
+  description: string | null;
+  is_active: Generated<boolean>;
+  created_at: Generated<Date>;
+  updated_at: Generated<Date>;
+}
+
+export interface TenderApprovalsTable {
+  id: Generated<string>;
+  tender_id: string;
+  requested_by: string | null;
+  approver_id: string | null;
+  status: Generated<string>;
+  requested_at: Generated<Date>;
+  responded_at: Date | null;
+  remarks: string | null;
+  rejection_reason: string | null;
+  created_at: Generated<Date>;
+  updated_at: Generated<Date>;
+}
+
+export interface TenderPortalIssuesTable {
+  id: Generated<string>;
+  tender_id: string;
+  issue: string;
+  reported_date: string;
+  reported_by: string | null;
+  responsible_person_id: string | null;
+  escalated_to: string | null;
+  escalation_date: Date | null;
+  resolution_status: Generated<string>;
+  resolution: string | null;
+  resolved_at: Date | null;
+  created_at: Generated<Date>;
+  updated_at: Generated<Date>;
+}
+
+export interface TenderActivitiesTable {
+  id: Generated<string>;
+  tender_id: string;
+  event_type: string;
+  description: string;
+  performed_by: string | null;
+  metadata: Generated<any>;
+  created_at: Generated<Date>;
+}
+
+export interface OutboxEventsTable {
+  id: Generated<string>;
+  event_id: string;
+  event_type: string;
+  aggregate_type: Generated<string>;
+  aggregate_id: string;
+  payload: any;
+  status: Generated<string>;
+  attempts: Generated<number>;
+  max_attempts: Generated<number>;
+  available_at: Generated<Date>;
+  processed_at: Date | null;
+  error_message: string | null;
+  created_at: Generated<Date>;
+}
+
+export interface ProcessedEventsTable {
+  id: Generated<string>;
+  event_id: string;
+  handler_name: string;
+  processed_at: Generated<Date>;
 }
 
 export interface TenderStatusHistoryTable {
@@ -355,6 +507,7 @@ export interface TenderOutcomesTable {
 
 export interface ProposalsTable {
   id: Generated<string>;
+  proposal_number: Generated<string>;
   organisation_id: string;
   lead_id: string | null;
   product_id: string | null;
@@ -365,14 +518,51 @@ export interface ProposalsTable {
   request_date: string | null;
   required_date: string | null;
   sent_date: string | null;
+  approved_at: Date | null;
+  approved_by: string | null;
   version: string | null;
   reference: string | null;
   status: Generated<ProposalStatus>;
+  last_followup: string | null;
   next_followup: string | null;
+  outcome: string | null;
+  lost_reason: string | null;
+  lost_remarks: string | null;
+  converted_to: string | null;
+  converted_reference: string | null;
   remarks: string | null;
+  created_by: string | null;
+  updated_by: string | null;
+  is_deleted: Generated<boolean>;
+  deleted_at: Date | null;
+  deleted_by: string | null;
   created_at: Generated<Date>;
   updated_at: Generated<Date>;
 }
+
+export interface ProposalFollowupsTable {
+  id: Generated<string>;
+  proposal_id: string;
+  followup_date: string;
+  owner_id: string;
+  remarks: string;
+  outcome: string | null;
+  next_followup_date: string | null;
+  created_by: string | null;
+  created_at: Generated<Date>;
+}
+
+export interface ProposalActivitiesTable {
+  id: Generated<string>;
+  proposal_id: string;
+  action: string;
+  old_value: string | null;
+  new_value: string | null;
+  performed_by: string | null;
+  metadata: Record<string, any> | null;
+  created_at: Generated<Date>;
+}
+
 
 export interface ServiceTicketsTable {
   id: Generated<string>;
@@ -537,7 +727,11 @@ export interface Database {
   organisations: OrganisationsTable;
   contacts: ContactsTable;
   leads: LeadsTable;
+  lead_product_interests: LeadProductInterestsTable;
+  lead_assignment_history: LeadAssignmentHistoryTable;
+  follow_ups: FollowUpsTable;
   interactions: InteractionsTable;
+  interaction_attachments: InteractionAttachmentsTable;
   trips: TripsTable;
   visits: VisitsTable;
   visit_updates: VisitUpdatesTable;
@@ -548,9 +742,17 @@ export interface Database {
   demo_outcomes: DemoOutcomesTable;
   demo_reschedule_history: DemoRescheduleHistoryTable;
   tenders: TendersTable;
+  tender_categories: TenderCategoriesTable;
+  tender_approvals: TenderApprovalsTable;
+  tender_portal_issues: TenderPortalIssuesTable;
+  tender_activities: TenderActivitiesTable;
   tender_status_history: TenderStatusHistoryTable;
   tender_outcomes: TenderOutcomesTable;
+  outbox_events: OutboxEventsTable;
+  processed_events: ProcessedEventsTable;
   proposals: ProposalsTable;
+  proposal_followups: ProposalFollowupsTable;
+  proposal_activities: ProposalActivitiesTable;
   service_tickets: ServiceTicketsTable;
   service_reports: ServiceReportsTable;
   expenses: ExpensesTable;

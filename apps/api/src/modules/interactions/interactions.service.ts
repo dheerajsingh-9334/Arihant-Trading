@@ -1,15 +1,20 @@
-import { Injectable, Inject } from '@nestjs/common';
-import { Kysely } from 'kysely';
+import { Injectable, Inject, NotFoundException } from '@nestjs/common';
+import { Kysely, sql } from 'kysely';
 import { KYSELY_DB } from '../../common/database/database.module.js';
+import { OutboxService } from '../../common/outbox/outbox.service.js';
+import { AppEvents } from '../../common/events/event-names.js';
 import type { Database } from '@arihant/shared';
 import type { CreateInteractionDto } from './interactions.dto.js';
 
 @Injectable()
 export class InteractionsService {
-  constructor(@Inject(KYSELY_DB) private readonly db: Kysely<Database>) {}
+  constructor(
+    @Inject(KYSELY_DB) private readonly db: Kysely<Database>,
+    private readonly outboxService: OutboxService,
+  ) {}
 
   async findByOrganisation(orgId: string) {
-    return this.db
+    const interactions = await this.db
       .selectFrom('interactions')
       .leftJoin('contacts', 'interactions.contact_id', 'contacts.id')
       .leftJoin('users', 'interactions.employee_id', 'users.id')
@@ -17,31 +22,185 @@ export class InteractionsService {
       .selectAll('interactions')
       .select([
         'contacts.full_name as contact_name',
+        'contacts.mobile as contact_mobile',
+        'contacts.email as contact_email',
         'users.full_name as employee_name',
-        'leads.status as lead_status',
+        'leads.lead_status',
+        'leads.status as legacy_status',
       ])
       .where('interactions.organisation_id', '=', orgId)
       .orderBy('interactions.occurred_on', 'desc')
       .orderBy('interactions.created_at', 'desc')
       .execute();
+
+    if (interactions.length === 0) {
+      return [];
+    }
+
+    const ids = interactions.map((i) => i.id);
+    const attachments = await this.db
+      .selectFrom('interaction_attachments')
+      .selectAll()
+      .where('interaction_id', 'in', ids)
+      .execute();
+
+    return interactions.map((item) => ({
+      ...item,
+      attachments: attachments.filter((a) => a.interaction_id === item.id),
+    }));
+  }
+
+  async findByLead(leadId: string) {
+    const interactions = await this.db
+      .selectFrom('interactions')
+      .leftJoin('contacts', 'interactions.contact_id', 'contacts.id')
+      .leftJoin('users', 'interactions.employee_id', 'users.id')
+      .selectAll('interactions')
+      .select([
+        'contacts.full_name as contact_name',
+        'users.full_name as employee_name',
+      ])
+      .where('interactions.lead_id', '=', leadId)
+      .orderBy('interactions.occurred_on', 'desc')
+      .orderBy('interactions.created_at', 'desc')
+      .execute();
+
+    if (interactions.length === 0) {
+      return [];
+    }
+
+    const ids = interactions.map((i) => i.id);
+    const attachments = await this.db
+      .selectFrom('interaction_attachments')
+      .selectAll()
+      .where('interaction_id', 'in', ids)
+      .execute();
+
+    return interactions.map((item) => ({
+      ...item,
+      attachments: attachments.filter((a) => a.interaction_id === item.id),
+    }));
   }
 
   async create(dto: CreateInteractionDto, employeeId: string) {
-    return this.db
-      .insertInto('interactions')
-      .values({
-        organisation_id: dto.organisation_id,
-        contact_id: dto.contact_id || null,
-        lead_id: dto.lead_id || null,
-        type: dto.type,
-        employee_id: employeeId,
-        occurred_on: dto.occurred_on || new Date().toISOString().split('T')[0],
-        remarks: dto.remarks || null,
-        outcome: dto.outcome || null,
-        next_action: dto.next_action || null,
-        followup_date: dto.followup_date || null,
-      })
-      .returningAll()
-      .executeTakeFirstOrThrow();
+    const occurredOn = dto.occurred_on || new Date().toISOString().split('T')[0];
+
+    const result = await this.db.transaction().execute(async (trx) => {
+      // 1. Insert interaction
+      const interaction = await trx
+        .insertInto('interactions')
+        .values({
+          organisation_id: dto.organisation_id,
+          contact_id: dto.contact_id || null,
+          lead_id: dto.lead_id || null,
+          type: dto.type,
+          employee_id: employeeId,
+          occurred_on: occurredOn,
+          remarks: dto.remarks || null,
+          outcome: dto.outcome || null,
+          next_action: dto.next_action || null,
+          followup_date: dto.followup_date || null,
+        })
+        .returningAll()
+        .executeTakeFirstOrThrow();
+
+      // 2. Attachments
+      let createdAttachments: any[] = [];
+      if (dto.attachments && dto.attachments.length > 0) {
+        for (const att of dto.attachments) {
+          const inserted = await trx
+            .insertInto('interaction_attachments')
+            .values({
+              interaction_id: interaction.id,
+              file_url: att.file_url,
+              file_name: att.file_name,
+              file_size: att.file_size || null,
+              mime_type: att.mime_type || null,
+            })
+            .returningAll()
+            .executeTakeFirstOrThrow();
+          createdAttachments.push(inserted);
+        }
+      }
+
+      // 3. Atomically update Lead last_interaction_at & next_followup_at if lead_id present
+      if (dto.lead_id) {
+        await trx
+          .updateTable('leads')
+          .set({
+            last_interaction_at: new Date(),
+            last_contact_date: occurredOn,
+            next_followup_at: dto.followup_date ? new Date(dto.followup_date) : undefined,
+            next_followup_date: dto.followup_date || undefined,
+            updated_at: new Date(),
+          })
+          .where('id', '=', dto.lead_id)
+          .execute();
+      }
+
+      // 4. Automatically create follow-up if followup_date provided
+      let createdFollowUp: any = null;
+      if (dto.followup_date) {
+        createdFollowUp = await trx
+          .insertInto('follow_ups')
+          .values({
+            organisation_id: dto.organisation_id,
+            contact_id: dto.contact_id || null,
+            lead_id: dto.lead_id || null,
+            interaction_id: interaction.id,
+            assigned_to: employeeId,
+            due_date: dto.followup_date,
+            status: 'pending',
+            remarks: dto.next_action || dto.remarks || 'Follow-up scheduled from client interaction',
+          })
+          .returningAll()
+          .executeTakeFirstOrThrow();
+
+        // Enqueue FollowUpCreated Outbox event
+        await this.outboxService.queueEvent(trx, {
+          eventType: AppEvents.FOLLOWUP_CREATED,
+          aggregateType: 'FOLLOW_UP',
+          aggregateId: createdFollowUp.id,
+          actorId: employeeId,
+          payload: {
+            followUpId: createdFollowUp.id,
+            organisationId: dto.organisation_id,
+            leadId: dto.lead_id,
+            assignedTo: employeeId,
+            dueDate: dto.followup_date,
+            remarks: createdFollowUp.remarks,
+          },
+        });
+      }
+
+      // 5. Enqueue InteractionCreated Outbox event
+      await this.outboxService.queueEvent(trx, {
+        eventType: AppEvents.INTERACTION_CREATED,
+        aggregateType: 'INTERACTION',
+        aggregateId: interaction.id,
+        actorId: employeeId,
+        payload: {
+          interactionId: interaction.id,
+          organisationId: dto.organisation_id,
+          contactId: dto.contact_id,
+          leadId: dto.lead_id,
+          type: dto.type,
+          occurredOn,
+          employeeId,
+          outcome: dto.outcome,
+          followupDate: dto.followup_date,
+        },
+      });
+
+      return {
+        ...interaction,
+        attachments: createdAttachments,
+        follow_up: createdFollowUp,
+      };
+    });
+
+    this.outboxService.triggerImmediate();
+
+    return result;
   }
 }

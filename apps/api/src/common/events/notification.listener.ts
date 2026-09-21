@@ -3,6 +3,7 @@ import { OnEvent } from '@nestjs/event-emitter';
 import { Kysely } from 'kysely';
 import { KYSELY_DB } from '../database/database.module.js';
 import { EventsGateway } from '../realtime/events.gateway.js';
+import { OutboxService } from '../outbox/outbox.service.js';
 import { AppEvents } from './event-names.js';
 import type { Database, UserRole } from '@arihant/shared';
 
@@ -13,7 +14,15 @@ export class NotificationListener {
   constructor(
     @Inject(KYSELY_DB) private readonly db: Kysely<Database>,
     private readonly eventsGateway: EventsGateway,
+    private readonly outboxService: OutboxService,
   ) {}
+
+  private unpackEvent<T = any>(input: any): { payload: T; eventId?: string } {
+    if (input && typeof input === 'object' && 'eventId' in input && 'payload' in input) {
+      return { payload: input.payload, eventId: input.eventId };
+    }
+    return { payload: input, eventId: input?.eventId };
+  }
 
   private async createAndPushNotification(data: {
     userId: string;
@@ -47,8 +56,97 @@ export class NotificationListener {
     }
   }
 
+  @OnEvent(AppEvents.TENDER_CREATED)
+  async handleTenderCreated(eventInput: any) {
+    const { payload, eventId } = this.unpackEvent<{
+      tenderId: string;
+      tenderNo: string;
+      orgName?: string;
+      assignedPersonId?: string;
+      tenderOwnerId?: string;
+      actorId?: string;
+    }>(eventInput);
+
+    if (eventId && (await this.outboxService.isEventProcessed(eventId, 'NotificationListener.tenderCreated'))) {
+      this.logger.log(`[Idempotency] Skip already processed event ${eventId}`);
+      return;
+    }
+
+    if (payload.assignedPersonId && payload.assignedPersonId !== payload.actorId) {
+      await this.createAndPushNotification({
+        userId: payload.assignedPersonId,
+        type: 'tender_assigned',
+        title: `New Tender Assigned: ${payload.tenderNo}`,
+        body: `You have been assigned to tender ${payload.tenderNo}${payload.orgName ? ` for ${payload.orgName}` : ''}.`,
+        entityType: 'tender',
+        entityId: payload.tenderId,
+      });
+    }
+
+    this.eventsGateway.sendToRole('tender_team', 'tender:created', payload);
+    this.eventsGateway.sendToRole('management', 'tender:created', payload);
+
+    if (eventId) {
+      await this.outboxService.markEventProcessed(eventId, 'NotificationListener.tenderCreated');
+    }
+  }
+
+  @OnEvent(AppEvents.TENDER_ASSIGNED)
+  async handleTenderAssigned(eventInput: any) {
+    const { payload, eventId } = this.unpackEvent<{
+      tenderId: string;
+      tenderNo: string;
+      assignedPersonId?: string;
+      tenderOwnerId?: string;
+      actorId?: string;
+    }>(eventInput);
+
+    if (eventId && (await this.outboxService.isEventProcessed(eventId, 'NotificationListener.tenderAssigned'))) {
+      return;
+    }
+
+    if (payload.assignedPersonId && payload.assignedPersonId !== payload.actorId) {
+      await this.createAndPushNotification({
+        userId: payload.assignedPersonId,
+        type: 'tender_assigned',
+        title: `Assigned to Tender: ${payload.tenderNo}`,
+        body: `You have been designated as assigned person for tender ${payload.tenderNo}.`,
+        entityType: 'tender',
+        entityId: payload.tenderId,
+      });
+    }
+
+    if (payload.tenderOwnerId && payload.tenderOwnerId !== payload.actorId && payload.tenderOwnerId !== payload.assignedPersonId) {
+      await this.createAndPushNotification({
+        userId: payload.tenderOwnerId,
+        type: 'tender_assigned',
+        title: `Designated Owner: ${payload.tenderNo}`,
+        body: `You have been designated as tender owner for tender ${payload.tenderNo}.`,
+        entityType: 'tender',
+        entityId: payload.tenderId,
+      });
+    }
+
+    this.eventsGateway.sendToRole('tender_team', 'tender:assigned', payload);
+    if (eventId) {
+      await this.outboxService.markEventProcessed(eventId, 'NotificationListener.tenderAssigned');
+    }
+  }
+
   @OnEvent(AppEvents.TENDER_APPROVAL_REQUESTED)
-  async handleTenderApprovalRequested(payload: { tenderId: string; tenderNo: string; orgName: string; actorId: string }) {
+  async handleTenderApprovalRequested(eventInput: any) {
+    const { payload, eventId } = this.unpackEvent<{
+      tenderId: string;
+      tenderNo: string;
+      orgName?: string;
+      actorId: string;
+      estimatedValue?: number;
+    }>(eventInput);
+
+    if (eventId && (await this.outboxService.isEventProcessed(eventId, 'NotificationListener.approvalRequested'))) {
+      return;
+    }
+
     // Notify management users
     const mgmtUsers = await this.db
       .selectFrom('users')
@@ -62,15 +160,111 @@ export class NotificationListener {
         userId: u.id,
         type: 'tender_approval',
         title: 'Tender Participation Approval Required',
-        body: `Tender ${payload.tenderNo} for ${payload.orgName} requires participation decision.`,
+        body: `Tender ${payload.tenderNo} ${payload.orgName ? `for ${payload.orgName} ` : ''}requires participation decision.`,
         entityType: 'tender',
         entityId: payload.tenderId,
       });
     }
+
+    this.eventsGateway.sendToRole('management', 'tender:approval_requested', payload);
+    if (eventId) {
+      await this.outboxService.markEventProcessed(eventId, 'NotificationListener.approvalRequested');
+    }
+  }
+
+  @OnEvent(AppEvents.TENDER_APPROVED)
+  async handleTenderApproved(eventInput: any) {
+    const { payload, eventId } = this.unpackEvent<{
+      tenderId: string;
+      tenderNo: string;
+      approverId?: string;
+      tenderOwnerId?: string;
+      assignedPersonId?: string;
+    }>(eventInput);
+
+    if (eventId && (await this.outboxService.isEventProcessed(eventId, 'NotificationListener.tenderApproved'))) {
+      return;
+    }
+
+    const recipients = new Set<string>();
+    if (payload.tenderOwnerId) recipients.add(payload.tenderOwnerId);
+    if (payload.assignedPersonId) recipients.add(payload.assignedPersonId);
+
+    for (const userId of recipients) {
+      if (userId !== payload.approverId) {
+        await this.createAndPushNotification({
+          userId,
+          type: 'tender_approval',
+          title: `Tender Participation Approved: ${payload.tenderNo}`,
+          body: `Tender ${payload.tenderNo} has been approved by management. Preparation phase can begin.`,
+          entityType: 'tender',
+          entityId: payload.tenderId,
+        });
+      }
+    }
+
+    this.eventsGateway.sendToRole('tender_team', 'tender:approved', payload);
+    this.eventsGateway.sendToRole('management', 'tender:approved', payload);
+
+    if (eventId) {
+      await this.outboxService.markEventProcessed(eventId, 'NotificationListener.tenderApproved');
+    }
+  }
+
+  @OnEvent(AppEvents.TENDER_REJECTED)
+  async handleTenderRejected(eventInput: any) {
+    const { payload, eventId } = this.unpackEvent<{
+      tenderId: string;
+      tenderNo: string;
+      approverId?: string;
+      tenderOwnerId?: string;
+      assignedPersonId?: string;
+      reason?: string;
+    }>(eventInput);
+
+    if (eventId && (await this.outboxService.isEventProcessed(eventId, 'NotificationListener.tenderRejected'))) {
+      return;
+    }
+
+    const recipients = new Set<string>();
+    if (payload.tenderOwnerId) recipients.add(payload.tenderOwnerId);
+    if (payload.assignedPersonId) recipients.add(payload.assignedPersonId);
+
+    for (const userId of recipients) {
+      if (userId !== payload.approverId) {
+        await this.createAndPushNotification({
+          userId,
+          type: 'tender_approval',
+          title: `Tender Participation Rejected: ${payload.tenderNo}`,
+          body: `Tender ${payload.tenderNo} was rejected internally. Reason: ${payload.reason || 'Management decision'}`,
+          entityType: 'tender',
+          entityId: payload.tenderId,
+        });
+      }
+    }
+
+    this.eventsGateway.sendToRole('tender_team', 'tender:rejected', payload);
+    this.eventsGateway.sendToRole('management', 'tender:rejected', payload);
+
+    if (eventId) {
+      await this.outboxService.markEventProcessed(eventId, 'NotificationListener.tenderRejected');
+    }
   }
 
   @OnEvent(AppEvents.TENDER_STATUS_CHANGED)
-  async handleTenderStatusChanged(payload: { tenderId: string; tenderNo: string; toStatus: string; actorId: string; tenderOwnerId?: string }) {
+  async handleTenderStatusChanged(eventInput: any) {
+    const { payload, eventId } = this.unpackEvent<{
+      tenderId: string;
+      tenderNo: string;
+      toStatus: string;
+      actorId: string;
+      tenderOwnerId?: string;
+    }>(eventInput);
+
+    if (eventId && (await this.outboxService.isEventProcessed(eventId, 'NotificationListener.tenderStatusChanged'))) {
+      return;
+    }
+
     if (payload.tenderOwnerId && payload.tenderOwnerId !== payload.actorId) {
       await this.createAndPushNotification({
         userId: payload.tenderOwnerId,
@@ -81,9 +275,293 @@ export class NotificationListener {
         entityId: payload.tenderId,
       });
     }
-    // Broadcast status change to role:tender_team and role:management
+
     this.eventsGateway.sendToRole('tender_team', 'tender:updated', payload);
     this.eventsGateway.sendToRole('management', 'tender:updated', payload);
+
+    if (eventId) {
+      await this.outboxService.markEventProcessed(eventId, 'NotificationListener.tenderStatusChanged');
+    }
+  }
+
+  @OnEvent(AppEvents.TENDER_SUBMITTED)
+  async handleTenderSubmitted(eventInput: any) {
+    const { payload, eventId } = this.unpackEvent<{
+      tenderId: string;
+      tenderNo: string;
+      submissionDate?: string;
+      actorId?: string;
+    }>(eventInput);
+
+    if (eventId && (await this.outboxService.isEventProcessed(eventId, 'NotificationListener.tenderSubmitted'))) {
+      return;
+    }
+
+    const mgmtUsers = await this.db
+      .selectFrom('users')
+      .select('id')
+      .where('role', '=', 'management')
+      .where('is_active', '=', true)
+      .execute();
+
+    for (const u of mgmtUsers) {
+      if (u.id !== payload.actorId) {
+        await this.createAndPushNotification({
+          userId: u.id,
+          type: 'tender_submitted',
+          title: `Tender Bid Submitted: ${payload.tenderNo}`,
+          body: `Tender ${payload.tenderNo} bid has been successfully submitted on portal.`,
+          entityType: 'tender',
+          entityId: payload.tenderId,
+        });
+      }
+    }
+
+    this.eventsGateway.sendToRole('tender_team', 'tender:submitted', payload);
+    this.eventsGateway.sendToRole('management', 'tender:submitted', payload);
+
+    if (eventId) {
+      await this.outboxService.markEventProcessed(eventId, 'NotificationListener.tenderSubmitted');
+    }
+  }
+
+  @OnEvent(AppEvents.TENDER_WON)
+  async handleTenderWon(eventInput: any) {
+    const { payload, eventId } = this.unpackEvent<{
+      tenderId: string;
+      tenderNo: string;
+      tenderValue?: number;
+      actorId?: string;
+    }>(eventInput);
+
+    if (eventId && (await this.outboxService.isEventProcessed(eventId, 'NotificationListener.tenderWon'))) {
+      return;
+    }
+
+    const mgmtUsers = await this.db
+      .selectFrom('users')
+      .select('id')
+      .where('role', '=', 'management')
+      .where('is_active', '=', true)
+      .execute();
+
+    for (const u of mgmtUsers) {
+      await this.createAndPushNotification({
+        userId: u.id,
+        type: 'tender_won',
+        title: `🏆 Tender Won: ${payload.tenderNo}`,
+        body: `Congratulations! Tender ${payload.tenderNo} has been marked as WON.${payload.tenderValue ? ` Value: ₹ ${payload.tenderValue.toLocaleString('en-IN')}` : ''}`,
+        entityType: 'tender',
+        entityId: payload.tenderId,
+      });
+    }
+
+    this.eventsGateway.broadcast('tender:won', payload);
+
+    if (eventId) {
+      await this.outboxService.markEventProcessed(eventId, 'NotificationListener.tenderWon');
+    }
+  }
+
+  @OnEvent(AppEvents.TENDER_LOST)
+  async handleTenderLost(eventInput: any) {
+    const { payload, eventId } = this.unpackEvent<{
+      tenderId: string;
+      tenderNo: string;
+      lossReason?: string;
+      competitor?: string;
+      actorId?: string;
+    }>(eventInput);
+
+    if (eventId && (await this.outboxService.isEventProcessed(eventId, 'NotificationListener.tenderLost'))) {
+      return;
+    }
+
+    const mgmtUsers = await this.db
+      .selectFrom('users')
+      .select('id')
+      .where('role', '=', 'management')
+      .where('is_active', '=', true)
+      .execute();
+
+    for (const u of mgmtUsers) {
+      await this.createAndPushNotification({
+        userId: u.id,
+        type: 'tender_lost',
+        title: `Tender Lost: ${payload.tenderNo}`,
+        body: `Tender ${payload.tenderNo} concluded as Lost. Reason: ${payload.lossReason || 'Unknown'}${payload.competitor ? ` (Competitor: ${payload.competitor})` : ''}.`,
+        entityType: 'tender',
+        entityId: payload.tenderId,
+      });
+    }
+
+    this.eventsGateway.broadcast('tender:lost', payload);
+
+    if (eventId) {
+      await this.outboxService.markEventProcessed(eventId, 'NotificationListener.tenderLost');
+    }
+  }
+
+  @OnEvent(AppEvents.TENDER_DEADLINE_APPROACHING)
+  async handleTenderDeadlineApproaching(eventInput: any) {
+    const { payload, eventId } = this.unpackEvent<{
+      tenderId: string;
+      tenderNo: string;
+      deadline: string;
+      hoursLeft: number;
+      assignedPersonId?: string;
+      tenderOwnerId?: string;
+    }>(eventInput);
+
+    if (eventId && (await this.outboxService.isEventProcessed(eventId, 'NotificationListener.deadlineApproaching'))) {
+      return;
+    }
+
+    const targets = new Set<string>();
+    if (payload.assignedPersonId) targets.add(payload.assignedPersonId);
+    if (payload.tenderOwnerId) targets.add(payload.tenderOwnerId);
+
+    for (const userId of targets) {
+      await this.createAndPushNotification({
+        userId,
+        type: 'tender_deadline',
+        title: `⏳ Urgent Tender Deadline: ${payload.tenderNo}`,
+        body: `Tender ${payload.tenderNo} deadline is in ${payload.hoursLeft} hours (${new Date(payload.deadline).toLocaleString('en-IN')}).`,
+        entityType: 'tender',
+        entityId: payload.tenderId,
+      });
+    }
+
+    this.eventsGateway.sendToRole('tender_team', 'tender:deadline_alert', payload);
+    if (eventId) {
+      await this.outboxService.markEventProcessed(eventId, 'NotificationListener.deadlineApproaching');
+    }
+  }
+
+  @OnEvent(AppEvents.TENDER_DEADLINE_EXCEEDED)
+  async handleTenderDeadlineExceeded(eventInput: any) {
+    const { payload, eventId } = this.unpackEvent<{
+      tenderId: string;
+      tenderNo: string;
+      deadline: string;
+      assignedPersonId?: string;
+      tenderOwnerId?: string;
+    }>(eventInput);
+
+    if (eventId && (await this.outboxService.isEventProcessed(eventId, 'NotificationListener.deadlineExceeded'))) {
+      return;
+    }
+
+    const targets = new Set<string>();
+    if (payload.assignedPersonId) targets.add(payload.assignedPersonId);
+    if (payload.tenderOwnerId) targets.add(payload.tenderOwnerId);
+
+    for (const userId of targets) {
+      await this.createAndPushNotification({
+        userId,
+        type: 'tender_overdue',
+        title: `🚨 Overdue Tender: ${payload.tenderNo}`,
+        body: `Tender ${payload.tenderNo} submission deadline has passed without submission. Immediate follow-up required.`,
+        entityType: 'tender',
+        entityId: payload.tenderId,
+      });
+    }
+
+    this.eventsGateway.sendToRole('management', 'tender:overdue', payload);
+    if (eventId) {
+      await this.outboxService.markEventProcessed(eventId, 'NotificationListener.deadlineExceeded');
+    }
+  }
+
+  @OnEvent(AppEvents.TENDER_PORTAL_ISSUE_CREATED)
+  async handleTenderPortalIssueCreated(eventInput: any) {
+    const { payload, eventId } = this.unpackEvent<{
+      issueId: string;
+      tenderId: string;
+      tenderNo?: string;
+      issue: string;
+      responsiblePersonId?: string;
+      actorId?: string;
+    }>(eventInput);
+
+    if (eventId && (await this.outboxService.isEventProcessed(eventId, 'NotificationListener.portalIssueCreated'))) {
+      return;
+    }
+
+    if (payload.responsiblePersonId && payload.responsiblePersonId !== payload.actorId) {
+      await this.createAndPushNotification({
+        userId: payload.responsiblePersonId,
+        type: 'tender_portal_issue',
+        title: `External Portal Issue Reported`,
+        body: `You are designated responsible for portal issue on tender ${payload.tenderNo || payload.tenderId}: "${payload.issue}".`,
+        entityType: 'tender',
+        entityId: payload.tenderId,
+      });
+    }
+
+    this.eventsGateway.sendToRole('tender_team', 'tender:portal_issue_created', payload);
+    if (eventId) {
+      await this.outboxService.markEventProcessed(eventId, 'NotificationListener.portalIssueCreated');
+    }
+  }
+
+  @OnEvent(AppEvents.TENDER_PORTAL_ISSUE_ESCALATED)
+  async handleTenderPortalIssueEscalated(eventInput: any) {
+    const { payload, eventId } = this.unpackEvent<{
+      issueId: string;
+      tenderId: string;
+      tenderNo?: string;
+      issue: string;
+      escalatedTo?: string;
+    }>(eventInput);
+
+    if (eventId && (await this.outboxService.isEventProcessed(eventId, 'NotificationListener.portalIssueEscalated'))) {
+      return;
+    }
+
+    // Notify management
+    const mgmtUsers = await this.db
+      .selectFrom('users')
+      .select('id')
+      .where('role', '=', 'management')
+      .where('is_active', '=', true)
+      .execute();
+
+    for (const u of mgmtUsers) {
+      await this.createAndPushNotification({
+        userId: u.id,
+        type: 'tender_portal_issue_escalated',
+        title: `🚨 Escalated Portal Issue: ${payload.tenderNo || ''}`,
+        body: `External portal issue escalated: "${payload.issue}" (${payload.escalatedTo || 'Management'}).`,
+        entityType: 'tender',
+        entityId: payload.tenderId,
+      });
+    }
+
+    this.eventsGateway.sendToRole('management', 'tender:portal_issue_escalated', payload);
+    if (eventId) {
+      await this.outboxService.markEventProcessed(eventId, 'NotificationListener.portalIssueEscalated');
+    }
+  }
+
+  @OnEvent(AppEvents.TENDER_PORTAL_ISSUE_RESOLVED)
+  async handleTenderPortalIssueResolved(eventInput: any) {
+    const { payload, eventId } = this.unpackEvent<{
+      issueId: string;
+      tenderId: string;
+      tenderNo?: string;
+      issue: string;
+      resolution?: string;
+    }>(eventInput);
+
+    if (eventId && (await this.outboxService.isEventProcessed(eventId, 'NotificationListener.portalIssueResolved'))) {
+      return;
+    }
+
+    this.eventsGateway.sendToRole('tender_team', 'tender:portal_issue_resolved', payload);
+    if (eventId) {
+      await this.outboxService.markEventProcessed(eventId, 'NotificationListener.portalIssueResolved');
+    }
   }
 
   @OnEvent(AppEvents.EXPENSE_SUBMITTED)
@@ -474,4 +952,498 @@ export class NotificationListener {
     this.eventsGateway.sendToRole('demo_team', 'demo:completed', payload);
     this.eventsGateway.sendToRole('management', 'demo:completed', payload);
   }
+
+  // =========================================================================
+  // Proposal Management Domain Event Listeners (Event-Driven Architecture)
+  // =========================================================================
+
+  @OnEvent(AppEvents.PROPOSAL_CREATED)
+  async handleProposalCreated(payload: {
+    proposalId: string;
+    proposalNumber: string;
+    customerName?: string;
+    responsibleId?: string;
+    requestedBy?: string;
+    actorId?: string;
+  }) {
+    if (payload.responsibleId && payload.responsibleId !== payload.actorId) {
+      await this.createAndPushNotification({
+        userId: payload.responsibleId,
+        type: 'proposal_assigned',
+        title: `New Proposal Assigned: ${payload.proposalNumber}`,
+        body: `You have been assigned to prepare proposal ${payload.proposalNumber} for ${payload.customerName || 'customer'}.`,
+        entityType: 'proposal',
+        entityId: payload.proposalId,
+      });
+    }
+
+    this.eventsGateway.broadcast('proposal:created', payload);
+  }
+
+  @OnEvent(AppEvents.PROPOSAL_REVIEW_REQUESTED)
+  async handleProposalReviewRequested(payload: {
+    proposalId: string;
+    proposalNumber: string;
+    customerName?: string;
+    actorId?: string;
+  }) {
+    const reviewers = await this.db
+      .selectFrom('users')
+      .select('id')
+      .where('role', 'in', ['management', 'regional_manager'])
+      .where('is_active', '=', true)
+      .execute();
+
+    for (const r of reviewers) {
+      if (r.id !== payload.actorId) {
+        await this.createAndPushNotification({
+          userId: r.id,
+          type: 'proposal_review',
+          title: `Proposal Review Required: ${payload.proposalNumber}`,
+          body: `Proposal ${payload.proposalNumber} for ${payload.customerName || 'customer'} is ready for executive review & approval.`,
+          entityType: 'proposal',
+          entityId: payload.proposalId,
+        });
+      }
+    }
+
+    this.eventsGateway.sendToRole('management', 'proposal:review_requested', payload);
+    this.eventsGateway.sendToRole('regional_manager', 'proposal:review_requested', payload);
+  }
+
+  @OnEvent(AppEvents.PROPOSAL_APPROVED)
+  async handleProposalApproved(payload: {
+    proposalId: string;
+    proposalNumber: string;
+    responsibleId?: string;
+    requestedBy?: string;
+    actorId?: string;
+  }) {
+    const targets = new Set<string>();
+    if (payload.responsibleId) targets.add(payload.responsibleId);
+    if (payload.requestedBy) targets.add(payload.requestedBy);
+
+    for (const uId of targets) {
+      if (uId !== payload.actorId) {
+        await this.createAndPushNotification({
+          userId: uId,
+          type: 'proposal_approved',
+          title: `Proposal Approved: ${payload.proposalNumber}`,
+          body: `Proposal ${payload.proposalNumber} has been approved by management and is ready to send.`,
+          entityType: 'proposal',
+          entityId: payload.proposalId,
+        });
+      }
+    }
+
+    this.eventsGateway.broadcast('proposal:approved', payload);
+  }
+
+  @OnEvent(AppEvents.PROPOSAL_SENT)
+  async handleProposalSent(payload: {
+    proposalId: string;
+    proposalNumber: string;
+    followUpOwnerId?: string;
+    actorId?: string;
+  }) {
+    if (payload.followUpOwnerId && payload.followUpOwnerId !== payload.actorId) {
+      await this.createAndPushNotification({
+        userId: payload.followUpOwnerId,
+        type: 'proposal_sent',
+        title: `Proposal Sent: ${payload.proposalNumber}`,
+        body: `Proposal ${payload.proposalNumber} was sent to customer. Follow-up tracking is now active.`,
+        entityType: 'proposal',
+        entityId: payload.proposalId,
+      });
+    }
+
+    this.eventsGateway.broadcast('proposal:sent', payload);
+  }
+
+  @OnEvent(AppEvents.PROPOSAL_FOLLOWUP_LOGGED)
+  async handleProposalFollowupLogged(payload: {
+    proposalId: string;
+    proposalNumber: string;
+    ownerId?: string;
+    ownerName?: string;
+    nextFollowupDate?: string | null;
+  }) {
+    this.eventsGateway.broadcast('proposal:followup_added', payload);
+  }
+
+  @OnEvent(AppEvents.PROPOSAL_OUTCOME_RECORDED)
+  async handleProposalOutcomeRecorded(payload: {
+    proposalId: string;
+    proposalNumber: string;
+    outcome?: string;
+    lostReason?: string | null;
+    actorId?: string;
+  }) {
+    const mgmt = await this.db
+      .selectFrom('users')
+      .select('id')
+      .where('role', '=', 'management')
+      .where('is_active', '=', true)
+      .execute();
+
+    for (const m of mgmt) {
+      if (m.id !== payload.actorId) {
+        await this.createAndPushNotification({
+          userId: m.id,
+          type: 'proposal_outcome',
+          title: `Proposal Concluded: ${payload.proposalNumber} [${payload.outcome}]`,
+          body: `Proposal ${payload.proposalNumber} marked as ${payload.outcome}${payload.lostReason ? ` (${payload.lostReason})` : ''}.`,
+          entityType: 'proposal',
+          entityId: payload.proposalId,
+        });
+      }
+    }
+
+    this.eventsGateway.broadcast('proposal:outcome', payload);
+  }
+
+  @OnEvent(AppEvents.PROPOSAL_STATUS_CHANGED)
+  async handleProposalStatusChanged(payload: any) {
+    this.eventsGateway.broadcast('proposal:updated', payload);
+  }
+
+  @OnEvent(AppEvents.PROPOSAL_OVERDUE_FOLLOWUP)
+  async handleProposalOverdueFollowup(payload: {
+    proposalId: string;
+    proposalNumber: string;
+    followUpOwnerId?: string;
+  }) {
+    if (payload.followUpOwnerId) {
+      await this.createAndPushNotification({
+        userId: payload.followUpOwnerId,
+        type: 'proposal_overdue',
+        title: `Overdue Follow-up: ${payload.proposalNumber}`,
+        body: `Proposal ${payload.proposalNumber} has an overdue customer follow-up. Please log client interaction.`,
+        entityType: 'proposal',
+        entityId: payload.proposalId,
+      });
+    }
+
+    this.eventsGateway.broadcast('proposal:overdue_alert', payload);
+  }
+
+  // ==========================================
+  // MODULE 1: LEADS & CUSTOMER DOMAIN EVENTS
+  // ==========================================
+
+  @OnEvent(AppEvents.LEAD_CREATED)
+  async handleLeadCreated(eventInput: any) {
+    const { payload, eventId } = this.unpackEvent<{
+      leadId: string;
+      organisationId: string;
+      organisationName: string;
+      leadType: string;
+      leadStatus: string;
+      assignedTo: string;
+      regionalManagerId?: string;
+    }>(eventInput);
+
+    if (eventId && (await this.outboxService.isEventProcessed(eventId, 'NotificationListener.leadCreated'))) {
+      return;
+    }
+
+    if (payload.assignedTo) {
+      await this.createAndPushNotification({
+        userId: payload.assignedTo,
+        type: 'lead_assigned',
+        title: `New Lead Registered: ${payload.organisationName}`,
+        body: `A ${payload.leadType.toUpperCase()} lead has been created and assigned to you.`,
+        entityType: 'lead',
+        entityId: payload.leadId,
+      });
+    }
+
+    if (payload.regionalManagerId && payload.regionalManagerId !== payload.assignedTo) {
+      await this.createAndPushNotification({
+        userId: payload.regionalManagerId,
+        type: 'lead_registered',
+        title: `Territory Lead Alert: ${payload.organisationName}`,
+        body: `New ${payload.leadType.toUpperCase()} lead registered in your region.`,
+        entityType: 'lead',
+        entityId: payload.leadId,
+      });
+    }
+
+    this.eventsGateway.broadcast('lead:created', payload);
+
+    if (eventId) {
+      await this.outboxService.markEventProcessed(eventId, 'NotificationListener.leadCreated');
+    }
+  }
+
+  @OnEvent(AppEvents.LEAD_RE_APPROACHED)
+  async handleLeadReApproached(eventInput: any) {
+    const { payload, eventId } = this.unpackEvent<{
+      leadId: string;
+      organisationId: string;
+      organisationName: string;
+      assignedTo: string;
+      regionalManagerId?: string;
+      reason?: string;
+    }>(eventInput);
+
+    if (eventId && (await this.outboxService.isEventProcessed(eventId, 'NotificationListener.leadReApproached'))) {
+      return;
+    }
+
+    if (payload.assignedTo) {
+      await this.createAndPushNotification({
+        userId: payload.assignedTo,
+        type: 'lead_re_approached',
+        title: `Re-Approached Account: ${payload.organisationName}`,
+        body: `An existing account with historical interactions has been re-approached for a new sales cycle.`,
+        entityType: 'lead',
+        entityId: payload.leadId,
+      });
+    }
+
+    this.eventsGateway.broadcast('lead:re_approached', payload);
+
+    if (eventId) {
+      await this.outboxService.markEventProcessed(eventId, 'NotificationListener.leadReApproached');
+    }
+  }
+
+  @OnEvent(AppEvents.LEAD_ASSIGNED)
+  async handleLeadAssigned(eventInput: any) {
+    const { payload, eventId } = this.unpackEvent<{
+      leadId: string;
+      organisationId: string;
+      previousSalespersonId?: string;
+      newSalespersonId: string;
+      previousRegionalManagerId?: string;
+      newRegionalManagerId?: string;
+      reason?: string;
+    }>(eventInput);
+
+    if (eventId && (await this.outboxService.isEventProcessed(eventId, 'NotificationListener.leadAssigned'))) {
+      return;
+    }
+
+    // Notify new salesperson
+    await this.createAndPushNotification({
+      userId: payload.newSalespersonId,
+      type: 'lead_assigned',
+      title: 'Lead Ownership Assigned',
+      body: `You are now the designated owner for lead. Reason: ${payload.reason || 'Management reassignment'}.`,
+      entityType: 'lead',
+      entityId: payload.leadId,
+    });
+
+    // If reassigned from someone else, notify previous salesperson
+    if (payload.previousSalespersonId && payload.previousSalespersonId !== payload.newSalespersonId) {
+      await this.createAndPushNotification({
+        userId: payload.previousSalespersonId,
+        type: 'lead_reassigned',
+        title: 'Lead Ownership Transitioned',
+        body: `Ownership of lead has transitioned to another team member.`,
+        entityType: 'lead',
+        entityId: payload.leadId,
+      });
+    }
+
+    this.eventsGateway.broadcast('lead:assigned', payload);
+
+    if (eventId) {
+      await this.outboxService.markEventProcessed(eventId, 'NotificationListener.leadAssigned');
+    }
+  }
+
+  @OnEvent(AppEvents.LEAD_STATUS_CHANGED)
+  async handleLeadStatusChanged(eventInput: any) {
+    const { payload, eventId } = this.unpackEvent<{
+      leadId: string;
+      organisationId: string;
+      fromStatus: string;
+      toStatus: string;
+      lossReason?: string;
+      assignedTo?: string;
+      regionalManagerId?: string;
+    }>(eventInput);
+
+    if (eventId && (await this.outboxService.isEventProcessed(eventId, 'NotificationListener.leadStatusChanged'))) {
+      return;
+    }
+
+    if (payload.assignedTo) {
+      await this.createAndPushNotification({
+        userId: payload.assignedTo,
+        type: 'lead_status',
+        title: `Lead Pipeline Stage: ${payload.toStatus.toUpperCase()}`,
+        body: `Lead progressed from ${payload.fromStatus} to ${payload.toStatus}.`,
+        entityType: 'lead',
+        entityId: payload.leadId,
+      });
+    }
+
+    this.eventsGateway.broadcast('lead:status_changed', payload);
+
+    if (eventId) {
+      await this.outboxService.markEventProcessed(eventId, 'NotificationListener.leadStatusChanged');
+    }
+  }
+
+  @OnEvent(AppEvents.LEAD_CONVERTED)
+  async handleLeadConverted(eventInput: any) {
+    const { payload, eventId } = this.unpackEvent<{
+      leadId: string;
+      organisationId: string;
+      assignedTo?: string;
+      valueLakh?: number;
+    }>(eventInput);
+
+    if (eventId && (await this.outboxService.isEventProcessed(eventId, 'NotificationListener.leadConverted'))) {
+      return;
+    }
+
+    // Broadcast win to management
+    const mgmt = await this.db
+      .selectFrom('users')
+      .select('id')
+      .where('role', '=', 'management')
+      .where('is_active', '=', true)
+      .execute();
+
+    for (const m of mgmt) {
+      await this.createAndPushNotification({
+        userId: m.id,
+        type: 'lead_converted',
+        title: '🎉 Lead Converted to Customer!',
+        body: `Lead converted successfully! Estimated value: ${payload.valueLakh ? `₹${payload.valueLakh} Lakh` : 'N/A'}.`,
+        entityType: 'lead',
+        entityId: payload.leadId,
+      });
+    }
+
+    this.eventsGateway.broadcast('lead:converted', payload);
+
+    if (eventId) {
+      await this.outboxService.markEventProcessed(eventId, 'NotificationListener.leadConverted');
+    }
+  }
+
+  @OnEvent(AppEvents.LEAD_LOST)
+  async handleLeadLost(eventInput: any) {
+    const { payload, eventId } = this.unpackEvent<{
+      leadId: string;
+      organisationId: string;
+      lossReason?: string;
+      assignedTo?: string;
+    }>(eventInput);
+
+    if (eventId && (await this.outboxService.isEventProcessed(eventId, 'NotificationListener.leadLost'))) {
+      return;
+    }
+
+    this.eventsGateway.broadcast('lead:lost', payload);
+
+    if (eventId) {
+      await this.outboxService.markEventProcessed(eventId, 'NotificationListener.leadLost');
+    }
+  }
+
+  @OnEvent(AppEvents.INTERACTION_CREATED)
+  async handleInteractionCreated(eventInput: any) {
+    const { payload, eventId } = this.unpackEvent<{
+      interactionId: string;
+      organisationId: string;
+      leadId?: string;
+      type: string;
+      employeeId: string;
+    }>(eventInput);
+
+    if (eventId && (await this.outboxService.isEventProcessed(eventId, 'NotificationListener.interactionCreated'))) {
+      return;
+    }
+
+    this.eventsGateway.broadcast('interaction:created', payload);
+
+    if (eventId) {
+      await this.outboxService.markEventProcessed(eventId, 'NotificationListener.interactionCreated');
+    }
+  }
+
+  @OnEvent(AppEvents.FOLLOWUP_CREATED)
+  async handleFollowUpCreated(eventInput: any) {
+    const { payload, eventId } = this.unpackEvent<{
+      followUpId: string;
+      organisationId: string;
+      leadId?: string;
+      assignedTo: string;
+      dueDate: string;
+    }>(eventInput);
+
+    if (eventId && (await this.outboxService.isEventProcessed(eventId, 'NotificationListener.followUpCreated'))) {
+      return;
+    }
+
+    await this.createAndPushNotification({
+      userId: payload.assignedTo,
+      type: 'followup_assigned',
+      title: 'Action Required: Client Follow-up Scheduled',
+      body: `A follow-up has been scheduled for ${payload.dueDate}.`,
+      entityType: 'follow_up',
+      entityId: payload.followUpId,
+    });
+
+    this.eventsGateway.broadcast('followup:created', payload);
+
+    if (eventId) {
+      await this.outboxService.markEventProcessed(eventId, 'NotificationListener.followUpCreated');
+    }
+  }
+
+  @OnEvent(AppEvents.FOLLOWUP_COMPLETED)
+  async handleFollowUpCompleted(eventInput: any) {
+    const { payload, eventId } = this.unpackEvent<{
+      followUpId: string;
+      outcome?: string;
+      nextFollowUpDate?: string;
+    }>(eventInput);
+
+    if (eventId && (await this.outboxService.isEventProcessed(eventId, 'NotificationListener.followUpCompleted'))) {
+      return;
+    }
+
+    this.eventsGateway.broadcast('followup:completed', payload);
+
+    if (eventId) {
+      await this.outboxService.markEventProcessed(eventId, 'NotificationListener.followUpCompleted');
+    }
+  }
+
+  @OnEvent(AppEvents.FOLLOWUP_OVERDUE)
+  async handleFollowUpOverdue(eventInput: any) {
+    const { payload, eventId } = this.unpackEvent<{
+      followUpId: string;
+      assignedTo: string;
+      dueDate: string;
+      organisationName?: string;
+    }>(eventInput);
+
+    if (eventId && (await this.outboxService.isEventProcessed(eventId, 'NotificationListener.followUpOverdue'))) {
+      return;
+    }
+
+    await this.createAndPushNotification({
+      userId: payload.assignedTo,
+      type: 'followup_overdue',
+      title: '⚠️ OVERDUE: Customer Follow-up Pending',
+      body: `Follow-up for ${payload.organisationName || 'Client'} was due on ${payload.dueDate}. Immediate touchpoint needed.`,
+      entityType: 'follow_up',
+      entityId: payload.followUpId,
+    });
+
+    this.eventsGateway.broadcast('followup:overdue_alert', payload);
+
+    if (eventId) {
+      await this.outboxService.markEventProcessed(eventId, 'NotificationListener.followUpOverdue');
+    }
+  }
 }
+

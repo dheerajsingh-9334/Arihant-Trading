@@ -19,8 +19,17 @@ export class InteractionsController {
   constructor(private readonly interactionsService: InteractionsService) {}
 
   @Get()
-  async findByOrganisation(@Query('organisation_id') orgId: string) {
-    return this.interactionsService.findByOrganisation(orgId);
+  async find(
+    @Query('organisation_id') orgId?: string,
+    @Query('lead_id') leadId?: string,
+  ) {
+    if (leadId) {
+      return this.interactionsService.findByLead(leadId);
+    }
+    if (orgId) {
+      return this.interactionsService.findByOrganisation(orgId);
+    }
+    return [];
   }
 
   @Post()

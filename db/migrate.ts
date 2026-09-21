@@ -85,6 +85,42 @@ async function runMigration() {
       console.log('   ✓ db/migrations/005_module3_demo_management.sql executed successfully.');
     }
 
+    // 3.8. Migration 006 - Module 5 Proposal Management
+    const m6Path = path.join(rootDir, 'db/migrations/006_proposal_management.sql');
+    if (fs.existsSync(m6Path)) {
+      console.log('📜 [3.8/5] Executing db/migrations/006_proposal_management.sql...');
+      const m6Sql = fs.readFileSync(m6Path, 'utf8');
+      await client.query(m6Sql);
+      console.log('   ✓ db/migrations/006_proposal_management.sql executed successfully.');
+    }
+
+    // 3.9. Migration 007 - Module 4 Tender Management EDA
+    const m7Path = path.join(rootDir, 'db/migrations/007_tender_management_eda.sql');
+    if (fs.existsSync(m7Path)) {
+      console.log('📜 [3.9/5] Executing db/migrations/007_tender_management_eda.sql...');
+      const m7Sql = fs.readFileSync(m7Path, 'utf8');
+      await client.query(m7Sql);
+      console.log('   ✓ db/migrations/007_tender_management_eda.sql executed successfully.');
+    }
+
+    // 3.10. Migration 008 - Module 1 Lead & Customer Management EDA
+    const m8Path = path.join(rootDir, 'db/migrations/008_lead_and_customer_eda.sql');
+    if (fs.existsSync(m8Path)) {
+      console.log('📜 [3.10/5] Executing db/migrations/008_lead_and_customer_eda.sql...');
+      const m8Sql = fs.readFileSync(m8Path, 'utf8');
+      await client.query(m8Sql);
+      console.log('   ✓ db/migrations/008_lead_and_customer_eda.sql executed successfully.');
+    }
+
+    // 3.11. Migration 009 - Module 4 Tender Compatibility Columns & Triggers
+    const m9Path = path.join(rootDir, 'db/migrations/009_tender_compatibility_columns.sql');
+    if (fs.existsSync(m9Path)) {
+      console.log('📜 [3.11/5] Executing db/migrations/009_tender_compatibility_columns.sql...');
+      const m9Sql = fs.readFileSync(m9Path, 'utf8');
+      await client.query(m9Sql);
+      console.log('   ✓ db/migrations/009_tender_compatibility_columns.sql executed successfully.');
+    }
+
     // 4. Baseline Zones & Regions (Essential Master References)
     console.log('🌍 [4/5] Seeding baseline Zones & Regions masters...');
     const zonesRes = await client.query(`

@@ -7,6 +7,7 @@ import { DatabaseModule } from './common/database/database.module.js';
 import { RealtimeModule } from './common/realtime/realtime.module.js';
 import { CloudinaryModule } from './common/cloudinary/cloudinary.module.js';
 import { AppEventsModule } from './common/events/events.module.js';
+import { OutboxModule } from './common/outbox/outbox.module.js';
 import { JobsModule } from './jobs/jobs.module.js';
 
 import { AuthModule } from './modules/auth/auth.module.js';
@@ -16,6 +17,7 @@ import { OrganisationsModule } from './modules/organisations/organisations.modul
 import { ContactsModule } from './modules/contacts/contacts.module.js';
 import { LeadsModule } from './modules/leads/leads.module.js';
 import { InteractionsModule } from './modules/interactions/interactions.module.js';
+import { FollowUpsModule } from './modules/follow-ups/follow-ups.module.js';
 import { VisitsModule } from './modules/visits/visits.module.js';
 import { DemosModule } from './modules/demos/demos.module.js';
 import { TendersModule } from './modules/tenders/tenders.module.js';
@@ -43,6 +45,7 @@ import { AuditModule } from './modules/audit/audit.module.js';
     RealtimeModule,
     CloudinaryModule,
     AppEventsModule,
+    OutboxModule,
     JobsModule,
     AuthModule,
     UsersModule,
@@ -51,6 +54,7 @@ import { AuditModule } from './modules/audit/audit.module.js';
     ContactsModule,
     LeadsModule,
     InteractionsModule,
+    FollowUpsModule,
     VisitsModule,
     DemosModule,
     TendersModule,
