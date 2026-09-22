@@ -74,11 +74,11 @@ export default function AppLayout({
     restrictedRoute && !restrictedRoute.roles.includes(user.role);
 
   return (
-    <div className="min-h-screen bg-[#F7FBFF] flex flex-row text-[#1A1A1A]">
+    <div className="h-screen bg-[#F7FBFF] flex flex-row text-[#1A1A1A] overflow-hidden">
       <Sidebar />
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
         <Navbar onOpenCommand={() => setIsCommandOpen(true)} />
-        <main className="flex-1 overflow-y-auto p-6 lg:p-8 bg-[#F7FBFF]">
+        <main className="flex-1 overflow-y-auto p-6 lg:p-8 bg-[#F7FBFF] custom-scrollbar">
           {isUnauthorized ? (
             <div className="max-w-2xl mx-auto my-12 bg-white border border-amber-200 rounded-2xl p-8 shadow-xs text-center space-y-5">
               <div className="h-14 w-14 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center mx-auto text-amber-700">

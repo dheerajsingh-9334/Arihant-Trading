@@ -22,13 +22,20 @@ export const KYSELY_DB = 'KYSELY_DB';
         const pool = new Pool({
           connectionString,
           max: 10,
-          idleTimeoutMillis: 10000,
-          connectionTimeoutMillis: 5000,
+          idleTimeoutMillis: 30000,
+          connectionTimeoutMillis: 15000,
+          keepAlive: true,
+          keepAliveInitialDelayMillis: 10000,
           ssl:
             connectionString.includes('supabase') ||
             process.env.NODE_ENV === 'production'
               ? { rejectUnauthorized: false }
               : undefined,
+        });
+
+        pool.on('error', (err) => {
+          // Prevent unhandled errors from disconnected idle pool clients
+          console.warn('[DatabaseModule] Idle client pool warning:', err.message);
         });
 
         return new Kysely<Database>({

@@ -2,7 +2,7 @@
 node_modules
 .pnpm-store
 
-# Environment variables & secrets (CRITICAL)
+# Environment variables & secrets (CRITICAL: prevents credential leaks)
 .env
 .env*.local
 *.env
@@ -33,3 +33,4 @@ Thumbs.db
 .vscode/
 *.swp
 *.swo
+docs/

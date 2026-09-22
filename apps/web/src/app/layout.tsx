@@ -3,6 +3,7 @@ import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
 import './globals.css';
 import { AuthProvider } from '@/lib/auth-context';
+import { PersonaSwitcherFab } from '@/components/layout/PersonaSwitcherFab';
 
 export const metadata: Metadata = {
   title: 'Arihant BOS | Defence & Security GeM ERP',
@@ -21,7 +22,10 @@ export default function RootLayout({
         className={`${GeistSans.variable} ${GeistMono.variable} font-sans bg-[#F7FBFF] text-[#1A1A1A] text-[14px] antialiased selection:bg-[#EAF2FF] selection:text-[#223FA7]`}
         suppressHydrationWarning
       >
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          {children}
+          <PersonaSwitcherFab />
+        </AuthProvider>
       </body>
     </html>
   );

@@ -699,8 +699,8 @@ export const Sidebar: React.FC = () => {
   };
 
   return (
-    <aside className="w-72 min-h-screen bg-white border-r border-[#D6E3F5] flex flex-col justify-between shrink-0 z-20 select-none shadow-xs text-[#1A1A1A]">
-      <div className="flex flex-col h-full">
+    <aside className="w-72 h-screen max-h-screen bg-white border-r border-[#D6E3F5] flex flex-col justify-between shrink-0 z-20 select-none shadow-xs text-[#1A1A1A]">
+      <div className="flex flex-col flex-1 min-h-0">
         {/* Brand Insignia Header */}
         <div className="h-[64px] px-5 border-b border-[#D6E3F5] flex items-center justify-between bg-white shrink-0">
           <div className="flex items-center space-x-3 min-w-0">
@@ -728,7 +728,7 @@ export const Sidebar: React.FC = () => {
           </div>
         </div>
         {/* Dynamic Role Navigation Items */}
-        <nav className="px-2 py-3 space-y-4 overflow-y-auto custom-scrollbar flex-1">
+        <nav className="px-2 py-3 space-y-4 overflow-y-auto custom-scrollbar flex-1 min-h-0">
           {navGroups.map((group) => {
             // Filter strictly by RBAC module permission
             const visibleItems = group.items.filter((item) => isModuleAllowed(item.moduleKey));
@@ -801,11 +801,25 @@ export const Sidebar: React.FC = () => {
           <span className="text-[10px] text-emerald-700 font-semibold bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">Connected</span>
         </div>
 
+        {user && (
+          <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-white border border-[#D6E3F5]">
+            <div className="h-6 w-6 rounded-md bg-[#223FA7] text-white flex items-center justify-center text-[11px] font-bold shrink-0">
+              {user.full_name ? user.full_name[0].toUpperCase() : 'U'}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-xs font-bold text-[#1A1A1A] truncate">{user.full_name}</div>
+              <div className="text-[9px] text-[#5871A5] font-semibold uppercase tracking-wider truncate">
+                {user.role.replace('_', ' ')}
+              </div>
+            </div>
+          </div>
+        )}
+
         <button
           onClick={logout}
-          className="w-full flex items-center justify-center space-x-2 px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-600 hover:text-red-700 hover:bg-red-50 border border-[#D6E3F5] transition-colors min-w-0 truncate"
+          className="w-full flex items-center justify-center space-x-2 px-3 py-2 rounded-lg text-xs font-semibold text-gray-700 hover:text-red-700 bg-white hover:bg-red-50 border border-[#D6E3F5] hover:border-red-200 transition-colors min-w-0 truncate cursor-pointer shadow-2xs group"
         >
-          <LogOut className="h-3.5 w-3.5 shrink-0" />
+          <LogOut className="h-3.5 w-3.5 shrink-0 text-gray-500 group-hover:text-red-600 transition-colors" />
           <span className="truncate">Sign Out</span>
         </button>
       </div>

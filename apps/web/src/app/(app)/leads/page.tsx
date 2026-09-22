@@ -924,7 +924,7 @@ export default function LeadsPage() {
               }
             />
           ) : (
-            <Table>
+            <Table className="min-w-[1240px]">
               <TableHeader>
                 <TableRow>
                   <TableHead>Opportunity / Title</TableHead>
@@ -1140,7 +1140,7 @@ export default function LeadsPage() {
               description="No organisations match your search. Create an opportunity to auto-register an account."
             />
           ) : (
-            <Table>
+            <Table className="min-w-[1050px]">
               <TableHeader>
                 <TableRow>
                   <TableHead>Organisation Name</TableHead>
@@ -1314,7 +1314,7 @@ export default function LeadsPage() {
               description="You have no pending follow-up touchpoints matching this timeframe."
             />
           ) : (
-            <Table>
+            <Table className="min-w-[950px]">
               <TableHeader>
                 <TableRow>
                   <TableHead>Due Date</TableHead>
@@ -1481,7 +1481,7 @@ export default function LeadsPage() {
                 <CardTitle>Salesperson Conversion & Pipeline Ownership</CardTitle>
               </CardHeader>
               <CardContent>
-                <Table>
+                <Table className="min-w-[950px]">
                   <TableHeader>
                     <TableRow>
                       <TableHead>Salesperson Name</TableHead>
@@ -1532,7 +1532,7 @@ export default function LeadsPage() {
                 <CardTitle>Territorial Zone & Regional Pipeline Analysis</CardTitle>
               </CardHeader>
               <CardContent>
-                <Table>
+                <Table className="min-w-[800px]">
                   <TableHeader>
                     <TableRow>
                       <TableHead>Zone</TableHead>
@@ -1569,7 +1569,7 @@ export default function LeadsPage() {
                 <CardTitle>Product Demand & Inquiry Heatmap</CardTitle>
               </CardHeader>
               <CardContent>
-                <Table>
+                <Table className="min-w-[750px]">
                   <TableHeader>
                     <TableRow>
                       <TableHead>Product Name</TableHead>

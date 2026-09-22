@@ -5,7 +5,7 @@ export const Table = React.forwardRef<
   HTMLTableElement,
   React.HTMLAttributes<HTMLTableElement>
 >(({ className, ...props }, ref) => (
-  <div className="relative w-full overflow-auto rounded-xl border border-[#D6E3F5] bg-white shadow-xs">
+  <div className="relative w-full overflow-x-auto overflow-y-visible rounded-xl border border-[#D6E3F5] bg-white shadow-xs custom-scrollbar">
     <table
       ref={ref}
       className={twMerge('w-full caption-bottom text-xs text-left', className)}
@@ -22,7 +22,7 @@ export const TableHeader = React.forwardRef<
   <thead
     ref={ref}
     className={twMerge(
-      'bg-[#F7FBFF] border-b border-[#D6E3F5] text-[11px] font-semibold text-[#5871A5] uppercase tracking-wider',
+      'bg-[#F7FBFF] border-b border-[#D6E3F5] text-[11px] font-semibold text-[#5871A5] uppercase tracking-wider sticky top-0 z-10',
       className,
     )}
     {...props}
