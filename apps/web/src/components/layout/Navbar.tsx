@@ -88,7 +88,7 @@ export const Navbar: React.FC<{ onOpenCommand?: () => void }> = ({
       {/* Right controls */}
       <div className="flex items-center space-x-3.5">
         {/* Live IST clock */}
-        <div className="hidden lg:flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-[#F7FBFF] border border-[#D6E3F5] text-xs font-mono text-[#1A1A1A]">
+        <div className="hidden lg:flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-[#F7FBFF] border border-[#D6E3F5] text-xs tabular-nums text-[#1A1A1A]">
           <Clock className="h-3.5 w-3.5 text-[#223FA7]" />
           <span className="font-semibold">{istTime || 'IST Clock'}</span>
           <span className="text-[10px] px-1.5 py-0.2 rounded bg-[#EAF2FF] text-[#223FA7] font-bold border border-[#D6E3F5]">
@@ -96,10 +96,10 @@ export const Navbar: React.FC<{ onOpenCommand?: () => void }> = ({
           </span>
         </div>
 
-        {/* Security badge */}
+        {/* System status */}
         <div className="hidden sm:flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-medium">
           <ShieldCheck className="h-3.5 w-3.5" />
-          <span className="text-[11px] font-semibold">PostgreSQL 16</span>
+          <span className="text-[11px] font-semibold">System Active</span>
         </div>
 
         {/* Notifications Icon with unread badge */}

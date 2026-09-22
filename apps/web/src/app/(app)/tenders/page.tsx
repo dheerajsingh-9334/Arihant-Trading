@@ -638,7 +638,7 @@ export default function TendersPage() {
       {/* 1. Page Header */}
       <PageHeader
         title="Tender Pipeline & Bids Command"
-        description="Event-driven government bidding, GeM/CPPP portal issue tracking, dual-control signoffs & win/loss analytics."
+        description="Government bidding pipeline, GeM/CPPP portal issue tracking, dual-control signoffs, and win/loss analytics."
         icon={<FileText className="h-6 w-6 text-[#223FA7]" />}
         actions={
           <div className="flex items-center gap-2">
@@ -1311,7 +1311,7 @@ export default function TendersPage() {
                   <h4 className="font-bold text-[#1A1A1A] mb-1.5 uppercase text-[11px]">
                     Technical Requirement & Scope
                   </h4>
-                  <div className="p-3.5 rounded-xl bg-[#F7FBFF] border border-[#D6E3F5] text-gray-800 leading-relaxed font-mono text-[11px]">
+                  <div className="p-3.5 rounded-xl bg-[#F7FBFF] border border-[#D6E3F5] text-[#1A1A1A] leading-relaxed text-xs">
                     {selectedTender.requirement_text || 'No technical requirement text provided.'}
                   </div>
                 </div>
@@ -1635,8 +1635,8 @@ export default function TendersPage() {
             {detailTab === 'timeline' && (
               <div className="space-y-3">
                 <SectionHeader
-                  title="Immutable Activity Audit Trail"
-                  description="Complete event-driven log of all state transitions and management interventions"
+                  title="Activity Audit Trail"
+                  description="Complete audit trail of all state transitions and management interventions"
                 />
 
                 {activities.length === 0 ? (

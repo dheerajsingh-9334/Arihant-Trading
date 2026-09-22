@@ -8,7 +8,6 @@ import { Navbar } from '@/components/layout/Navbar';
 import { CommandPalette } from '@/components/layout/CommandPalette';
 import { Shield, ShieldAlert, ArrowLeft, UserCheck } from 'lucide-react';
 import { Button } from '@/components/ui';
-import { PersonaSwitcherFab } from '@/components/layout/PersonaSwitcherFab';
 import type { UserRole } from '@arihant/shared';
 
 const ROUTE_PERMISSIONS: { path: string; name: string; roles: UserRole[] }[] = [
@@ -158,7 +157,6 @@ export default function AppLayout({
         isOpen={isCommandOpen}
         onClose={() => setIsCommandOpen(false)}
       />
-      <PersonaSwitcherFab />
     </div>
   );
 }

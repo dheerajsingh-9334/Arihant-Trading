@@ -718,8 +718,6 @@ export default function VisitsPage() {
     <PageContainer>
       {/* ── TOP HERO BANNER: VISIT & FIELD PLANNING ── */}
       <PageHeader
-        moduleBadge="Module 2"
-        tagline="BOS-FIELD-OPS"
         icon={<Calendar className="h-7 w-7 text-[#223FA7]" />}
         title="Field Visits & Tour Operations"
         description="Weekly tour programs, multi-stop trips, regional manager directives, and post-visit intelligence."
@@ -940,13 +938,13 @@ export default function VisitsPage() {
 
                       {v.manager_assigned && (
                         <Badge variant="warning" size="sm" className="bg-amber-100 text-amber-900 border-amber-300">
-                          MANAGER ASSIGNED
+                          Manager Assigned
                         </Badge>
                       )}
 
                       {v.travel_required && (
                         <Badge variant="info" size="sm" className="bg-blue-50 text-blue-800 border-blue-200">
-                          TRAVEL REQUIRED
+                          Travel Required
                         </Badge>
                       )}
 
@@ -1239,7 +1237,7 @@ export default function VisitsPage() {
                 <Clock className="h-3.5 w-3.5" />
                 <span>Today's Deployed Operations ({managerData.grouped?.today?.length || 0})</span>
               </span>
-              <span className="text-[11px] font-mono font-semibold text-emerald-700">Live Field Status</span>
+              <span className="text-xs font-medium text-emerald-700">Live Field Status</span>
             </h3>
             {(!managerData.grouped?.today || managerData.grouped?.today?.length === 0) ? (
               <p className="text-xs text-gray-500 italic p-3 bg-white rounded-lg border border-gray-200">No field visits scheduled for today.</p>
@@ -1255,7 +1253,7 @@ export default function VisitsPage() {
                 <Calendar className="h-3.5 w-3.5" />
                 <span>Tomorrow's Deployments ({managerData.grouped?.tomorrow?.length || 0})</span>
               </span>
-              <span className="text-[11px] font-mono font-semibold text-blue-700">Departure Readiness</span>
+              <span className="text-xs font-medium text-blue-700">Departure Readiness</span>
             </h3>
             {(!managerData.grouped?.tomorrow || managerData.grouped?.tomorrow?.length === 0) ? (
               <p className="text-xs text-gray-500 italic p-3 bg-white rounded-lg border border-gray-200">No field visits scheduled for tomorrow.</p>
@@ -1271,7 +1269,7 @@ export default function VisitsPage() {
                 <CalendarDays className="h-3.5 w-3.5" />
                 <span>Next 7 Days Field Schedule ({managerData.grouped?.next_7_days?.length || 0})</span>
               </span>
-              <span className="text-[11px] font-mono font-semibold text-indigo-700">Pre-Planned Horizon</span>
+              <span className="text-xs font-medium text-indigo-700">Pre-Planned Horizon</span>
             </h3>
             {(!managerData.grouped?.next_7_days || managerData.grouped?.next_7_days?.length === 0) ? (
               <p className="text-xs text-gray-500 italic p-3 bg-white rounded-lg border border-gray-200">No field visits scheduled for the next 7 days.</p>
@@ -1287,7 +1285,7 @@ export default function VisitsPage() {
                 <Route className="h-3.5 w-3.5" />
                 <span>Later & Long-Range Tour Programs ({managerData.grouped?.later?.length || 0})</span>
               </span>
-              <span className="text-[11px] font-mono font-semibold text-purple-700">Future Calendar</span>
+              <span className="text-xs font-medium text-purple-700">Future Calendar</span>
             </h3>
             {(!managerData.grouped?.later || managerData.grouped?.later?.length === 0) ? (
               <p className="text-xs text-gray-500 italic p-3 bg-white rounded-lg border border-gray-200">No long-range visits scheduled beyond 7 days.</p>

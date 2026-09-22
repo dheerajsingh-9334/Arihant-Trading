@@ -582,11 +582,9 @@ export default function DemosPage() {
     <PageContainer>
       {/* Top Banner & Header */}
       <PageHeader
-        moduleBadge="Module 3"
-        tagline="BOS-DEMO-SUITE"
         icon={<Sparkles className="h-7 w-7 text-[#223FA7]" />}
         title="Field Demonstrations & Trials Management"
-        description="End-to-end management of client trial requests, multi-depot fleet availability, concurrency-safe reservations, date confirmation, failure analysis, and visit integration."
+        description="End-to-end management of client trial requests, multi-depot fleet availability, equipment reservations, date confirmation, failure analysis, and visit integration."
         actions={
           <>
             <Button
@@ -1126,7 +1124,7 @@ export default function DemosPage() {
               <div>
                 <h3 className="text-base font-bold text-[#1A1A1A] flex items-center gap-2">
                   <Package className="h-5 w-5 text-[#223FA7]" />
-                  Live Fleet Availability & Conflict Checker (§8 & §10)
+                  Live Fleet Availability & Conflict Checker
                 </h3>
                 <p className="text-xs text-[#5871A5] mt-1">
                   Query inventory across Delhi, Patna, and Kolkata depots for specific dates to prevent
@@ -1358,7 +1356,7 @@ export default function DemosPage() {
               <Card className="p-6 bg-white border border-[#D6E3F5] rounded-xl shadow-2xs">
                 <SectionHeader
                   icon={<AlertTriangle className="h-5 w-5 text-rose-500" />}
-                  title="Structured Demo Failure Analysis (§18)"
+                  title="Structured Demo Failure Analysis"
                   description="Categorized breakdown of trial deficiencies to guide technical R&D, product tuning, and sales training."
                   badge={<Badge variant="danger">{analyticsData.overview.unsuccessful} Total Failures</Badge>}
                   className="mb-4"
@@ -1430,7 +1428,7 @@ export default function DemosPage() {
           <Card className="p-5 bg-white border border-[#D6E3F5] rounded-xl shadow-2xs">
             <SectionHeader
               icon={<History className="h-5 w-5 text-[#223FA7]" />}
-              title="Customer Demonstration & Field Trial Timeline (§20)"
+              title="Customer Demonstration & Field Trial Timeline"
               description="Select an organisation to view the complete history of trials, certificates, outcomes, and follow-up actions."
             />
 
@@ -1513,7 +1511,7 @@ export default function DemosPage() {
       <Modal
         isOpen={isCreateOpen}
         onClose={() => setIsCreateOpen(false)}
-        title="Create New Demo Trial Request (§1)"
+        title="Create New Demo Trial Request"
       >
         <form onSubmit={handleCreateDemo} className="space-y-4 text-sm">
           <Select
@@ -1599,7 +1597,7 @@ export default function DemosPage() {
             <Checkbox
               checked={newDemo.travel_required}
               onChange={(e) => setNewDemo({ ...newDemo, travel_required: e.target.checked })}
-              label="Travel Required for Demo Team (§12)"
+              label="Travel Required for Demo Team"
             />
 
             {newDemo.travel_required && (
@@ -1658,7 +1656,7 @@ export default function DemosPage() {
 
           <div>
             <label className="block text-xs font-medium text-[#1A1A1A] mb-1.5">
-              Select Demo Specialist (Live Conflict & Availability Check §11) *
+              Select Demo Specialist (Availability Checked) *
             </label>
             <div className="space-y-2 max-h-48 overflow-y-auto border border-[#D6E3F5] rounded-lg p-2 bg-[#F7FBFF]">
               {teamMembers.map((member) => (
@@ -1807,7 +1805,7 @@ export default function DemosPage() {
 
           <div>
             <label className="block text-xs font-medium text-[#1A1A1A] mb-1.5">
-              Select Fleet Equipment Unit (Physical Serial Number §6 & §7) *
+              Select Fleet Equipment Unit (Serial Number & Depot) *
             </label>
             <div className="space-y-2 max-h-56 overflow-y-auto border border-[#D6E3F5] rounded-lg p-2 bg-[#F7FBFF]">
               {equipmentList.map((unit) => {
@@ -1948,7 +1946,7 @@ export default function DemosPage() {
           />
 
           <Input
-            label="Rescheduling Reason (MANDATORY §16) *"
+            label="Rescheduling Reason *"
             placeholder="e.g. Client inspection postponed due to state VIP security deployment"
             value={rescheduleForm.reason}
             onChange={(e) => setRescheduleForm({ ...rescheduleForm, reason: e.target.value })}
@@ -1984,7 +1982,7 @@ export default function DemosPage() {
           </div>
 
           <Select
-            label="Cancellation Reason (MANDATORY §15) *"
+            label="Cancellation Reason *"
             value={cancelForm.cancellation_reason}
             onChange={(e) => setCancelForm({ ...cancelForm, cancellation_reason: e.target.value })}
             options={[
@@ -2042,7 +2040,7 @@ export default function DemosPage() {
                 onChange={(e) =>
                   setOutcomeForm({ ...outcomeForm, decision_maker_present: e.target.checked })
                 }
-                label="Decision-Maker Attended Trial (§17)"
+                label="Decision-Maker Attended Trial"
               />
             </div>
           </div>
@@ -2051,7 +2049,7 @@ export default function DemosPage() {
           {outcomeForm.result === 'fail' && (
             <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 space-y-2">
               <span className="text-xs font-bold text-rose-700 block">
-                Structured Failure Reason (REQUIRED FOR ANALYTICS §18) *
+                Structured Failure Reason *
               </span>
               <Select
                 value={outcomeForm.failure_reason}
@@ -2199,7 +2197,7 @@ export default function DemosPage() {
       <Modal
         isOpen={isEquipmentModalOpen}
         onClose={() => setIsEquipmentModalOpen(false)}
-        title={equipmentForm.id ? 'Edit Depot Equipment Unit' : 'Add New Depot Equipment Unit (§6)'}
+        title={equipmentForm.id ? 'Edit Depot Equipment Unit' : 'Add New Depot Equipment Unit'}
       >
         <form onSubmit={handleSaveEquipment} className="space-y-4 text-sm">
           <Select
@@ -2222,7 +2220,7 @@ export default function DemosPage() {
               required
             />
             <Input
-              label="Serial Number (Unique §6) *"
+              label="Serial Number *"
               placeholder="e.g. DFMD-DEL-03"
               value={equipmentForm.serial_no}
               onChange={(e) => setEquipmentForm({ ...equipmentForm, serial_no: e.target.value })}

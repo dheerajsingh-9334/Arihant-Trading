@@ -146,7 +146,7 @@ export default function ServicePage() {
   return (
     <PageContainer>
       <PageHeader
-        badge="Module 11 — Maintenance & Support"
+        badge="Maintenance & Support"
         title="Service Desk, Spares & AMC Support"
         subtitle="Breakdown maintenance, on-site engineer deployment, and customer signoff vouchers."
         icon={<Wrench className="h-5 w-5 text-[#223FA7]" />}

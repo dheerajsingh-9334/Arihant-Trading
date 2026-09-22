@@ -117,7 +117,7 @@ export const CommandPalette: React.FC<{
     },
     {
       id: 'page-admin',
-      title: 'Enterprise Administration & 8-Persona RBAC',
+      title: 'Enterprise Administration & Access Controls',
       subtitle: 'Users directory, department hierarchy, equipment masters & audit logs',
       category: 'Page',
       href: '/admin',

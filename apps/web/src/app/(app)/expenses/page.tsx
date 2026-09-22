@@ -179,7 +179,7 @@ export default function ExpensesPage() {
     <PageContainer>
       {/* Top Header */}
       <PageHeader
-        badge="Module 7 — Travel & Reimbursements"
+        badge="Travel & Reimbursements"
         title="Two-Stage Expense Reimbursements"
         subtitle="Stage 1: Regional Manager verification • Stage 2: Corporate Accounts disbursement."
         icon={<Receipt className="h-5 w-5 text-[#223FA7]" />}

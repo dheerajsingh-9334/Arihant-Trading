@@ -178,9 +178,9 @@ export default function ConsolidatedReportsPage() {
     <PageContainer>
       {/* Top Banner */}
       <PageHeader
-        badge="Module 15 — Corporate Intelligence"
+        badge="Executive Intelligence"
         title="Consolidated Operational Reports"
-        subtitle="Enterprise cross-module data aggregates with direct CSV spreadsheet exports."
+        subtitle="Consolidated enterprise data aggregates and business intelligence with direct CSV spreadsheet exports."
         icon={<FileText className="w-5 h-5 text-[#223FA7]" />}
         actions={
           <div className="flex items-center space-x-3">

@@ -44,7 +44,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
               </span>
             )}
             {tagline && (
-              <span className="text-xs text-[#5871A5] font-mono">{tagline}</span>
+              <span className="text-xs text-[#5871A5] font-medium">{tagline}</span>
             )}
           </div>
         )}

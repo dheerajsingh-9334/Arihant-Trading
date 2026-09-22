@@ -744,10 +744,8 @@ export default function LeadsPage() {
     <div className="space-y-6 pb-12 animate-in fade-in duration-200">
       {/* 1. Page Header */}
       <PageHeader
-        moduleBadge="Module 01"
-        tagline="ACCOUNT DISCOVERY & SALES PIPELINE COMMAND CENTER"
         title="Lead & Customer Management"
-        description="Enterprise CRM pipeline with transactional outbox events, automatic Fresh vs Re-Approached prospect classification, immutable salesperson audit logs, and unified 360° customer timeline."
+        description="Enterprise sales pipeline, customer account directory, proactive follow-up schedule, and 360° interaction timeline."
         icon={<Target className="h-7 w-7 text-[#223FA7]" />}
         actions={
           <div className="flex items-center gap-2">
@@ -948,8 +946,8 @@ export default function LeadsPage() {
                       <div className="font-bold text-[#1A1A1A] group-hover:text-[#223FA7] transition-colors line-clamp-1">
                         {lead.title}
                       </div>
-                      <div className="text-[10px] text-[#5871A5] font-mono">
-                        ID: {lead.id.slice(0, 8)}... • Source: {lead.source || 'direct'}
+                      <div className="text-[10px] text-[#5871A5]">
+                        <span className="font-mono">#{lead.id.slice(0, 8)}</span> • Source: {lead.source || 'direct'}
                       </div>
                     </TableCell>
 
@@ -2232,7 +2230,7 @@ export default function LeadsPage() {
         isOpen={isLogInteractionOpen}
         onClose={() => setIsLogInteractionOpen(false)}
         title="Log Client Interaction & Field Minutes"
-        description="Records phone calls, physical meetings, technical presentations, and dispatches outbox events."
+        description="Record phone calls, in-person meetings, discussions, and technical presentations."
         maxWidth="lg"
       >
         <form onSubmit={handleLogInteraction} className="space-y-4 text-xs">
@@ -2449,7 +2447,7 @@ export default function LeadsPage() {
                           <Badge variant="outline" size="sm" className="uppercase font-bold text-[10px]">
                             {it.type}
                           </Badge>
-                          <span className="text-[11px] text-[#5871A5] font-mono">
+                          <span className="text-[11px] text-[#5871A5] font-medium">
                             {new Date(it.interaction_date).toLocaleDateString('en-IN')}
                           </span>
                         </div>

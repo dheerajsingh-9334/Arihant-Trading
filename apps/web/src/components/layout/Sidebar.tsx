@@ -473,7 +473,7 @@ function getRoleNavGroups(role: UserRole): NavGroup[] {
               badgeVariant: 'cyber',
             },
             {
-              label: 'Users, RBAC & Audit Trail',
+              label: 'Users & Security Audit',
               href: '/admin',
               icon: Settings,
               moduleKey: 'admin',
@@ -666,7 +666,7 @@ function getRoleNavGroups(role: UserRole): NavGroup[] {
               href: '/admin',
               icon: Settings,
               moduleKey: 'admin',
-              badge: 'RBAC',
+              badge: 'System',
               badgeVariant: 'cyber',
             },
             {
@@ -720,10 +720,10 @@ export const Sidebar: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center shrink-0" title="Role-based Clearance Active">
+          <div className="flex items-center shrink-0" title="Security Clearance Active">
             <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
               <ShieldCheck className="w-2.5 h-2.5 mr-0.5" />
-              RBAC
+              Verified
             </span>
           </div>
         </div>
@@ -798,7 +798,7 @@ export const Sidebar: React.FC = () => {
             <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
             <span>GeM Gateway: Online</span>
           </div>
-          <span className="font-mono text-[10px] text-gray-500">12ms</span>
+          <span className="text-[10px] text-emerald-700 font-semibold bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">Connected</span>
         </div>
 
         <button

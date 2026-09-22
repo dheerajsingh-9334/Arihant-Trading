@@ -712,7 +712,7 @@ export default function DashboardPage() {
               </div>
               <div className="text-2xl font-black text-gray-950 mb-1">8 Active Roles</div>
               <div className="text-[11px] text-purple-700 font-medium pt-2 border-t border-purple-50 flex justify-between">
-                <span>Blueprint §4 Scorecard</span><span className="font-bold">0 Auto-Deductions</span>
+                <span>Performance Scorecard</span><span className="font-bold">Verified Logs</span>
               </div>
             </div>
           </Link>
@@ -740,7 +740,7 @@ export default function DashboardPage() {
             <div className="bg-white border border-[#D6E3F5] rounded-xl overflow-hidden relative pt-4 pb-3.5 px-4 transition-all hover:shadow-md hover:border-emerald-300 flex flex-col justify-between h-full min-h-[115px]">
               <div className="absolute top-0 left-0 right-0 h-[3px] bg-emerald-500" />
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[11px] text-[#5871A5] font-bold uppercase tracking-wider">Enterprise RBAC Personas</span>
+                <span className="text-[11px] text-[#5871A5] font-bold uppercase tracking-wider">Enterprise Role Clearances</span>
                 <div className="w-7 h-7 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center"><Key size={14} /></div>
               </div>
               <div className="text-2xl font-black text-gray-950 mb-1">8 Roles</div>
@@ -1151,7 +1151,7 @@ export default function DashboardPage() {
                   </span>
                 </div>
                 <p className="text-xs text-[#5871A5] mt-0.5">
-                  Access territory-scoped live sales funnel, field tour planner with &ldquo;Also Meet&rdquo; directives, and Blueprint §4 employee performance evidence dossier.
+                  Access territory-scoped live sales funnel, field tour planner with &ldquo;Also Meet&rdquo; directives, and verified employee performance evidence dossiers.
                 </p>
               </div>
             </div>
@@ -1171,10 +1171,10 @@ export default function DashboardPage() {
           <div className="rounded-xl border border-[#D6E3F5] bg-white p-5 shadow-xs space-y-4">
             <h3 className="text-xs font-bold text-gray-950 uppercase tracking-wider flex items-center gap-2">
               <Key className="w-4 h-4 text-[#223FA7]" />
-              <span>8-Persona Role Governance Status</span>
+              <span>Enterprise Role Governance Status</span>
             </h3>
             <p className="text-xs text-[#5871A5]">
-              All 8 enterprise personas are configured with operational and territorial consistency. Final permissions will be configured during implementation.
+              Enterprise role policies are enforced across all territorial zones and operational departments.
             </p>
             <Link href="/admin">
               <Button size="sm" variant="primary" className="w-full">

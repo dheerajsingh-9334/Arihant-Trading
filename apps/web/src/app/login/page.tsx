@@ -136,11 +136,11 @@ export default function LoginPage() {
                 <div className="flex items-center space-x-2">
                   <UserCheck className="h-4 w-4 text-[#223FA7]" />
                   <h4 className="text-xs font-bold text-[#1A1A1A] uppercase tracking-wider">
-                    1-Click Role Personas
+                    Demo Access Profiles
                   </h4>
                 </div>
-                <span className="text-[11px] font-mono text-[#5871A5] bg-[#F7FBFF] px-2 py-0.5 rounded border border-[#D6E3F5]">
-                  PW: password123
+                <span className="text-[11px] font-medium text-[#5871A5] bg-[#F7FBFF] px-2.5 py-0.5 rounded border border-[#D6E3F5]">
+                  Default Password: password123
                 </span>
               </div>
 
@@ -187,7 +187,7 @@ export default function LoginPage() {
             </div>
 
             <div className="mt-4 p-2.5 rounded-lg bg-[#F7FBFF] border border-[#D6E3F5] text-[11px] text-[#5871A5] text-center font-medium">
-              Click any role persona to fill credentials and test permissions.
+              Select a demo profile above to autofill credentials.
             </div>
           </div>
         </div>

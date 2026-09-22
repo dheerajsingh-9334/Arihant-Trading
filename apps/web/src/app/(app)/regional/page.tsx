@@ -364,9 +364,9 @@ export default function RegionalPage() {
 
           <div className="p-3 rounded-lg bg-[#F7FBFF] border border-[#D6E3F5] text-[11px] text-[#5871A5] flex items-center justify-between">
             <span>
-              <strong>Blueprint §4 Policy Enforced:</strong> The BOS never auto-deducts salaries. It surfaces empirical evidence (task completion, deadline compliance, blocker resolution) for management decision-making.
+              <strong>Policy Notice:</strong> Performance reviews surface verified empirical metrics (task completion, deadline compliance, blocker resolution) for managerial review.
             </span>
-            <span className="text-[#223FA7] font-semibold font-mono">NORTH-ZONE-AUDIT-READY</span>
+            <span className="text-[#223FA7] font-semibold text-xs">Audit Compliant</span>
           </div>
         </div>
       )}

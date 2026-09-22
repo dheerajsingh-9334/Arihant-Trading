@@ -87,7 +87,7 @@ const CAPABILITY_LABELS: Record<keyof RolePermissionProfile['capabilities'], { l
   },
   canEndorseExpensesStage1: {
     label: 'Stage 1 Manager Expense Endorsement',
-    desc: 'First-level policy and receipt validation under Blueprint §4 corporate travel rules.',
+    desc: 'First-level policy and receipt validation under corporate travel & reimbursement rules.',
   },
   canDisburseExpensesStage2: {
     label: 'Stage 2 Finance Disbursement',
@@ -278,8 +278,8 @@ export default function AdminPage() {
 
       <Tabs
         tabs={[
-          { id: 'permissions', label: 'Role Permissions & Scope Matrix (8 Personas)' },
-          { id: 'users', label: 'Users & Departments (30 Seeded)', count: usersList.length },
+          { id: 'permissions', label: 'Role Permissions & Scope Matrix' },
+          { id: 'users', label: 'Users & Departments', count: usersList.length },
           { id: 'products', label: 'Equipment & MHA QRs', count: productsList.length },
           { id: 'zones', label: 'Zones & Regions', count: zonesList.length },
           { id: 'audit', label: 'Security Audit Logs', count: auditLogs.length },
@@ -299,11 +299,11 @@ export default function AdminPage() {
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="text-sm font-bold text-gray-950">Enterprise RBAC & Persona Engine</h3>
+                  <h3 className="text-sm font-bold text-gray-950">Enterprise Role & Access Control Policy</h3>
                   <Badge variant="cyber" size="sm">Active Baseline</Badge>
                 </div>
                 <p className="text-xs text-[#5871A5] mt-0.5 max-w-3xl">
-                  <strong>Notice:</strong> Final permissions will be configured during implementation. Pre-configured baseline policies are consistent across all 8 enterprise operational personas (Management, Regional Manager, Sales, Tender, Demo, Service, Accounts, and Admin).
+                  <strong>Enterprise Security:</strong> Baseline policies and role scopes are enforced across all operational departments and territorial regions.
                 </p>
               </div>
             </div>
@@ -500,13 +500,13 @@ export default function AdminPage() {
               <Card>
                 <div className="p-4 border-b border-[#D6E3F5] bg-[#F7FBFF]">
                   <h4 className="text-xs font-bold text-[#1A1A1A] uppercase tracking-wider">
-                    8-Persona Governance Cross-Audit Matrix
+                    Enterprise Role Governance Matrix
                   </h4>
                 </div>
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Enterprise Persona</TableHead>
+                      <TableHead>Enterprise Role</TableHead>
                       <TableHead>Territory</TableHead>
                       <TableHead className="text-center">All-India</TableHead>
                       <TableHead className="text-center">Tender Signoff</TableHead>
