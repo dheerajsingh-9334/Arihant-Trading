@@ -1171,6 +1171,41 @@ export class TendersService {
   }
 
   /**
+   * Get all portal issues across all tenders (global external issues monitor)
+   */
+  async getAllPortalIssues(user: AuthUser) {
+    let query = this.db
+      .selectFrom('tender_portal_issues')
+      .innerJoin('tenders', 'tender_portal_issues.tender_id', 'tenders.id')
+      .leftJoin('users as rep', 'tender_portal_issues.reported_by', 'rep.id')
+      .leftJoin('users as resp', 'tender_portal_issues.responsible_person_id', 'resp.id')
+      .selectAll('tender_portal_issues')
+      .select([
+        'tenders.tender_no',
+        'tenders.portal as tender_portal',
+        'tenders.department as tender_department',
+        'tenders.status as tender_status',
+        'tenders.category as tender_category',
+        'rep.full_name as reported_by_name',
+        'resp.full_name as responsible_name',
+      ])
+      .where('tenders.is_deleted', '=', false);
+
+    if (user.role === 'regional_manager' && user.zone_id) {
+      query = query.where('tenders.zone_id', '=', user.zone_id);
+    } else if (user.role === 'sales' && user.region_id) {
+      query = query.where((eb) =>
+        eb.or([
+          eb('tenders.region_id', '=', user.region_id),
+          eb('tenders.assigned_to', '=', user.id),
+        ]),
+      );
+    }
+
+    return query.orderBy('tender_portal_issues.created_at', 'desc').execute();
+  }
+
+  /**
    * Get complete audit history / activity timeline for a tender
    */
   async getActivities(tenderId: string) {

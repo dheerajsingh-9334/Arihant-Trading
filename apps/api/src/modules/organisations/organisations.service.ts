@@ -129,8 +129,13 @@ export class OrganisationsService {
       .selectFrom('organisations')
       .leftJoin('zones', 'organisations.zone_id', 'zones.id')
       .leftJoin('regions', 'organisations.region_id', 'regions.id')
+      .leftJoin('users as creator', 'organisations.created_by', 'creator.id')
       .selectAll('organisations')
-      .select(['zones.name as zone_name', 'regions.name as region_name'])
+      .select([
+        'zones.name as zone_name',
+        'regions.name as region_name',
+        'creator.full_name as created_by_name',
+      ])
       .where('organisations.id', '=', id)
       .executeTakeFirst();
 
@@ -263,6 +268,72 @@ export class OrganisationsService {
       .orderBy('created_at', 'desc')
       .execute();
 
+    // 7. Product interests across all leads (from lead_product_interests + products)
+    let productInterestsList: any[] = [];
+    if (leadIds.length > 0) {
+      productInterestsList = await this.db
+        .selectFrom('lead_product_interests')
+        .innerJoin('products', 'lead_product_interests.product_id', 'products.id')
+        .select(['products.id', 'products.name', 'products.category'])
+        .where('lead_product_interests.lead_id', 'in', leadIds)
+        .distinct()
+        .execute();
+    }
+    const leadProductNames = leads.map((l) => l.product_name).filter(Boolean);
+    const allProductNames = Array.from(
+      new Set([...productInterestsList.map((p) => p.name), ...leadProductNames]),
+    );
+
+    // 8. Previous Meetings (Physical visits, demonstrations, in-person discussions)
+    const meetings = enrichedInteractions.filter((i) =>
+      ['physical_visit', 'demo', 'meeting'].includes((i.type || '').toLowerCase()),
+    );
+
+    // 9. First and Latest interaction
+    const latestInteraction = enrichedInteractions.length > 0 ? enrichedInteractions[0] : null;
+    const firstInteraction =
+      enrichedInteractions.length > 0
+        ? enrichedInteractions[enrichedInteractions.length - 1]
+        : null;
+
+    // 10. Current vs Previous Salesperson
+    const currentSalesperson = leads[0]?.assignee_name || (org as any).created_by_name || 'Unassigned';
+
+    // 11. Follow-up history metrics
+    const today = new Date().toISOString().split('T')[0];
+    const followUpHistory = {
+      total: followUps.length,
+      pending: followUps.filter((f) => f.status === 'pending').length,
+      completed: followUps.filter((f) => f.status === 'completed').length,
+      overdue: followUps.filter((f) => f.status === 'pending' && f.due_date < today).length,
+      due_today: followUps.filter((f) => f.status === 'pending' && f.due_date === today).length,
+      items: followUps,
+    };
+
+    // 12. Current opportunity status across leads
+    const activeOpportunities = leads.map((l) => ({
+      id: l.id,
+      product_name: l.product_name || 'Procurement Opportunity',
+      status: l.lead_status || l.status || 'new',
+      lead_type: l.lead_type || 'fresh',
+      value_lakh: l.value_lakh,
+      assigned_salesperson: l.assignee_name,
+      next_followup_date: l.next_followup_date,
+      last_interaction_date: l.last_contact_date,
+      created_at: l.created_at,
+    }));
+
+    const managementSummary = {
+      first_interaction: firstInteraction,
+      latest_interaction: latestInteraction,
+      previous_meetings: meetings,
+      product_interests: allProductNames,
+      current_salesperson: currentSalesperson,
+      previous_salespersons: assignmentHistory,
+      follow_up_history: followUpHistory,
+      current_opportunity_status: activeOpportunities,
+    };
+
     return {
       organisation: org,
       contacts: org.contacts,
@@ -272,6 +343,7 @@ export class OrganisationsService {
       follow_ups: followUps,
       tenders,
       proposals,
+      management_summary: managementSummary,
     };
   }
 

@@ -47,9 +47,17 @@ export class CreateInteractionDto {
   @IsOptional()
   occurred_on?: string;
 
+  @IsDateString()
+  @IsOptional()
+  interaction_date?: string;
+
   @IsString()
   @IsOptional()
   remarks?: string;
+
+  @IsString()
+  @IsOptional()
+  notes?: string;
 
   @IsString()
   @IsOptional()
@@ -62,6 +70,10 @@ export class CreateInteractionDto {
   @IsDateString()
   @IsOptional()
   followup_date?: string;
+
+  @IsDateString()
+  @IsOptional()
+  next_followup_date?: string;
 
   @IsArray()
   @IsOptional()

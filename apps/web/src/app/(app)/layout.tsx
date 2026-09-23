@@ -8,6 +8,7 @@ import { Navbar } from '@/components/layout/Navbar';
 import { CommandPalette } from '@/components/layout/CommandPalette';
 import { Shield, ShieldAlert, ArrowLeft, UserCheck } from 'lucide-react';
 import { Button } from '@/components/ui';
+import { SidebarProvider } from '@/lib/sidebar-context';
 import type { UserRole } from '@arihant/shared';
 
 const ROUTE_PERMISSIONS: { path: string; name: string; roles: UserRole[] }[] = [
@@ -74,89 +75,91 @@ export default function AppLayout({
     restrictedRoute && !restrictedRoute.roles.includes(user.role);
 
   return (
-    <div className="h-screen bg-[#F7FBFF] flex flex-row text-[#1A1A1A] overflow-hidden">
-      <Sidebar />
-      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
-        <Navbar onOpenCommand={() => setIsCommandOpen(true)} />
-        <main className="flex-1 overflow-y-auto p-6 lg:p-8 bg-[#F7FBFF] custom-scrollbar">
-          {isUnauthorized ? (
-            <div className="max-w-2xl mx-auto my-12 bg-white border border-amber-200 rounded-2xl p-8 shadow-xs text-center space-y-5">
-              <div className="h-14 w-14 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center mx-auto text-amber-700">
-                <ShieldAlert className="h-7 w-7" />
-              </div>
-
-              <div>
-                <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200 uppercase tracking-wide">
-                  403 — Access Denied
-                </span>
-                <h2 className="text-xl font-bold text-[#1A1A1A] mt-2">
-                  Restricted Operational Domain
-                </h2>
-                <p className="text-xs text-[#5871A5] mt-1.5 max-w-md mx-auto leading-relaxed">
-                  Your active role (
-                  <span className="font-semibold text-[#1A1A1A]">
-                    {user.role.toUpperCase().replace('_', ' ')}
-                  </span>
-                  ) does not have clearance to view or operate in{' '}
-                  <span className="font-semibold text-[#223FA7]">
-                    {restrictedRoute.name}
-                  </span>
-                  .
-                </p>
-              </div>
-
-              <div className="p-3.5 rounded-xl bg-[#F7FBFF] border border-[#D6E3F5] text-xs text-left max-w-md mx-auto">
-                <div className="text-[10px] font-bold text-[#5871A5] uppercase tracking-wider mb-1">
-                  Permitted Clearances for this Domain
+    <SidebarProvider>
+      <div className="h-screen bg-[#F7FBFF] flex flex-row text-[#1A1A1A] overflow-hidden">
+        <Sidebar />
+        <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+          <Navbar onOpenCommand={() => setIsCommandOpen(true)} />
+          <main className="flex-1 overflow-y-auto p-6 lg:p-8 bg-[#F7FBFF] custom-scrollbar">
+            {isUnauthorized ? (
+              <div className="max-w-2xl mx-auto my-12 bg-white border border-amber-200 rounded-2xl p-8 shadow-xs text-center space-y-5">
+                <div className="h-14 w-14 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center mx-auto text-amber-700">
+                  <ShieldAlert className="h-7 w-7" />
                 </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {restrictedRoute.roles.map((r) => (
-                    <span
-                      key={r}
-                      className="px-2 py-0.5 rounded bg-white border border-[#D6E3F5] text-[11px] font-medium text-gray-700 capitalize"
-                    >
-                      {r.replace('_', ' ')}
+
+                <div>
+                  <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200 uppercase tracking-wide">
+                    403 — Access Denied
+                  </span>
+                  <h2 className="text-xl font-bold text-[#1A1A1A] mt-2">
+                    Restricted Operational Domain
+                  </h2>
+                  <p className="text-xs text-[#5871A5] mt-1.5 max-w-md mx-auto leading-relaxed">
+                    Your active role (
+                    <span className="font-semibold text-[#1A1A1A]">
+                      {user.role.toUpperCase().replace('_', ' ')}
                     </span>
-                  ))}
+                    ) does not have clearance to view or operate in{' '}
+                    <span className="font-semibold text-[#223FA7]">
+                      {restrictedRoute.name}
+                    </span>
+                    .
+                  </p>
                 </div>
-              </div>
 
-              <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => router.push('/dashboard')}
-                >
-                  <ArrowLeft className="h-3.5 w-3.5 mr-1" />
-                  <span>Return to Executive Deck</span>
-                </Button>
-
-                <div className="flex items-center gap-2 bg-[#F7FBFF] px-3 py-1.5 rounded-lg border border-[#D6E3F5]">
-                  <UserCheck className="h-4 w-4 text-[#223FA7]" />
-                  <span className="text-xs font-medium text-gray-700">Switch Role:</span>
-                  <select
-                    value={user.role}
-                    onChange={(e) => switchRole(e.target.value as UserRole)}
-                    className="bg-white text-[#1A1A1A] text-xs rounded border border-[#D6E3F5] px-2 py-1 font-medium focus:border-[#3770E3] focus:outline-none"
-                  >
-                    {Object.entries(PRESET_ROLE_USERS).map(([roleKey, info]) => (
-                      <option key={roleKey} value={roleKey}>
-                        {info.title}
-                      </option>
+                <div className="p-3.5 rounded-xl bg-[#F7FBFF] border border-[#D6E3F5] text-xs text-left max-w-md mx-auto">
+                  <div className="text-[10px] font-bold text-[#5871A5] uppercase tracking-wider mb-1">
+                    Permitted Clearances for this Domain
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {restrictedRoute.roles.map((r) => (
+                      <span
+                        key={r}
+                        className="px-2 py-0.5 rounded bg-white border border-[#D6E3F5] text-[11px] font-medium text-gray-700 capitalize"
+                      >
+                        {r.replace('_', ' ')}
+                      </span>
                     ))}
-                  </select>
+                  </div>
+                </div>
+
+                <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => router.push('/dashboard')}
+                  >
+                    <ArrowLeft className="h-3.5 w-3.5 mr-1" />
+                    <span>Return to Executive Deck</span>
+                  </Button>
+
+                  <div className="flex items-center gap-2 bg-[#F7FBFF] px-3 py-1.5 rounded-lg border border-[#D6E3F5]">
+                    <UserCheck className="h-4 w-4 text-[#223FA7]" />
+                    <span className="text-xs font-medium text-gray-700">Switch Role:</span>
+                    <select
+                      value={user.role}
+                      onChange={(e) => switchRole(e.target.value as UserRole)}
+                      className="bg-white text-[#1A1A1A] text-xs rounded border border-[#D6E3F5] px-2 py-1 font-medium focus:border-[#3770E3] focus:outline-none"
+                    >
+                      {Object.entries(PRESET_ROLE_USERS).map(([roleKey, info]) => (
+                        <option key={roleKey} value={roleKey}>
+                          {info.title}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               </div>
-            </div>
-          ) : (
-            children
-          )}
-        </main>
+            ) : (
+              children
+            )}
+          </main>
+        </div>
+        <CommandPalette
+          isOpen={isCommandOpen}
+          onClose={() => setIsCommandOpen(false)}
+        />
       </div>
-      <CommandPalette
-        isOpen={isCommandOpen}
-        onClose={() => setIsCommandOpen(false)}
-      />
-    </div>
+    </SidebarProvider>
   );
 }

@@ -21,12 +21,56 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{
 
 export class CreateLeadDto {
   @Matches(UUID_PATTERN, { message: 'Organisation ID must be a valid UUID' })
-  @IsNotEmpty({ message: 'Organisation is required' })
-  organisation_id!: string;
+  @IsOptional()
+  organisation_id?: string;
+
+  @IsString()
+  @IsOptional()
+  organisation_name?: string;
 
   @Matches(UUID_PATTERN, { message: 'Contact ID must be a valid UUID' })
   @IsOptional()
   primary_contact_id?: string;
+
+  @IsString()
+  @IsOptional()
+  contact_name?: string;
+
+  @IsString()
+  @IsOptional()
+  contact_designation?: string;
+
+  @IsString()
+  @IsOptional()
+  contact_mobile?: string;
+
+  @IsString()
+  @IsOptional()
+  contact_email?: string;
+
+  @IsString()
+  @IsOptional()
+  city?: string;
+
+  @IsString()
+  @IsOptional()
+  state?: string;
+
+  @Matches(UUID_PATTERN, { message: 'Zone ID must be a valid UUID' })
+  @IsOptional()
+  zone_id?: string;
+
+  @Matches(UUID_PATTERN, { message: 'Region ID must be a valid UUID' })
+  @IsOptional()
+  region_id?: string;
+
+  @IsString()
+  @IsOptional()
+  sector?: string;
+
+  @IsString()
+  @IsOptional()
+  department?: string;
 
   @Matches(UUID_PATTERN, { message: 'Product ID must be a valid UUID' })
   @IsOptional()
@@ -79,6 +123,18 @@ export class CreateLeadDto {
   @IsString()
   @IsOptional()
   bill_qtr?: string;
+
+  @IsDateString()
+  @IsOptional()
+  last_interaction_date?: string;
+
+  @IsString()
+  @IsOptional()
+  last_interaction_type?: string;
+
+  @IsString()
+  @IsOptional()
+  last_interaction_notes?: string;
 
   @IsDateString()
   @IsOptional()

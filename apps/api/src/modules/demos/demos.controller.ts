@@ -18,6 +18,9 @@ import {
   CancelDemoDto,
   ReserveEquipmentDto,
   SuggestAlternativeDto,
+  ApproveReservationDto,
+  RejectReservationDto,
+  AllocateAnotherUnitDto,
   SubmitDemoOutcomeDto,
   CreateEquipmentDto,
   UpdateEquipmentDto,
@@ -220,6 +223,36 @@ export class DemosController {
     @CurrentUser() user: AuthUser,
   ) {
     return this.demosService.suggestAlternative(id, dto, user);
+  }
+
+  @Post('reservations/:id/approve')
+  @Roles('management', 'regional_manager', 'demo_team', 'service_team', 'admin')
+  async approveReservation(
+    @Param('id') id: string,
+    @Body() dto: ApproveReservationDto,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.demosService.approveReservation(id, dto, user);
+  }
+
+  @Post('reservations/:id/reject')
+  @Roles('management', 'regional_manager', 'demo_team', 'service_team', 'admin')
+  async rejectReservation(
+    @Param('id') id: string,
+    @Body() dto: RejectReservationDto,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.demosService.rejectReservation(id, dto, user);
+  }
+
+  @Post('reservations/:id/allocate')
+  @Roles('management', 'regional_manager', 'demo_team', 'service_team', 'admin')
+  async allocateAnotherUnit(
+    @Param('id') id: string,
+    @Body() dto: AllocateAnotherUnitDto,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.demosService.allocateAnotherUnit(id, dto, user);
   }
 
   @Post(':id/outcome')

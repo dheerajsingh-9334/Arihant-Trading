@@ -83,7 +83,9 @@ export class InteractionsService {
   }
 
   async create(dto: CreateInteractionDto, employeeId: string) {
-    const occurredOn = dto.occurred_on || new Date().toISOString().split('T')[0];
+    const occurredOn = dto.occurred_on || dto.interaction_date || new Date().toISOString().split('T')[0];
+    const remarks = dto.remarks || dto.notes || null;
+    const followupDate = dto.followup_date || dto.next_followup_date || null;
 
     const result = await this.db.transaction().execute(async (trx) => {
       // 1. Insert interaction
@@ -96,10 +98,10 @@ export class InteractionsService {
           type: dto.type,
           employee_id: employeeId,
           occurred_on: occurredOn,
-          remarks: dto.remarks || null,
+          remarks: remarks,
           outcome: dto.outcome || null,
           next_action: dto.next_action || null,
-          followup_date: dto.followup_date || null,
+          followup_date: followupDate,
         })
         .returningAll()
         .executeTakeFirstOrThrow();
@@ -130,8 +132,8 @@ export class InteractionsService {
           .set({
             last_interaction_at: new Date(),
             last_contact_date: occurredOn,
-            next_followup_at: dto.followup_date ? new Date(dto.followup_date) : undefined,
-            next_followup_date: dto.followup_date || undefined,
+            next_followup_at: followupDate ? new Date(followupDate) : undefined,
+            next_followup_date: followupDate || undefined,
             updated_at: new Date(),
           })
           .where('id', '=', dto.lead_id)
@@ -140,7 +142,7 @@ export class InteractionsService {
 
       // 4. Automatically create follow-up if followup_date provided
       let createdFollowUp: any = null;
-      if (dto.followup_date) {
+      if (followupDate) {
         createdFollowUp = await trx
           .insertInto('follow_ups')
           .values({
@@ -149,9 +151,9 @@ export class InteractionsService {
             lead_id: dto.lead_id || null,
             interaction_id: interaction.id,
             assigned_to: employeeId,
-            due_date: dto.followup_date,
+            due_date: followupDate,
             status: 'pending',
-            remarks: dto.next_action || dto.remarks || 'Follow-up scheduled from client interaction',
+            remarks: dto.next_action || remarks || 'Follow-up scheduled from client interaction',
           })
           .returningAll()
           .executeTakeFirstOrThrow();
@@ -167,7 +169,7 @@ export class InteractionsService {
             organisationId: dto.organisation_id,
             leadId: dto.lead_id,
             assignedTo: employeeId,
-            dueDate: dto.followup_date,
+            dueDate: followupDate,
             remarks: createdFollowUp.remarks,
           },
         });
@@ -188,7 +190,7 @@ export class InteractionsService {
           occurredOn,
           employeeId,
           outcome: dto.outcome,
-          followupDate: dto.followup_date,
+          followupDate: followupDate,
         },
       });
 

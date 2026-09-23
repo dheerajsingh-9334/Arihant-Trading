@@ -19,8 +19,12 @@ import {
   Activity,
   Shield,
   ShieldCheck,
+  PanelLeftClose,
+  PanelLeftOpen,
+  X,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
+import { useSidebar } from '@/lib/sidebar-context';
 import { ROLE_PROFILES, type UserRole, type BosModuleKey } from '@arihant/shared';
 
 interface NavItem {
@@ -684,6 +688,7 @@ function getRoleNavGroups(role: UserRole): NavGroup[] {
 export const Sidebar: React.FC = () => {
   const pathname = usePathname();
   const { user, logout } = useAuth();
+  const { isCollapsed, isOpenMobile, toggleCollapse, closeMobile } = useSidebar();
 
   const role = user?.role || 'management';
   const roleProfile = ROLE_PROFILES[role];
@@ -698,131 +703,313 @@ export const Sidebar: React.FC = () => {
     return roleProfile?.allowedModules?.includes(moduleKey as BosModuleKey);
   };
 
-  return (
-    <aside className="w-72 h-screen max-h-screen bg-white border-r border-[#D6E3F5] flex flex-col justify-between shrink-0 z-20 select-none shadow-xs text-[#1A1A1A]">
-      <div className="flex flex-col flex-1 min-h-0">
-        {/* Brand Insignia Header */}
-        <div className="h-[64px] px-5 border-b border-[#D6E3F5] flex items-center justify-between bg-white shrink-0">
-          <div className="flex items-center space-x-3 min-w-0">
-            <div className="h-9 w-9 rounded-lg bg-[#223FA7] flex items-center justify-center text-white shadow-xs shrink-0">
-              <Shield className="h-5 w-5" />
-            </div>
-            <div className="min-w-0">
-              <div className="font-bold text-[#1A1A1A] text-sm tracking-tight flex items-center gap-1.5">
-                <span>ARIHANT</span>
-                <span className="text-[#223FA7] font-extrabold text-xs px-1.5 py-0.2 rounded bg-[#EAF2FF] border border-[#D6E3F5]">
-                  BOS
-                </span>
+  const renderNavContent = (isCompact: boolean, onNavigate?: () => void) => (
+    <nav className={`px-2 py-3 ${isCompact ? 'space-y-3' : 'space-y-4'} overflow-y-auto custom-scrollbar flex-1 min-h-0`}>
+      {navGroups.map((group, gIdx) => {
+        const visibleItems = group.items.filter((item) => isModuleAllowed(item.moduleKey));
+        if (visibleItems.length === 0) return null;
+
+        return (
+          <div key={group.title} className="space-y-0.5">
+            {isCompact ? (
+              gIdx > 0 && <div className="h-px bg-[#D6E3F5] my-2 mx-1" />
+            ) : (
+              <div className="px-3 text-[10px] font-bold text-[#5871A5] uppercase tracking-wider mb-1">
+                {group.title}
               </div>
-              <div className="text-[10px] text-[#5871A5] font-medium truncate">
-                Defence GeM Portal
-              </div>
-            </div>
-          </div>
+            )}
+            {visibleItems.map((item) => {
+              const isActive =
+                pathname === item.href ||
+                (item.href !== '/dashboard' && pathname.startsWith(item.href));
+              const Icon = item.icon;
 
-          <div className="flex items-center shrink-0" title="Security Clearance Active">
-            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-              <ShieldCheck className="w-2.5 h-2.5 mr-0.5" />
-              Verified
-            </span>
-          </div>
-        </div>
-        {/* Dynamic Role Navigation Items */}
-        <nav className="px-2 py-3 space-y-4 overflow-y-auto custom-scrollbar flex-1 min-h-0">
-          {navGroups.map((group) => {
-            // Filter strictly by RBAC module permission
-            const visibleItems = group.items.filter((item) => isModuleAllowed(item.moduleKey));
-
-            if (visibleItems.length === 0) return null;
-
-            return (
-              <div key={group.title} className="space-y-0.5">
-                <div className="px-3 text-[10px] font-bold text-[#5871A5] uppercase tracking-wider mb-1">
-                  {group.title}
-                </div>
-                {visibleItems.map((item) => {
-                  const isActive =
-                    pathname === item.href ||
-                    (item.href !== '/dashboard' && pathname.startsWith(item.href));
-                  const Icon = item.icon;
-
-                  return (
-                    <Link
-                      key={item.href + item.label}
-                      href={item.href}
-                      className={`flex items-center justify-between py-2 text-[13px] transition-colors rounded-lg px-3 min-w-0 max-w-full ${
-                        isActive
-                          ? 'bg-[#EAF2FF] text-[#223FA7] font-semibold border-r-2 border-[#223FA7]'
-                          : 'text-gray-600 hover:bg-[#F7FBFF] hover:text-[#1A1A1A]'
+              if (isCompact) {
+                return (
+                  <Link
+                    key={item.href + item.label}
+                    href={item.href}
+                    onClick={onNavigate}
+                    title={item.label + (item.badge ? ` (${item.badge})` : '')}
+                    className={`relative w-10 h-10 mx-auto flex items-center justify-center rounded-lg transition-all cursor-pointer group ${
+                      isActive
+                        ? 'bg-[#EAF2FF] text-[#223FA7] font-semibold border border-[#9FC0F5] shadow-2xs'
+                        : 'text-gray-600 hover:bg-[#F7FBFF] hover:text-[#223FA7] hover:border-[#D6E3F5] border border-transparent'
+                    }`}
+                  >
+                    <Icon
+                      className={`w-4 h-4 transition-transform group-hover:scale-110 ${
+                        isActive ? 'text-[#223FA7]' : 'text-gray-500'
                       }`}
-                    >
-                      <div className="flex items-center space-x-2.5 min-w-0 flex-1 mr-1.5">
-                        <Icon
-                          className={`w-4 h-4 shrink-0 ${
-                            isActive ? 'text-[#223FA7]' : 'text-gray-500'
-                          }`}
-                        />
-                        <span className="truncate">{item.label}</span>
-                      </div>
+                    />
+                    {item.badge && (
+                      <span
+                        className={`absolute top-1 right-1 w-2 h-2 rounded-full ${
+                          item.badgeVariant === 'urgent'
+                            ? 'bg-red-500'
+                            : item.badgeVariant === 'warning'
+                            ? 'bg-amber-500'
+                            : 'bg-[#223FA7]'
+                        }`}
+                      />
+                    )}
+                  </Link>
+                );
+              }
 
-                      <div className="flex items-center space-x-1 shrink-0">
-                        {item.badge && (
-                          <span
-                            className={`px-1.5 py-0.2 rounded text-[10px] font-bold shrink-0 ${
-                              item.badgeVariant === 'urgent'
-                                ? 'bg-red-50 text-red-700 border border-red-200'
-                                : item.badgeVariant === 'warning'
-                                ? 'bg-amber-50 text-amber-800 border border-amber-200'
-                                : item.badgeVariant === 'neutral'
-                                ? 'bg-gray-100 text-gray-700 border border-gray-200'
-                                : 'bg-[#EAF2FF] text-[#223FA7] border border-[#D6E3F5]'
-                            }`}
-                          >
-                            {item.badge}
-                          </span>
-                        )}
-                      </div>
-                    </Link>
-                  );
-                })}
-              </div>
-            );
-          })}
-        </nav>
-      </div>
+              return (
+                <Link
+                  key={item.href + item.label}
+                  href={item.href}
+                  onClick={onNavigate}
+                  className={`flex items-center justify-between py-2 text-[13px] transition-colors rounded-lg px-3 min-w-0 max-w-full ${
+                    isActive
+                      ? 'bg-[#EAF2FF] text-[#223FA7] font-semibold border-r-2 border-[#223FA7]'
+                      : 'text-gray-600 hover:bg-[#F7FBFF] hover:text-[#1A1A1A]'
+                  }`}
+                >
+                  <div className="flex items-center space-x-2.5 min-w-0 flex-1 mr-1.5">
+                    <Icon
+                      className={`w-4 h-4 shrink-0 ${
+                        isActive ? 'text-[#223FA7]' : 'text-gray-500'
+                      }`}
+                    />
+                    <span className="truncate">{item.label}</span>
+                  </div>
 
-      {/* Footer / Status / Logout */}
-      <div className="p-3 border-t border-[#D6E3F5] bg-[#F7FBFF] space-y-2 shrink-0">
-        <div className="flex items-center justify-between text-[11px] text-[#5871A5] px-1 font-medium">
-          <div className="flex items-center space-x-1.5">
-            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span>GeM Gateway: Online</span>
+                  <div className="flex items-center space-x-1 shrink-0">
+                    {item.badge && (
+                      <span
+                        className={`px-1.5 py-0.2 rounded text-[10px] font-bold shrink-0 ${
+                          item.badgeVariant === 'urgent'
+                            ? 'bg-red-50 text-red-700 border border-red-200'
+                            : item.badgeVariant === 'warning'
+                            ? 'bg-amber-50 text-amber-800 border border-amber-200'
+                            : item.badgeVariant === 'neutral'
+                            ? 'bg-gray-100 text-gray-700 border border-gray-200'
+                            : 'bg-[#EAF2FF] text-[#223FA7] border border-[#D6E3F5]'
+                        }`}
+                      >
+                        {item.badge}
+                      </span>
+                    )}
+                  </div>
+                </Link>
+              );
+            })}
           </div>
-          <span className="text-[10px] text-emerald-700 font-semibold bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">Connected</span>
+        );
+      })}
+    </nav>
+  );
+
+  return (
+    <>
+      {/* ========================================================================= */}
+      {/* DESKTOP SIDEBAR (Collapsible with Open & Close buttons)                    */}
+      {/* ========================================================================= */}
+      <aside
+        className={`hidden lg:flex flex-col justify-between shrink-0 z-20 select-none shadow-xs text-[#1A1A1A] bg-white border-r border-[#D6E3F5] transition-all duration-300 ease-in-out h-screen max-h-screen ${
+          isCollapsed ? 'w-[72px]' : 'w-72'
+        }`}
+      >
+        <div className="flex flex-col flex-1 min-h-0">
+          {/* Header with Open/Close Buttons */}
+          {isCollapsed ? (
+            <div className="h-[64px] px-2 border-b border-[#D6E3F5] flex items-center justify-center bg-white shrink-0">
+              {/* OPEN BUTTON IN SIDEBAR */}
+              <button
+                type="button"
+                onClick={toggleCollapse}
+                className="h-10 w-10 rounded-lg bg-[#F7FBFF] hover:bg-[#EAF2FF] border border-[#D6E3F5] hover:border-[#9FC0F5] text-[#223FA7] flex items-center justify-center transition-all cursor-pointer shadow-2xs group"
+                title="Open sidebar (Expand) [Ctrl+B]"
+                aria-label="Open sidebar"
+              >
+                <PanelLeftOpen className="w-4 h-4 transition-transform group-hover:scale-110" />
+              </button>
+            </div>
+          ) : (
+            <div className="h-[64px] px-4 border-b border-[#D6E3F5] flex items-center justify-between bg-white shrink-0">
+              <div className="flex items-center space-x-2.5 min-w-0">
+                <div className="h-9 w-9 rounded-lg bg-[#223FA7] flex items-center justify-center text-white shadow-xs shrink-0">
+                  <Shield className="h-5 w-5" />
+                </div>
+                <div className="min-w-0">
+                  <div className="font-bold text-[#1A1A1A] text-sm tracking-tight flex items-center gap-1.5">
+                    <span>ARIHANT</span>
+                    <span className="text-[#223FA7] font-extrabold text-xs px-1.5 py-0.2 rounded bg-[#EAF2FF] border border-[#D6E3F5]">
+                      BOS
+                    </span>
+                  </div>
+                  <div className="text-[10px] text-[#5871A5] font-medium truncate">
+                    Defence GeM Portal
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-1 shrink-0">
+                <span className="hidden xl:inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  <ShieldCheck className="w-2.5 h-2.5 mr-0.5" />
+                  Verified
+                </span>
+                {/* CLOSE BUTTON IN SIDEBAR */}
+                <button
+                  type="button"
+                  onClick={toggleCollapse}
+                  className="p-1.5 rounded-lg text-[#5871A5] hover:text-[#223FA7] hover:bg-[#EAF2FF] border border-transparent hover:border-[#D6E3F5] transition-all cursor-pointer shrink-0 ml-1 group"
+                  title="Close sidebar (Collapse) [Ctrl+B]"
+                  aria-label="Close sidebar"
+                >
+                  <PanelLeftClose className="w-4 h-4 transition-transform group-hover:scale-105" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Navigation List */}
+          {renderNavContent(isCollapsed)}
         </div>
 
-        {user && (
-          <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-white border border-[#D6E3F5]">
-            <div className="h-6 w-6 rounded-md bg-[#223FA7] text-white flex items-center justify-center text-[11px] font-bold shrink-0">
-              {user.full_name ? user.full_name[0].toUpperCase() : 'U'}
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="text-xs font-bold text-[#1A1A1A] truncate">{user.full_name}</div>
-              <div className="text-[9px] text-[#5871A5] font-semibold uppercase tracking-wider truncate">
-                {user.role.replace('_', ' ')}
+        {/* Footer / Status / Logout */}
+        {isCollapsed ? (
+          <div className="p-2 border-t border-[#D6E3F5] bg-[#F7FBFF] flex flex-col items-center space-y-2 shrink-0">
+            <div
+              className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse my-1"
+              title="GeM Gateway: Online & Connected"
+            />
+            {user && (
+              <div
+                className="h-8 w-8 rounded-lg bg-[#223FA7] text-white flex items-center justify-center text-xs font-bold shrink-0 cursor-default"
+                title={`${user.full_name} (${user.role.replace('_', ' ')})`}
+              >
+                {user.full_name ? user.full_name[0].toUpperCase() : 'U'}
               </div>
+            )}
+            <button
+              onClick={logout}
+              title="Sign Out"
+              aria-label="Sign Out"
+              className="h-8 w-8 flex items-center justify-center rounded-lg text-gray-500 hover:text-red-700 bg-white hover:bg-red-50 border border-[#D6E3F5] hover:border-red-200 transition-colors cursor-pointer"
+            >
+              <LogOut className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        ) : (
+          <div className="p-3 border-t border-[#D6E3F5] bg-[#F7FBFF] space-y-2 shrink-0">
+            <div className="flex items-center justify-between text-[11px] text-[#5871A5] px-1 font-medium">
+              <div className="flex items-center space-x-1.5">
+                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span>GeM Gateway: Online</span>
+              </div>
+              <span className="text-[10px] text-emerald-700 font-semibold bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">
+                Connected
+              </span>
             </div>
+
+            {user && (
+              <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-white border border-[#D6E3F5]">
+                <div className="h-6 w-6 rounded-md bg-[#223FA7] text-white flex items-center justify-center text-[11px] font-bold shrink-0">
+                  {user.full_name ? user.full_name[0].toUpperCase() : 'U'}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-xs font-bold text-[#1A1A1A] truncate">{user.full_name}</div>
+                  <div className="text-[9px] text-[#5871A5] font-semibold uppercase tracking-wider truncate">
+                    {user.role.replace('_', ' ')}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <button
+              onClick={logout}
+              className="w-full flex items-center justify-center space-x-2 px-3 py-2 rounded-lg text-xs font-semibold text-gray-700 hover:text-red-700 bg-white hover:bg-red-50 border border-[#D6E3F5] hover:border-red-200 transition-colors min-w-0 truncate cursor-pointer shadow-2xs group"
+            >
+              <LogOut className="h-3.5 w-3.5 shrink-0 text-gray-500 group-hover:text-red-600 transition-colors" />
+              <span className="truncate">Sign Out</span>
+            </button>
           </div>
         )}
+      </aside>
 
-        <button
-          onClick={logout}
-          className="w-full flex items-center justify-center space-x-2 px-3 py-2 rounded-lg text-xs font-semibold text-gray-700 hover:text-red-700 bg-white hover:bg-red-50 border border-[#D6E3F5] hover:border-red-200 transition-colors min-w-0 truncate cursor-pointer shadow-2xs group"
-        >
-          <LogOut className="h-3.5 w-3.5 shrink-0 text-gray-500 group-hover:text-red-600 transition-colors" />
-          <span className="truncate">Sign Out</span>
-        </button>
-      </div>
-    </aside>
+      {/* ========================================================================= */}
+      {/* MOBILE DRAWER (With Backdrop and Close button)                            */}
+      {/* ========================================================================= */}
+      {isOpenMobile && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity"
+            onClick={closeMobile}
+          />
+
+          {/* Drawer Panel */}
+          <aside className="fixed top-0 left-0 bottom-0 w-72 max-w-[85vw] bg-white z-50 shadow-2xl flex flex-col justify-between select-none text-[#1A1A1A] border-r border-[#D6E3F5] animate-in slide-in-from-left duration-200">
+            <div className="flex flex-col flex-1 min-h-0">
+              {/* Header with Close Button */}
+              <div className="h-[64px] px-4 border-b border-[#D6E3F5] flex items-center justify-between bg-white shrink-0">
+                <div className="flex items-center space-x-2.5 min-w-0">
+                  <div className="h-9 w-9 rounded-lg bg-[#223FA7] flex items-center justify-center text-white shadow-xs shrink-0">
+                    <Shield className="h-5 w-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="font-bold text-[#1A1A1A] text-sm tracking-tight flex items-center gap-1.5">
+                      <span>ARIHANT</span>
+                      <span className="text-[#223FA7] font-extrabold text-xs px-1.5 py-0.2 rounded bg-[#EAF2FF] border border-[#D6E3F5]">
+                        BOS
+                      </span>
+                    </div>
+                    <div className="text-[10px] text-[#5871A5] font-medium truncate">
+                      Defence GeM Portal
+                    </div>
+                  </div>
+                </div>
+
+                {/* CLOSE BUTTON IN MOBILE DRAWER */}
+                <button
+                  type="button"
+                  onClick={closeMobile}
+                  className="p-1.5 rounded-lg text-gray-500 hover:text-red-600 hover:bg-red-50 border border-transparent hover:border-red-200 transition-colors cursor-pointer"
+                  title="Close sidebar drawer"
+                  aria-label="Close sidebar drawer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Navigation List */}
+              {renderNavContent(false, closeMobile)}
+            </div>
+
+            {/* Mobile Footer */}
+            <div className="p-3 border-t border-[#D6E3F5] bg-[#F7FBFF] space-y-2 shrink-0">
+              {user && (
+                <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-white border border-[#D6E3F5]">
+                  <div className="h-6 w-6 rounded-md bg-[#223FA7] text-white flex items-center justify-center text-[11px] font-bold shrink-0">
+                    {user.full_name ? user.full_name[0].toUpperCase() : 'U'}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-xs font-bold text-[#1A1A1A] truncate">{user.full_name}</div>
+                    <div className="text-[9px] text-[#5871A5] font-semibold uppercase tracking-wider truncate">
+                      {user.role.replace('_', ' ')}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <button
+                onClick={() => {
+                  closeMobile();
+                  logout();
+                }}
+                className="w-full flex items-center justify-center space-x-2 px-3 py-2 rounded-lg text-xs font-semibold text-gray-700 hover:text-red-700 bg-white hover:bg-red-50 border border-[#D6E3F5] hover:border-red-200 transition-colors min-w-0 truncate cursor-pointer shadow-2xs"
+              >
+                <LogOut className="h-3.5 w-3.5 shrink-0 text-gray-500" />
+                <span className="truncate">Sign Out</span>
+              </button>
+            </div>
+          </aside>
+        </div>
+      )}
+    </>
   );
 };

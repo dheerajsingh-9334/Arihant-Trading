@@ -138,7 +138,16 @@ export default function VisitsPage() {
   });
 
   // 4. Also Meet Form
-  const [alsoMeetNotes, setAlsoMeetNotes] = useState('');
+  const [alsoMeetData, setAlsoMeetData] = useState({
+    instructions: '',
+    assign_additional: true,
+    organisation_id: '',
+    location: '',
+    contact_person: '',
+    purpose: 'Strategic procurement review / GeM requirements',
+    start_time: '14:30',
+    end_time: '16:00',
+  });
 
   // 5. Reschedule Form
   const [rescheduleData, setRescheduleData] = useState({
@@ -380,11 +389,26 @@ export default function VisitsPage() {
 
     try {
       await api.post(`/visits/${selectedVisit.id}/intervention`, {
-        instructions: alsoMeetNotes,
+        instructions: alsoMeetData.instructions,
+        organisation_id: alsoMeetData.assign_additional && alsoMeetData.organisation_id ? alsoMeetData.organisation_id : undefined,
+        location: alsoMeetData.assign_additional && alsoMeetData.location ? alsoMeetData.location : undefined,
+        contact_person: alsoMeetData.assign_additional && alsoMeetData.contact_person ? alsoMeetData.contact_person : undefined,
+        purpose: alsoMeetData.assign_additional && alsoMeetData.purpose ? alsoMeetData.purpose : undefined,
+        start_time: alsoMeetData.assign_additional && alsoMeetData.start_time ? alsoMeetData.start_time : undefined,
+        end_time: alsoMeetData.assign_additional && alsoMeetData.end_time ? alsoMeetData.end_time : undefined,
       });
 
       setIsAlsoMeetOpen(false);
-      setAlsoMeetNotes('');
+      setAlsoMeetData({
+        instructions: '',
+        assign_additional: true,
+        organisation_id: '',
+        location: '',
+        contact_person: '',
+        purpose: 'Strategic procurement review / GeM requirements',
+        start_time: '14:30',
+        end_time: '16:00',
+      });
       await fetchData();
     } catch (err: any) {
       setActionError(err.message || 'Failed to attach manager directive.');
@@ -681,7 +705,17 @@ export default function VisitsPage() {
             variant="outline"
             onClick={() => {
               setSelectedVisit(v);
-              setAlsoMeetNotes(v.remarks?.includes('Manager Directive:') ? v.remarks.split('Manager Directive:')[1].trim() : '');
+              const directiveText = v.remarks?.includes('Manager Directive:') ? v.remarks.split('Manager Directive:')[1].trim() : '';
+              setAlsoMeetData({
+                instructions: directiveText,
+                assign_additional: true,
+                organisation_id: '',
+                location: v.location || '',
+                contact_person: '',
+                purpose: 'Strategic procurement review / GeM requirements',
+                start_time: '14:30',
+                end_time: '16:00',
+              });
               setIsAlsoMeetOpen(true);
             }}
             className="border-amber-300 text-amber-800 hover:bg-amber-50 text-xs"
@@ -948,6 +982,20 @@ export default function VisitsPage() {
                         </Badge>
                       )}
 
+                      {v.planned_date && (() => {
+                        const planDate = new Date(v.planned_date);
+                        const createdDate = v.created_at ? new Date(v.created_at) : new Date();
+                        const diffDays = Math.round((planDate.getTime() - createdDate.getTime()) / (1000 * 3600 * 24));
+                        if (diffDays >= 5) {
+                          return (
+                            <Badge variant="outline" size="sm" className="bg-emerald-50 text-emerald-800 border-emerald-300">
+                              1-Wk Cycle
+                            </Badge>
+                          );
+                        }
+                        return null;
+                      })()}
+
                       {v.demo_required && (
                         v.linked_demo_no ? (
                           <Link
@@ -1040,7 +1088,17 @@ export default function VisitsPage() {
                         variant="outline"
                         onClick={() => {
                           setSelectedVisit(v);
-                          setAlsoMeetNotes(v.remarks?.includes('Manager Directive:') ? v.remarks.split('Manager Directive:')[1].trim() : '');
+                          const directiveText = v.remarks?.includes('Manager Directive:') ? v.remarks.split('Manager Directive:')[1].trim() : '';
+                          setAlsoMeetData({
+                            instructions: directiveText,
+                            assign_additional: true,
+                            organisation_id: '',
+                            location: v.location || '',
+                            contact_person: '',
+                            purpose: 'Strategic procurement review / GeM requirements',
+                            start_time: '14:30',
+                            end_time: '16:00',
+                          });
                           setIsAlsoMeetOpen(true);
                         }}
                         className="border-amber-300 text-amber-800 hover:bg-amber-50"
@@ -1181,16 +1239,48 @@ export default function VisitsPage() {
                       </div>
                       <div>
                         <span className="font-bold text-gray-700">Outcome: </span>
-                        <span>{v.updates[0].outcome || 'Completed'}</span>
+                        <span className="font-semibold text-emerald-700">{v.updates[0].outcome || 'Completed'}</span>
                       </div>
+                      {v.updates[0].product_discussed && (
+                        <div>
+                          <span className="font-bold text-gray-700">Product Discussed: </span>
+                          <span className="text-[#223FA7] font-medium">{v.updates[0].product_discussed}</span>
+                        </div>
+                      )}
+                      {v.updates[0].opportunity && (
+                        <div>
+                          <span className="font-bold text-gray-700">Opportunity: </span>
+                          <span className="text-emerald-700 font-medium">{v.updates[0].opportunity}</span>
+                        </div>
+                      )}
+                      {v.updates[0].tender_opportunity && (
+                        <div className="col-span-full">
+                          <span className="font-bold text-[#223FA7]">Tender / GeM Bid: </span>
+                          <span className="font-mono text-[#223FA7] bg-[#EAF2FF] px-2 py-0.5 rounded text-[11px] font-semibold border border-[#D6E3F5]">
+                            {v.updates[0].tender_opportunity}
+                          </span>
+                        </div>
+                      )}
+                      {v.updates[0].demo_required && (
+                        <div>
+                          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#223FA7] bg-[#EAF2FF] px-2 py-0.5 rounded-full border border-[#D6E3F5]">
+                            <Sparkles className="h-3 w-3" /> Technical Demo Requested
+                          </span>
+                        </div>
+                      )}
                     </div>
                     {v.updates[0].discussion && (
-                      <p className="text-gray-700 italic border-l-2 border-[#3770E3] pl-2 mt-1">
+                      <p className="text-gray-700 italic border-l-2 border-[#3770E3] pl-2 mt-1.5">
                         "{v.updates[0].discussion}"
                       </p>
                     )}
+                    {v.updates[0].remarks && (
+                      <p className="text-xs text-gray-600 bg-white p-2 rounded border border-[#D6E3F5] mt-1">
+                        <span className="font-bold text-gray-700">Field Remarks: </span>{v.updates[0].remarks}
+                      </p>
+                    )}
                     {v.updates[0].followup_date && (
-                      <div className="text-[11px] text-[#223FA7] font-semibold flex items-center gap-1 mt-1">
+                      <div className="text-[11px] text-[#223FA7] font-semibold flex items-center gap-1 mt-1.5">
                         <Clock className="h-3 w-3" />
                         Next Follow-up Commitment: {new Date(v.updates[0].followup_date).toLocaleDateString('en-IN')}
                         {v.updates[0].next_action ? ` — ${v.updates[0].next_action}` : ''}
@@ -1207,25 +1297,25 @@ export default function VisitsPage() {
       {/* TAB CONTENT: MANAGER DASHBOARD (TEAM FIELD ACTIVITY) */}
       {activeTab === 'manager_dashboard' && managerData && (
         <div className="space-y-6">
-          {/* Summary counters banner */}
-          <div className="p-4 bg-gradient-to-r from-blue-900 to-indigo-900 text-white rounded-xl shadow-xs">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-blue-200">Team Field Deployment Horizon</h2>
+          {/* Summary counters banner - Light Executive */}
+          <div className="p-4 bg-[#EAF2FF] border border-[#D6E3F5] rounded-xl shadow-xs">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-[#223FA7]">Team Field Deployment Horizon</h2>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-3">
-              <div>
-                <span className="text-2xl font-black">{managerData.summary?.todayCount || 0}</span>
-                <span className="block text-xs text-blue-200">Deployed Today</span>
+              <div className="bg-white p-3 rounded-lg border border-[#D6E3F5]">
+                <span className="text-2xl font-black text-[#1A1A1A]">{managerData.summary?.todayCount || 0}</span>
+                <span className="block text-xs text-[#5871A5]">Deployed Today</span>
               </div>
-              <div>
-                <span className="text-2xl font-black">{managerData.summary?.tomorrowCount || 0}</span>
-                <span className="block text-xs text-blue-200">Tomorrow</span>
+              <div className="bg-white p-3 rounded-lg border border-[#D6E3F5]">
+                <span className="text-2xl font-black text-[#1A1A1A]">{managerData.summary?.tomorrowCount || 0}</span>
+                <span className="block text-xs text-[#5871A5]">Tomorrow</span>
               </div>
-              <div>
-                <span className="text-2xl font-black">{managerData.summary?.next7DaysCount || 0}</span>
-                <span className="block text-xs text-blue-200">Next 7 Days</span>
+              <div className="bg-white p-3 rounded-lg border border-[#D6E3F5]">
+                <span className="text-2xl font-black text-[#1A1A1A]">{managerData.summary?.next7DaysCount || 0}</span>
+                <span className="block text-xs text-[#5871A5]">Next 7 Days (1-Wk Cycle)</span>
               </div>
-              <div>
-                <span className="text-2xl font-black">{managerData.summary?.laterCount || 0}</span>
-                <span className="block text-xs text-blue-200">Later</span>
+              <div className="bg-white p-3 rounded-lg border border-[#D6E3F5]">
+                <span className="text-2xl font-black text-[#1A1A1A]">{managerData.summary?.laterCount || 0}</span>
+                <span className="block text-xs text-[#5871A5]">Later</span>
               </div>
             </div>
           </div>
@@ -1620,14 +1710,30 @@ export default function VisitsPage() {
             <span className="text-[11px] font-bold text-[#223FA7] uppercase tracking-wider block">
               2. Date, Time & Meeting Purpose
             </span>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <Input
-                label="Planned Date"
-                type="date"
-                required
-                value={newVisit.planned_date}
-                onChange={(e) => setNewVisit({ ...newVisit, planned_date: e.target.value })}
-              />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-semibold text-[#1A1A1A]">Planned Date <span className="text-red-500">*</span></label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const d = new Date();
+                      d.setDate(d.getDate() + 7);
+                      setNewVisit({ ...newVisit, planned_date: d.toISOString().split('T')[0] });
+                    }}
+                    className="text-[10px] text-[#223FA7] hover:underline font-bold"
+                  >
+                    +7 Days (1-Wk Cycle)
+                  </button>
+                </div>
+                <input
+                  type="date"
+                  required
+                  value={newVisit.planned_date}
+                  onChange={(e) => setNewVisit({ ...newVisit, planned_date: e.target.value })}
+                  className="flex h-9 w-full rounded-lg border border-[#D6E3F5] bg-white px-3 py-1 text-xs text-[#1A1A1A] transition-colors focus:border-[#3770E3] focus:outline-none focus:ring-2 focus:ring-[#3770E3]/15"
+                />
+              </div>
 
               <Input
                 label="Start Time"
@@ -1895,9 +2001,9 @@ export default function VisitsPage() {
       <Modal
         isOpen={isAlsoMeetOpen}
         onClose={() => setIsAlsoMeetOpen(false)}
-        title="Manager 'Also-Meet' Strategic Directive"
-        description="Instruct the visiting sales executive to meet additional procurement officers while in the area."
-        maxWidth="md"
+        title="Manager Intervention & Trip Optimization ('Also-Meet')"
+        description="Optimize field travel by assigning additional customer or prospect meetings in the same operational area."
+        maxWidth="lg"
       >
         <form onSubmit={handleAlsoMeetSubmit} className="space-y-4">
           {actionError && (
@@ -1906,20 +2012,130 @@ export default function VisitsPage() {
             </div>
           )}
 
-          <Input
-            label="Manager Directive & Contact Details"
-            required
-            value={alsoMeetNotes}
-            onChange={(e) => setAlsoMeetNotes(e.target.value)}
-            placeholder="e.g. Also meet SP Provisioning regarding pending AMC contract before GeM tender closes."
-          />
+          {/* Current Target Context */}
+          {selectedVisit && (
+            <div className="p-3 rounded-lg bg-blue-50/70 border border-blue-200 text-xs space-y-1">
+              <div className="font-bold text-[#223FA7] flex items-center justify-between">
+                <span>Active Field Visit Target</span>
+                <span className="font-mono text-gray-500">Visit #{selectedVisit.id.slice(0, 8)}</span>
+              </div>
+              <div className="text-gray-700">
+                <span className="font-semibold">Agency:</span> {selectedVisit.organisation_name} |{' '}
+                <span className="font-semibold">Station:</span> {selectedVisit.location} |{' '}
+                <span className="font-semibold">Date:</span> {selectedVisit.planned_date ? new Date(selectedVisit.planned_date).toLocaleDateString('en-IN') : ''}
+              </div>
+              <div className="text-gray-600">
+                <span className="font-semibold">Assigned Staff:</span> {selectedVisit.assigned_to_name}
+              </div>
+            </div>
+          )}
 
-          <div className="pt-2 flex justify-end gap-2">
+          <div>
+            <label className="block text-xs font-bold text-gray-700 mb-1">
+              Manager Directive / Travel Utilization Guidance <span className="text-red-500">*</span>
+            </label>
+            <textarea
+              required
+              rows={2}
+              value={alsoMeetData.instructions}
+              onChange={(e) => setAlsoMeetData({ ...alsoMeetData, instructions: e.target.value })}
+              placeholder="e.g. While visiting Delhi Police HQ, also meet SP Provisioning in same complex regarding pending GeM tender."
+              className="w-full text-xs p-2.5 rounded-lg border border-[#D6E3F5] focus:ring-1 focus:ring-[#3770E3] focus:border-[#3770E3]"
+            />
+          </div>
+
+          {/* Piggyback Itinerary Addition */}
+          <div className="p-3.5 bg-gray-50/80 rounded-xl border border-[#D6E3F5] space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Route className="h-4 w-4 text-[#223FA7]" />
+                <span className="text-xs font-bold text-[#1A1A1A]">
+                  Piggyback Another Meeting in Same Area (Trip Plan Itinerary)
+                </span>
+              </div>
+              <Checkbox
+                checked={alsoMeetData.assign_additional}
+                onChange={(e) => setAlsoMeetData({ ...alsoMeetData, assign_additional: e.target.checked })}
+                label="Create Itinerary Item"
+              />
+            </div>
+            <p className="text-[11px] text-gray-500">
+              Automatically attaches both visits to a unified Trip Itinerary to improve staff utilization, increase meetings per trip, and reduce redundant travel expenses.
+            </p>
+
+            {alsoMeetData.assign_additional && (
+              <div className="space-y-3 pt-2 border-t border-gray-200">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <Select
+                    label="Select Organisation to Meet"
+                    required={alsoMeetData.assign_additional}
+                    value={alsoMeetData.organisation_id}
+                    onChange={(e) => {
+                      const orgId = e.target.value;
+                      const org = organisations.find((o) => o.id === orgId);
+                      setAlsoMeetData({
+                        ...alsoMeetData,
+                        organisation_id: orgId,
+                        location: org?.city || selectedVisit?.location || alsoMeetData.location,
+                      });
+                    }}
+                    options={[
+                      { value: '', label: '-- Select Adjacent Organisation --' },
+                      ...organisations.map((o) => ({
+                        value: o.id,
+                        label: `${o.name} (${o.city || 'Office'})`,
+                      })),
+                    ]}
+                  />
+
+                  <Input
+                    label="Location / Office Detail"
+                    required={alsoMeetData.assign_additional}
+                    value={alsoMeetData.location}
+                    onChange={(e) => setAlsoMeetData({ ...alsoMeetData, location: e.target.value })}
+                    placeholder="e.g. Police HQ, ITO, New Delhi"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <Input
+                    label="Contact Person / Officer"
+                    value={alsoMeetData.contact_person}
+                    onChange={(e) => setAlsoMeetData({ ...alsoMeetData, contact_person: e.target.value })}
+                    placeholder="e.g. SP Provisioning / DCP Store"
+                  />
+
+                  <Input
+                    label="Start Time"
+                    type="time"
+                    value={alsoMeetData.start_time}
+                    onChange={(e) => setAlsoMeetData({ ...alsoMeetData, start_time: e.target.value })}
+                  />
+
+                  <Input
+                    label="End Time"
+                    type="time"
+                    value={alsoMeetData.end_time}
+                    onChange={(e) => setAlsoMeetData({ ...alsoMeetData, end_time: e.target.value })}
+                  />
+                </div>
+
+                <Input
+                  label="Meeting Purpose / Strategic Agenda"
+                  value={alsoMeetData.purpose}
+                  onChange={(e) => setAlsoMeetData({ ...alsoMeetData, purpose: e.target.value })}
+                  placeholder="e.g. Review upcoming GeM custom bid & verify demo compliance"
+                />
+              </div>
+            )}
+          </div>
+
+          <div className="pt-2 flex justify-end gap-2 border-t border-gray-100">
             <Button type="button" variant="ghost" size="sm" onClick={() => setIsAlsoMeetOpen(false)}>
               Cancel
             </Button>
             <Button type="submit" size="sm" isLoading={isSubmitting}>
-              Save Directive
+              {alsoMeetData.assign_additional ? 'Add to Trip & Assign Directive' : 'Save Directive'}
             </Button>
           </div>
         </form>
@@ -2190,6 +2406,36 @@ export default function VisitsPage() {
                   type="date"
                   value={reportData.followup_date}
                   onChange={(e) => setReportData({ ...reportData, followup_date: e.target.value })}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 items-center">
+                <Input
+                  label="Tender / GeM Bid Opportunity"
+                  value={reportData.tender_opportunity}
+                  onChange={(e) => setReportData({ ...reportData, tender_opportunity: e.target.value })}
+                  placeholder="e.g. GeM custom bid GEM/2026/B/88219 for 250 units"
+                />
+
+                <div className="pt-4">
+                  <Checkbox
+                    checked={reportData.demo_required}
+                    onChange={(e) => setReportData({ ...reportData, demo_required: e.target.checked })}
+                    label="Demo / Field Trial Required as Next Step"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1">
+                  General Remarks & Field Intelligence Notes
+                </label>
+                <textarea
+                  rows={2}
+                  value={reportData.remarks}
+                  onChange={(e) => setReportData({ ...reportData, remarks: e.target.value })}
+                  placeholder="Additional field intelligence, competitive products observed, technical feedback..."
+                  className="w-full text-xs p-2.5 rounded-lg border border-[#D6E3F5] focus:ring-1 focus:ring-[#3770E3] focus:border-[#3770E3]"
                 />
               </div>
             </>

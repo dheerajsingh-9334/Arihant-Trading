@@ -8,7 +8,9 @@ import {
   IsIn,
   IsNumber,
   Matches,
+  ValidateIf,
 } from 'class-validator';
+import { Transform } from 'class-transformer';
 import type {
   DemoStatus,
   DemoEquipmentAvailability,
@@ -24,18 +26,26 @@ export class CreateDemoDto {
   @IsNotEmpty({ message: 'Organisation is required' })
   organisation_id!: string;
 
+  @Transform(({ value }) => (value === '' || value === null ? undefined : value))
+  @ValidateIf((o, v) => v !== '' && v !== null && v !== undefined)
   @Matches(UUID_PATTERN, { message: 'lead_id must be a valid UUID' })
   @IsOptional()
   lead_id?: string;
 
+  @Transform(({ value }) => (value === '' || value === null ? undefined : value))
+  @ValidateIf((o, v) => v !== '' && v !== null && v !== undefined)
   @Matches(UUID_PATTERN, { message: 'product_id must be a valid UUID' })
   @IsOptional()
   product_id?: string;
 
+  @Transform(({ value }) => (value === '' || value === null ? undefined : value))
+  @ValidateIf((o, v) => v !== '' && v !== null && v !== undefined)
   @Matches(UUID_PATTERN, { message: 'visit_id must be a valid UUID' })
   @IsOptional()
   visit_id?: string;
 
+  @Transform(({ value }) => (value === '' || value === null ? undefined : value))
+  @ValidateIf((o, v) => v !== '' && v !== null && v !== undefined)
   @Matches(UUID_PATTERN, { message: 'assigned_to must be a valid UUID' })
   @IsOptional()
   assigned_to?: string;
@@ -230,6 +240,44 @@ export class SuggestAlternativeDto {
   alternative_reason!: string;
 }
 
+export class ApproveReservationDto {
+  @IsString()
+  @IsOptional()
+  remarks?: string;
+}
+
+export class RejectReservationDto {
+  @IsString()
+  @IsNotEmpty({ message: 'Reason for rejection is required' })
+  rejection_reason!: string;
+
+  @IsString()
+  @IsOptional()
+  remarks?: string;
+}
+
+export class AllocateAnotherUnitDto {
+  @Matches(UUID_PATTERN, { message: 'equipment_id must be a valid UUID' })
+  @IsNotEmpty({ message: 'Target equipment ID is required' })
+  equipment_id!: string;
+
+  @IsString()
+  @IsOptional()
+  reason?: string;
+
+  @IsDateString()
+  @IsOptional()
+  reserved_from?: string;
+
+  @IsDateString()
+  @IsOptional()
+  reserved_to?: string;
+
+  @IsString()
+  @IsOptional()
+  remarks?: string;
+}
+
 export class SubmitDemoOutcomeDto {
   @IsBoolean()
   @IsOptional()
@@ -296,6 +344,8 @@ export class CreateEquipmentDto {
   @IsNotEmpty({ message: 'Location (Delhi/Patna/Kolkata/etc.) is required' })
   current_location!: string;
 
+  @Transform(({ value }) => (value === '' || value === null ? undefined : value))
+  @ValidateIf((o, v) => v !== '' && v !== null && v !== undefined)
   @Matches(UUID_PATTERN, { message: 'responsible_person must be a valid UUID' })
   @IsOptional()
   responsible_person?: string;
@@ -318,6 +368,8 @@ export class UpdateEquipmentDto {
   @IsOptional()
   current_location?: string;
 
+  @Transform(({ value }) => (value === '' || value === null ? undefined : value))
+  @ValidateIf((o, v) => v !== '' && v !== null && v !== undefined)
   @Matches(UUID_PATTERN, { message: 'responsible_person must be a valid UUID' })
   @IsOptional()
   responsible_person?: string;

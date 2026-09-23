@@ -84,6 +84,12 @@ export class TendersController {
     return this.tendersService.getCategories();
   }
 
+  @Get('portal-issues')
+  @Roles('management', 'regional_manager', 'sales', 'tender_team', 'admin')
+  async getAllPortalIssues(@CurrentUser() user: AuthUser) {
+    return this.tendersService.getAllPortalIssues(user);
+  }
+
   @Get(':id')
   @Roles('management', 'regional_manager', 'sales', 'tender_team', 'admin')
   async findOne(@Param('id') id: string) {

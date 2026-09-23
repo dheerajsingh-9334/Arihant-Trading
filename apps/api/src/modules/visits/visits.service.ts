@@ -834,14 +834,98 @@ export class VisitsService {
   async addManagerIntervention(id: string, dto: ManagerInterventionDto, user: AuthUser) {
     const existing = await this.findOne(id, user);
 
+    let createdAlsoMeetVisit: any = null;
+
+    if (dto.organisation_id) {
+      // Manager is assigning an additional prospect/customer in the same area
+      const org = await this.db
+        .selectFrom('organisations')
+        .select(['id', 'name', 'city'])
+        .where('id', '=', dto.organisation_id)
+        .executeTakeFirst();
+
+      if (!org) {
+        throw new BadRequestException({
+          code: 'INVALID_ORGANISATION',
+          message: 'Selected additional organisation not found.',
+        });
+      }
+
+      const targetLocation = dto.location || org.city || existing.location || 'HQ Station';
+
+      await this.db.transaction().execute(async (trx) => {
+        let activeTripId = existing.trip_id;
+
+        // If no trip currently exists for this visit, establish one
+        if (!activeTripId) {
+          const newTrip = await trx
+            .insertInto('trips')
+            .values({
+              employee_id: existing.assigned_to,
+              trip_date: existing.planned_date,
+              base_location: existing.location || org.city || 'Regional Base',
+              status: 'planned',
+              notes: `Multi-stop trip initiated by manager intervention: ${existing.organisation_name} + ${org.name}`,
+              created_by: user.id,
+            })
+            .returningAll()
+            .executeTakeFirstOrThrow();
+
+          activeTripId = newTrip.id;
+
+          // Attach initial visit to this trip
+          await trx
+            .updateTable('visits')
+            .set({
+              trip_id: activeTripId,
+              remarks: existing.remarks
+                ? `${existing.remarks} | Trip Plan Formed with ${org.name}`
+                : `Part of multi-stop trip with ${org.name}`,
+              version: existing.version + 1,
+            })
+            .where('id', '=', id)
+            .execute();
+        }
+
+        // Insert the secondary also-meet visit
+        createdAlsoMeetVisit = await trx
+          .insertInto('visits')
+          .values({
+            trip_id: activeTripId,
+            organisation_id: dto.organisation_id!,
+            contact_id: dto.contact_id || null,
+            contact_person: dto.contact_person || null,
+            product_id: dto.product_id || null,
+            planned_by: user.id,
+            assigned_to: existing.assigned_to,
+            assigned_by_manager: user.id,
+            manager_assigned: true,
+            location: targetLocation,
+            planned_date: existing.planned_date,
+            start_time: dto.start_time || '14:30',
+            end_time: dto.end_time || '16:00',
+            purpose: dto.purpose || `Manager assigned also-meet visit with ${org.name}`,
+            demo_required: false,
+            travel_required: false,
+            expected_outcome: 'Engage adjacent prospect in same area',
+            status: 'planned',
+            remarks: `Manager Directive: ${dto.instructions}`,
+            version: 1,
+          })
+          .returningAll()
+          .executeTakeFirstOrThrow();
+      });
+    }
+
+    // Update the base visit notes with the manager's directive
     const updated = await this.db
       .updateTable('visits')
       .set({
         assigned_by_manager: user.id,
         manager_assigned: true,
         remarks: existing.remarks
-          ? `${existing.remarks} | Manager Intervention: ${dto.instructions}`
-          : `Manager Intervention: ${dto.instructions}`,
+          ? `${existing.remarks} | Manager Directive: ${dto.instructions}`
+          : `Manager Directive: ${dto.instructions}`,
         version: existing.version + 1,
       })
       .where('id', '=', id)
@@ -853,6 +937,7 @@ export class VisitsService {
       employeeId: existing.assigned_to,
       managerName: user.full_name,
       instructions: dto.instructions,
+      additionalVisitId: createdAlsoMeetVisit?.id,
     });
 
     this.eventEmitter.emit('audit.log', {
@@ -861,11 +946,18 @@ export class VisitsService {
       entityId: id,
       action: 'MANAGER_MODIFY_VISIT',
       previousValue: { remarks: existing.remarks },
-      newValue: { remarks: updated.remarks, assigned_by_manager: user.id },
+      newValue: {
+        remarks: updated.remarks,
+        assigned_by_manager: user.id,
+        additionalVisitId: createdAlsoMeetVisit?.id,
+      },
       reason: dto.instructions,
     });
 
-    return updated;
+    return {
+      ...updated,
+      additional_visit: createdAlsoMeetVisit,
+    };
   }
 
   // -------------------------------------------------------------

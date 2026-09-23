@@ -240,6 +240,38 @@ export class ManagerInterventionDto {
   @IsString()
   @IsNotEmpty({ message: 'Instructions for the employee are required' })
   instructions!: string;
+
+  @IsUUID('all')
+  @IsOptional()
+  organisation_id?: string;
+
+  @IsUUID('all')
+  @IsOptional()
+  contact_id?: string;
+
+  @IsString()
+  @IsOptional()
+  contact_person?: string;
+
+  @IsUUID('all')
+  @IsOptional()
+  product_id?: string;
+
+  @IsString()
+  @IsOptional()
+  location?: string;
+
+  @IsString()
+  @IsOptional()
+  start_time?: string;
+
+  @IsString()
+  @IsOptional()
+  end_time?: string;
+
+  @IsString()
+  @IsOptional()
+  purpose?: string;
 }
 
 export class CreateTripDto {

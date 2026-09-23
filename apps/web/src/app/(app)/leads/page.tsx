@@ -38,6 +38,11 @@ import {
   AlertCircle,
   Eye,
   Edit,
+  History,
+  Activity,
+  UserCheck,
+  CalendarDays,
+  CheckCircle2,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { api } from '@/lib/api';
@@ -65,8 +70,72 @@ import {
 } from '@/components/ui';
 import { formatLakh, LeadStatus, LeadType, LeadLossReason, InteractionType, FollowUpStatus } from '@arihant/shared';
 
+const SECTOR_OPTIONS = [
+  { value: 'Defence', label: 'Defence (Army / Navy / Air Force)' },
+  { value: 'Police / Paramilitary', label: 'Police / Paramilitary (CRPF, BSF, CISF, ITBP, SSB)' },
+  { value: 'State Police', label: 'State Police & Special Forces' },
+  { value: 'Railways', label: 'Railways & Metro Transit' },
+  { value: 'Security / Intelligence', label: 'Intelligence & Security Agencies' },
+  { value: 'Nuclear & Energy', label: 'Nuclear, Power & Critical Infrastructure' },
+  { value: 'Aviation & Airports', label: 'Aviation & Airport Security' },
+  { value: 'Prisons & Correctional', label: 'Prisons & Correctional Services' },
+  { value: 'PSU / Government', label: 'Public Sector Undertaking (PSU) / Govt' },
+  { value: 'Corporate Security', label: 'Corporate & Industrial Security' },
+  { value: 'Other', label: 'Other Sector' },
+];
+
+const LEAD_SOURCE_OPTIONS = [
+  { value: 'field_visit', label: 'Field Visit / On-Site' },
+  { value: 'gem_portal', label: 'GeM Portal (Government e-Marketplace)' },
+  { value: 'tender', label: 'Tender / E-Procurement Portal' },
+  { value: 'referral', label: 'Referral / Recommendation' },
+  { value: 'exhibition', label: 'Exhibition / Defense Expo' },
+  { value: 'cold_outreach', label: 'Cold Outreach' },
+  { value: 'website', label: 'Inbound / Company Website' },
+  { value: 'partner', label: 'OEM / Partner Channel' },
+];
+
+const LEAD_STATUS_OPTIONS: { value: LeadStatus; label: string }[] = [
+  { value: 'new', label: 'New / Inquired' },
+  { value: 'contacted', label: 'Contacted' },
+  { value: 'qualified', label: 'Qualified' },
+  { value: 'follow_up', label: 'Follow-up Active' },
+  { value: 'demo', label: 'Demo Scheduled' },
+  { value: 'proposal', label: 'Proposal / Quoted' },
+  { value: 'tender_discussion', label: 'Tender Discussion' },
+  { value: 'negotiation', label: 'Commercial Negotiation' },
+  { value: 'converted', label: 'Converted / Won' },
+  { value: 'on_hold', label: 'On Hold' },
+  { value: 'dropped', label: 'Dropped / Lost' },
+];
+
+const INTERACTION_TYPE_OPTIONS = [
+  { value: 'call', label: 'Phone Call' },
+  { value: 'physical_visit', label: 'Physical Visit' },
+  { value: 'meeting', label: 'In-person Meeting' },
+  { value: 'email', label: 'Email Correspondence' },
+  { value: 'whatsapp', label: 'WhatsApp Message' },
+  { value: 'demo', label: 'Demonstration / Trial' },
+  { value: 'other', label: 'Other Touchpoint' },
+];
+
 export default function LeadsPage() {
-  const { user } = useAuth();
+  const { user, hasRole, switchRole } = useAuth();
+  const canReassign = hasRole(['management', 'regional_manager', 'admin']);
+  const [isSwitchingPersona, setIsSwitchingPersona] = useState(false);
+
+  // Quick switch role handler for modal self-service
+  const handleQuickSwitchRole = async (role: 'regional_manager' | 'management') => {
+    try {
+      setIsSwitchingPersona(true);
+      setFormError(null);
+      await switchRole(role);
+    } catch (err: any) {
+      setFormError('Failed to switch persona: ' + (err.message || 'Unknown error'));
+    } finally {
+      setIsSwitchingPersona(false);
+    }
+  };
 
   // Active Workspace Tab: 'leads' | 'customers' | 'followups' | 'reports'
   const [activeTab, setActiveTab] = useState<string>('leads');
@@ -77,6 +146,7 @@ export default function LeadsPage() {
   const [usersList, setUsersList] = useState<any[]>([]);
   const [zonesList, setZonesList] = useState<any[]>([]);
   const [regionsList, setRegionsList] = useState<any[]>([]);
+  const [organisationsList, setOrganisationsList] = useState<any[]>([]);
 
   // 1. Leads State
   const [leads, setLeads] = useState<any[]>([]);
@@ -134,33 +204,99 @@ export default function LeadsPage() {
   const [customerContacts, setCustomerContacts] = useState<any[]>([]);
   const [customerLeads, setCustomerLeads] = useState<any[]>([]);
   const [customerTimelineLoading, setCustomerTimelineLoading] = useState(false);
+  const [customerManagementSummary, setCustomerManagementSummary] = useState<any | null>(null);
+  const [c360Tab, setC360Tab] = useState<'management' | 'timeline' | 'contacts' | 'deals'>('management');
   const [selectedFollowup, setSelectedFollowup] = useState<any | null>(null);
 
   // Form States
   const [actionLoading, setActionLoading] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
-  // Create Lead Form
+  // Create Lead Form (Complete 18 Parameters)
   const [leadForm, setLeadForm] = useState({
-    title: '',
     organisation_mode: 'new' as 'new' | 'existing',
     organisation_id: '',
     organisation_name: '',
     department: '',
     city: '',
     state: '',
+    zone_id: '',
+    region_id: '',
     sector: '',
     contact_name: '',
     contact_designation: '',
     contact_mobile: '',
     contact_email: '',
+    product_ids: [] as string[],
+    source: 'field_visit',
     assigned_to: '',
     regional_manager_id: '',
-    source: 'field_visit',
-    value_lakh: '',
     remarks: '',
-    product_ids: [] as string[],
+    lead_status: 'new' as LeadStatus,
+    last_interaction_date: new Date().toISOString().split('T')[0],
+    last_interaction_type: 'call',
+    next_followup_date: '',
+    value_lakh: '',
   });
+
+  // Filter regions based on currently selected zone
+  const filteredRegions = useMemo(() => {
+    if (!leadForm.zone_id) return regionsList;
+    return regionsList.filter((r) => r.zone_id === leadForm.zone_id);
+  }, [regionsList, leadForm.zone_id]);
+
+  const handleSalespersonChange = (userId: string) => {
+    const selectedUser = usersList.find((u) => u.id === userId);
+    setLeadForm((prev) => ({
+      ...prev,
+      assigned_to: userId,
+      regional_manager_id: selectedUser?.reporting_manager_id || prev.regional_manager_id,
+    }));
+  };
+
+  const handleZoneChange = (zoneId: string) => {
+    setLeadForm((prev) => {
+      const isRegionInZone = regionsList.some((r) => r.id === prev.region_id && r.zone_id === zoneId);
+      return {
+        ...prev,
+        zone_id: zoneId,
+        region_id: isRegionInZone ? prev.region_id : '',
+      };
+    });
+  };
+
+  const handleSelectExistingOrg = async (orgId: string) => {
+    const found = organisationsList.find((o) => o.id === orgId) || customers.find((c) => c.id === orgId);
+    setLeadForm((prev) => ({
+      ...prev,
+      organisation_id: orgId,
+      organisation_name: found?.name || prev.organisation_name,
+      city: found?.city || prev.city,
+      state: found?.state || prev.state,
+      zone_id: found?.zone_id || prev.zone_id,
+      region_id: found?.region_id || prev.region_id,
+      sector: found?.sector || prev.sector,
+    }));
+
+    if (orgId) {
+      try {
+        const contacts = await api.get(`/contacts?organisation_id=${orgId}`);
+        const cList = Array.isArray(contacts) ? contacts : contacts?.data || [];
+        if (cList.length > 0) {
+          const primary = cList.find((c: any) => c.is_primary) || cList[0];
+          setLeadForm((prev) => ({
+            ...prev,
+            contact_name: primary.full_name || primary.name || '',
+            contact_designation: primary.designation || '',
+            contact_mobile: primary.mobile || primary.phone || '',
+            contact_email: primary.email || '',
+          }));
+        }
+      } catch (err) {
+        // preserve current contact info
+      }
+    }
+  };
 
   // Live Duplicate Detection Results
   const [duplicateMatches, setDuplicateMatches] = useState<any[]>([]);
@@ -205,12 +341,13 @@ export default function LeadsPage() {
   useEffect(() => {
     const loadMasters = async () => {
       try {
-        const [prodRes, secRes, usrRes, znRes, regRes] = await Promise.allSettled([
+        const [prodRes, secRes, usrRes, znRes, regRes, orgRes] = await Promise.allSettled([
           api.get('/masters/products'),
           api.get('/masters/sectors'),
           api.get('/users'),
           api.get('/masters/zones'),
           api.get('/masters/regions'),
+          api.get('/organisations', { limit: 200 }),
         ]);
 
         if (prodRes.status === 'fulfilled') setProductsList(prodRes.value.data || prodRes.value || []);
@@ -218,6 +355,7 @@ export default function LeadsPage() {
         if (usrRes.status === 'fulfilled') setUsersList(usrRes.value.data || usrRes.value || []);
         if (znRes.status === 'fulfilled') setZonesList(znRes.value.data || znRes.value || []);
         if (regRes.status === 'fulfilled') setRegionsList(regRes.value.data || regRes.value || []);
+        if (orgRes.status === 'fulfilled') setOrganisationsList(orgRes.value.data || orgRes.value || []);
       } catch (err) {
         console.error('Failed to load masters:', err);
       }
@@ -418,6 +556,7 @@ export default function LeadsPage() {
     try {
       setCustomerTimelineLoading(true);
       setIsCustomer360Open(true);
+      setC360Tab('management');
       const [orgRes, timelineRes, contactsRes, leadsRes] = await Promise.allSettled([
         api.get(`/organisations/${orgId}`),
         api.get(`/organisations/${orgId}/timeline`),
@@ -426,7 +565,14 @@ export default function LeadsPage() {
       ]);
 
       if (orgRes.status === 'fulfilled') setSelectedCustomer(orgRes.value);
-      if (timelineRes.status === 'fulfilled') setCustomerTimeline(timelineRes.value.interactions || []);
+      if (timelineRes.status === 'fulfilled') {
+        const val = timelineRes.value;
+        setCustomerTimeline(val.timeline || val.interactions || []);
+        setCustomerManagementSummary(val.management_summary || null);
+        if (val.organisation && (!orgRes || orgRes.status !== 'fulfilled')) {
+          setSelectedCustomer(val.organisation);
+        }
+      }
       if (contactsRes.status === 'fulfilled') setCustomerContacts(contactsRes.value || []);
       if (leadsRes.status === 'fulfilled') setCustomerLeads(leadsRes.value.data || []);
     } catch (err) {
@@ -436,58 +582,53 @@ export default function LeadsPage() {
     }
   };
 
-  // Handle Create Lead Submission
+  // Handle Create Lead Submission (Atomic Sync of all 18 Parameters)
   const handleCreateLead = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
     setActionLoading(true);
 
     try {
-      let orgId = leadForm.organisation_id;
-      let contactId: string | undefined = undefined;
-
-      // 1. If new organisation mode, create or resolve organisation
-      if (leadForm.organisation_mode === 'new') {
-        const orgRes = await api.post('/organisations', {
-          name: leadForm.organisation_name.trim(),
-          department: leadForm.department.trim() || undefined,
-          city: leadForm.city.trim() || undefined,
-          state: leadForm.state.trim() || undefined,
-          sector: leadForm.sector || undefined,
-        });
-        orgId = orgRes.id;
+      if (leadForm.organisation_mode === 'new' && !leadForm.organisation_name.trim()) {
+        throw new Error('Organisation name is required.');
+      }
+      if (leadForm.organisation_mode === 'existing' && !leadForm.organisation_id) {
+        throw new Error('Please select an existing organisation.');
       }
 
-      // 2. Create contact if details provided
-      if (leadForm.contact_name.trim() && orgId) {
-        const contactRes = await api.post('/contacts', {
-          organisation_id: orgId,
-          name: leadForm.contact_name.trim(),
-          designation: leadForm.contact_designation.trim() || undefined,
-          phone: leadForm.contact_mobile.trim() || undefined,
-          email: leadForm.contact_email.trim() || undefined,
-          is_primary: true,
-        });
-        contactId = contactRes.id;
-      }
-
-      // 3. Create lead (automatically classifies Fresh vs Re-Approached)
-      const createdLead = await api.post('/leads', {
-        title: leadForm.title.trim(),
-        organisation_id: orgId,
-        primary_contact_id: contactId,
+      await api.post('/leads', {
+        organisation_id: leadForm.organisation_mode === 'existing' ? leadForm.organisation_id : undefined,
+        organisation_name: leadForm.organisation_mode === 'new' ? leadForm.organisation_name.trim() : undefined,
+        contact_name: leadForm.contact_name.trim() || undefined,
+        contact_designation: leadForm.contact_designation.trim() || undefined,
+        contact_mobile: leadForm.contact_mobile.trim() || undefined,
+        contact_email: leadForm.contact_email.trim() || undefined,
+        city: leadForm.city.trim() || undefined,
+        state: leadForm.state.trim() || undefined,
+        zone_id: leadForm.zone_id || undefined,
+        region_id: leadForm.region_id || undefined,
+        sector: leadForm.sector || undefined,
+        department: leadForm.department.trim() || undefined,
+        product_id: leadForm.product_ids[0] || undefined,
+        product_ids: leadForm.product_ids.length > 0 ? leadForm.product_ids : undefined,
+        source: leadForm.source || 'field_visit',
         assigned_to: leadForm.assigned_to || user?.id,
         regional_manager_id: leadForm.regional_manager_id || undefined,
-        source: leadForm.source,
-        value_lakh: leadForm.value_lakh ? Number(leadForm.value_lakh) : undefined,
         remarks: leadForm.remarks.trim() || undefined,
-        product_ids: leadForm.product_ids.length > 0 ? leadForm.product_ids : undefined,
+        lead_status: leadForm.lead_status || 'new',
+        status: leadForm.lead_status || 'new',
+        last_interaction_date: leadForm.last_interaction_date || new Date().toISOString().split('T')[0],
+        last_interaction_type: leadForm.last_interaction_type || 'call',
+        next_followup_date: leadForm.next_followup_date ? leadForm.next_followup_date : undefined,
+        value_lakh: leadForm.value_lakh ? Number(leadForm.value_lakh) : undefined,
       });
 
       setIsCreateLeadOpen(false);
       resetLeadForm();
       fetchLeads();
       fetchDashboardStats();
+      if (activeTab === 'customers') fetchCustomers();
+      if (activeTab === 'followups') fetchFollowups();
     } catch (err: any) {
       setFormError(err.message || 'Failed to register lead.');
     } finally {
@@ -497,24 +638,29 @@ export default function LeadsPage() {
 
   const resetLeadForm = () => {
     setLeadForm({
-      title: '',
       organisation_mode: 'new',
       organisation_id: '',
       organisation_name: '',
       department: '',
       city: '',
       state: '',
+      zone_id: '',
+      region_id: '',
       sector: '',
       contact_name: '',
       contact_designation: '',
       contact_mobile: '',
       contact_email: '',
-      assigned_to: '',
-      regional_manager_id: '',
-      source: 'field_visit',
-      value_lakh: '',
-      remarks: '',
       product_ids: [],
+      source: 'field_visit',
+      assigned_to: user?.id || '',
+      regional_manager_id: '',
+      remarks: '',
+      lead_status: 'new',
+      last_interaction_date: new Date().toISOString().split('T')[0],
+      last_interaction_type: 'call',
+      next_followup_date: '',
+      value_lakh: '',
     });
     setDuplicateMatches([]);
     setDuplicateSuggestion(null);
@@ -550,6 +696,10 @@ export default function LeadsPage() {
   const handleReassign = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedLead) return;
+    if (!canReassign) {
+      setFormError('Access restricted: Only Regional Managers, Management, or Admins can transfer lead ownership.');
+      return;
+    }
     setFormError(null);
     setActionLoading(true);
 
@@ -606,10 +756,13 @@ export default function LeadsPage() {
         organisation_id: interactionForm.organisation_id,
         contact_id: interactionForm.contact_id || undefined,
         type: interactionForm.type,
+        occurred_on: interactionForm.date,
         interaction_date: interactionForm.date,
+        remarks: interactionForm.notes,
         notes: interactionForm.notes,
         outcome: interactionForm.outcome || undefined,
         next_action: interactionForm.next_action || undefined,
+        followup_date: interactionForm.next_followup_date || undefined,
         next_followup_date: interactionForm.next_followup_date || undefined,
         attachments:
           interactionForm.attachment_title && interactionForm.attachment_url
@@ -944,10 +1097,10 @@ export default function LeadsPage() {
                   <TableRow key={lead.id} className="group cursor-pointer" onClick={() => handleOpenLead(lead.id)}>
                     <TableCell>
                       <div className="font-bold text-[#1A1A1A] group-hover:text-[#223FA7] transition-colors line-clamp-1">
-                        {lead.title}
+                        {lead.product_name || lead.organisation_name || 'Procurement Opportunity'}
                       </div>
                       <div className="text-[10px] text-[#5871A5]">
-                        <span className="font-mono">#{lead.id.slice(0, 8)}</span> • Source: {lead.source || 'direct'}
+                        <span className="font-mono">#{lead.id.slice(0, 8)}</span> • Source: {lead.source || 'Direct'}
                       </div>
                     </TableCell>
 
@@ -956,8 +1109,11 @@ export default function LeadsPage() {
                         <Building className="h-3.5 w-3.5 text-[#5871A5] shrink-0" />
                         <span className="truncate">{lead.organisation_name || '—'}</span>
                       </div>
-                      <div className="text-[10px] text-[#5871A5]">
-                        {lead.sector || 'Defence / Security'}
+                      <div className="text-[10px] text-[#5871A5] flex items-center gap-1">
+                        <span>{lead.sector || 'Defence / Security'}</span>
+                        {(lead.city || lead.state) && (
+                          <span>• {lead.city ? `${lead.city}, ` : ''}{lead.state || ''}</span>
+                        )}
                       </div>
                     </TableCell>
 
@@ -969,7 +1125,7 @@ export default function LeadsPage() {
                             <span>{lead.contact_name}</span>
                           </div>
                           <div className="text-[10px] text-[#5871A5]">
-                            {lead.contact_designation || lead.contact_phone || '—'}
+                            {lead.contact_designation || lead.contact_mobile || lead.contact_phone || '—'}
                           </div>
                         </div>
                       ) : (
@@ -991,7 +1147,7 @@ export default function LeadsPage() {
 
                     <TableCell>
                       <div className="text-xs font-semibold text-gray-800">
-                        {lead.assigned_salesperson_name || 'Unassigned'}
+                        {lead.assignee_name || lead.assigned_salesperson_name || 'Unassigned'}
                       </div>
                       {lead.regional_manager_name && (
                         <div className="text-[10px] text-[#5871A5]">
@@ -1633,40 +1789,34 @@ export default function LeadsPage() {
         isOpen={isCreateLeadOpen}
         onClose={() => setIsCreateLeadOpen(false)}
         title="Register New Lead Opportunity"
-        description="Capture upcoming defence/security procurement requirements with automatic duplicate prevention & Fresh classification."
-        maxWidth="2xl"
+        description="Capture comprehensive opportunity intelligence, contact person, jurisdiction, and initial interaction."
+        maxWidth="4xl"
       >
         <form onSubmit={handleCreateLead} className="space-y-4 text-xs">
           {formError && (
             <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 flex items-center gap-2">
               <AlertCircle className="h-4 w-4 shrink-0" />
-              <span>{formError}</span>
+              <span className="font-medium">{formError}</span>
             </div>
           )}
 
-          {/* Opportunity Title */}
-          <Input
-            label="Opportunity Title *"
-            required
-            value={leadForm.title}
-            onChange={(e) => setLeadForm({ ...leadForm, title: e.target.value })}
-            placeholder="e.g. 50x Bomb Blankets for Rapid Action Force HQ"
-          />
-
-          {/* Account Mode Toggle */}
-          <div className="p-3 rounded-xl bg-[#F7FBFF] border border-[#D6E3F5] space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-[#1A1A1A] uppercase tracking-wider">
-                Organisation Account Details
-              </span>
+          {/* 1. Organisation & Geography */}
+          <div className="p-4 rounded-xl bg-[#F7FBFF] border border-[#D6E3F5] space-y-3">
+            <div className="flex items-center justify-between border-b border-[#D6E3F5] pb-2">
               <div className="flex items-center gap-2">
+                <Building className="h-4 w-4 text-[#223FA7]" />
+                <span className="text-xs font-bold text-[#1A1A1A] uppercase tracking-wider">
+                  1. Organisation & Jurisdiction
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5">
                 <button
                   type="button"
                   onClick={() => setLeadForm({ ...leadForm, organisation_mode: 'new' })}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold ${
+                  className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
                     leadForm.organisation_mode === 'new'
-                      ? 'bg-[#223FA7] text-white'
-                      : 'bg-white text-[#5871A5] border border-[#D6E3F5]'
+                      ? 'bg-[#223FA7] text-white shadow-sm'
+                      : 'bg-white text-[#5871A5] border border-[#D6E3F5] hover:border-[#9FC0F5]'
                   }`}
                 >
                   Create New Account
@@ -1674,18 +1824,17 @@ export default function LeadsPage() {
                 <button
                   type="button"
                   onClick={() => setLeadForm({ ...leadForm, organisation_mode: 'existing' })}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold ${
+                  className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
                     leadForm.organisation_mode === 'existing'
-                      ? 'bg-[#223FA7] text-white'
-                      : 'bg-white text-[#5871A5] border border-[#D6E3F5]'
+                      ? 'bg-[#223FA7] text-white shadow-sm'
+                      : 'bg-white text-[#5871A5] border border-[#D6E3F5] hover:border-[#9FC0F5]'
                   }`}
                 >
-                  Link Existing Account
+                  Select Existing Account
                 </button>
               </div>
             </div>
 
-            {/* If New Organisation Mode */}
             {leadForm.organisation_mode === 'new' ? (
               <div className="space-y-3">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1694,44 +1843,21 @@ export default function LeadsPage() {
                     required
                     value={leadForm.organisation_name}
                     onChange={(e) => setLeadForm({ ...leadForm, organisation_name: e.target.value })}
-                    placeholder="e.g. Central Reserve Police Force"
+                    placeholder="e.g. Central Reserve Police Force or Western Naval Command"
                   />
                   <Input
-                    label="Department / Unit"
+                    label="Department / Unit / Wing"
                     value={leadForm.department}
                     onChange={(e) => setLeadForm({ ...leadForm, department: e.target.value })}
                     placeholder="e.g. Procurement & Ordnance Branch"
                   />
                 </div>
 
-                <div className="grid grid-cols-3 gap-3">
-                  <Input
-                    label="City"
-                    value={leadForm.city}
-                    onChange={(e) => setLeadForm({ ...leadForm, city: e.target.value })}
-                    placeholder="e.g. New Delhi"
-                  />
-                  <Input
-                    label="State"
-                    value={leadForm.state}
-                    onChange={(e) => setLeadForm({ ...leadForm, state: e.target.value })}
-                    placeholder="e.g. Delhi"
-                  />
-                  <Select
-                    label="Sector"
-                    value={leadForm.sector}
-                    onChange={(e) => setLeadForm({ ...leadForm, sector: e.target.value })}
-                    options={[
-                      { value: '', label: 'Select Sector' },
-                      ...sectorsList.map((s) => ({ value: s.name, label: s.name })),
-                    ]}
-                  />
-                </div>
-
                 {/* Duplicate Detection Alert Banner */}
                 {isCheckingDuplicate && (
-                  <div className="text-[11px] text-[#5871A5] italic">
-                    Checking account database for duplicate records...
+                  <div className="text-[11px] text-[#5871A5] italic flex items-center gap-1.5">
+                    <RefreshCw className="h-3 w-3 animate-spin text-[#223FA7]" />
+                    <span>Checking account database for duplicate records...</span>
                   </div>
                 )}
                 {duplicateMatches.length > 0 && (
@@ -1765,6 +1891,7 @@ export default function LeadsPage() {
                                 organisation_mode: 'existing',
                                 organisation_id: m.id,
                               });
+                              handleSelectExistingOrg(m.id);
                             }}
                           >
                             Link This Account
@@ -1776,49 +1903,110 @@ export default function LeadsPage() {
                 )}
               </div>
             ) : (
-              <div>
+              <div className="space-y-3">
                 <Select
-                  label="Select Existing Account *"
+                  label="Select Existing Organisation Account *"
                   required
                   value={leadForm.organisation_id}
-                  onChange={(e) => setLeadForm({ ...leadForm, organisation_id: e.target.value })}
+                  onChange={(e) => handleSelectExistingOrg(e.target.value)}
                   options={[
-                    { value: '', label: 'Select Organisation' },
-                    ...customers.map((c) => ({ value: c.id, label: `${c.name} (${c.city || 'Delhi'})` })),
+                    { value: '', label: 'Select Organisation...' },
+                    ...(organisationsList.length > 0 ? organisationsList : customers).map((c) => ({
+                      value: c.id,
+                      label: `${c.name} (${c.city || c.state || 'India'})`,
+                    })),
                   ]}
                 />
               </div>
             )}
-          </div>
 
-          {/* Primary Contact Person */}
-          <div className="p-3 rounded-xl bg-[#F7FBFF] border border-[#D6E3F5] space-y-3">
-            <span className="text-xs font-bold text-[#1A1A1A] uppercase tracking-wider block">
-              Key Contact Person
-            </span>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* City, State, Zone, Region, Sector */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
               <Input
-                label="Contact Officer Name"
-                value={leadForm.contact_name}
-                onChange={(e) => setLeadForm({ ...leadForm, contact_name: e.target.value })}
-                placeholder="e.g. Col. Alok Mathur"
+                label="City *"
+                required
+                value={leadForm.city}
+                onChange={(e) => setLeadForm({ ...leadForm, city: e.target.value })}
+                placeholder="e.g. New Delhi"
               />
               <Input
-                label="Designation / Rank"
+                label="State *"
+                required
+                value={leadForm.state}
+                onChange={(e) => setLeadForm({ ...leadForm, state: e.target.value })}
+                placeholder="e.g. Delhi or Maharashtra"
+              />
+              <Select
+                label="Sector / Department *"
+                required
+                value={leadForm.sector}
+                onChange={(e) => setLeadForm({ ...leadForm, sector: e.target.value })}
+                options={[
+                  { value: '', label: 'Select Sector...' },
+                  ...SECTOR_OPTIONS,
+                ]}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <Select
+                label="Zone *"
+                required
+                value={leadForm.zone_id}
+                onChange={(e) => handleZoneChange(e.target.value)}
+                options={[
+                  { value: '', label: 'Select Zone...' },
+                  ...zonesList.map((z) => ({ value: z.id, label: `${z.name} (${z.code})` })),
+                ]}
+              />
+              <Select
+                label="Region *"
+                required
+                value={leadForm.region_id}
+                onChange={(e) => setLeadForm({ ...leadForm, region_id: e.target.value })}
+                options={[
+                  { value: '', label: leadForm.zone_id ? 'Select Region in Zone...' : 'Select Region...' },
+                  ...filteredRegions.map((r) => ({ value: r.id, label: r.name })),
+                ]}
+              />
+            </div>
+          </div>
+
+          {/* 2. Key Contact Person */}
+          <div className="p-4 rounded-xl bg-[#F7FBFF] border border-[#D6E3F5] space-y-3">
+            <div className="flex items-center gap-2 border-b border-[#D6E3F5] pb-2">
+              <User className="h-4 w-4 text-[#223FA7]" />
+              <span className="text-xs font-bold text-[#1A1A1A] uppercase tracking-wider">
+                2. Contact Person Details
+              </span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <Input
+                label="Contact Person Name *"
+                required
+                value={leadForm.contact_name}
+                onChange={(e) => setLeadForm({ ...leadForm, contact_name: e.target.value })}
+                placeholder="e.g. Col. Alok Mathur or Shri R.K. Sharma"
+              />
+              <Input
+                label="Designation / Rank *"
+                required
                 value={leadForm.contact_designation}
                 onChange={(e) => setLeadForm({ ...leadForm, contact_designation: e.target.value })}
-                placeholder="e.g. DIG Procurement"
+                placeholder="e.g. DIG Procurement, Director, ADG"
               />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <Input
-                label="Mobile / Direct Line"
+                label="Mobile / Direct Phone *"
+                required
                 value={leadForm.contact_mobile}
                 onChange={(e) => setLeadForm({ ...leadForm, contact_mobile: e.target.value })}
                 placeholder="+91 98110 00000"
               />
               <Input
                 label="Email Address"
+                type="email"
                 value={leadForm.contact_email}
                 onChange={(e) => setLeadForm({ ...leadForm, contact_email: e.target.value })}
                 placeholder="officer@crpf.gov.in"
@@ -1826,75 +2014,138 @@ export default function LeadsPage() {
             </div>
           </div>
 
-          {/* Opportunity Parameters */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <Select
-              label="Assigned Salesperson"
-              value={leadForm.assigned_to}
-              onChange={(e) => setLeadForm({ ...leadForm, assigned_to: e.target.value })}
-              options={[
-                { value: '', label: 'Current User' },
-                ...usersList.map((u) => ({ value: u.id, label: `${u.full_name} (${u.role})` })),
-              ]}
-            />
-            <Select
-              label="Regional Manager"
-              value={leadForm.regional_manager_id}
-              onChange={(e) => setLeadForm({ ...leadForm, regional_manager_id: e.target.value })}
-              options={[
-                { value: '', label: 'None' },
-                ...usersList.filter((u) => u.role === 'regional_manager' || u.role === 'management').map((u) => ({ value: u.id, label: u.full_name })),
-              ]}
-            />
-            <Select
-              label="Lead Source"
-              value={leadForm.source}
-              onChange={(e) => setLeadForm({ ...leadForm, source: e.target.value })}
-              options={[
-                { value: 'field_visit', label: 'Field Visit' },
-                { value: 'referral', label: 'Referral' },
-                { value: 'tender', label: 'Tender' },
-                { value: 'exhibition', label: 'Exhibition' },
-                { value: 'website', label: 'Website' },
-                { value: 'cold_outreach', label: 'Cold Outreach' },
-              ]}
+          {/* 3. Product Interest, Source & Lead Status */}
+          <div className="p-4 rounded-xl bg-[#F7FBFF] border border-[#D6E3F5] space-y-3">
+            <div className="flex items-center gap-2 border-b border-[#D6E3F5] pb-2">
+              <Target className="h-4 w-4 text-[#223FA7]" />
+              <span className="text-xs font-bold text-[#1A1A1A] uppercase tracking-wider">
+                3. Product Interest, Source & Status
+              </span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <Select
+                label="Product Interest *"
+                required
+                value={leadForm.product_ids[0] || ''}
+                onChange={(e) => setLeadForm({ ...leadForm, product_ids: e.target.value ? [e.target.value] : [] })}
+                options={[
+                  { value: '', label: 'Select Product Interest...' },
+                  ...productsList.map((p) => ({ value: p.id, label: `${p.name} (${p.category || 'Security'})` })),
+                ]}
+              />
+              <Select
+                label="Lead Source *"
+                required
+                value={leadForm.source}
+                onChange={(e) => setLeadForm({ ...leadForm, source: e.target.value })}
+                options={LEAD_SOURCE_OPTIONS}
+              />
+              <Select
+                label="Lead Status *"
+                required
+                value={leadForm.lead_status}
+                onChange={(e) => setLeadForm({ ...leadForm, lead_status: e.target.value as LeadStatus })}
+                options={LEAD_STATUS_OPTIONS}
+              />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <Input
+                label="Estimated Deal Value (₹ Lakh)"
+                type="number"
+                step="0.1"
+                value={leadForm.value_lakh}
+                onChange={(e) => setLeadForm({ ...leadForm, value_lakh: e.target.value })}
+                placeholder="e.g. 45.0"
+              />
+              <div className="sm:col-span-2 flex items-center pt-5">
+                <span className="text-[11px] text-[#5871A5] italic">
+                  💡 Arihant Lead Engine automatically dedupes against account history and tags Fresh vs Re-Approached pipeline cycle.
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* 4. Salesperson & Regional Manager */}
+          <div className="p-4 rounded-xl bg-[#F7FBFF] border border-[#D6E3F5] space-y-3">
+            <div className="flex items-center gap-2 border-b border-[#D6E3F5] pb-2">
+              <Users className="h-4 w-4 text-[#223FA7]" />
+              <span className="text-xs font-bold text-[#1A1A1A] uppercase tracking-wider">
+                4. Ownership & Jurisdiction
+              </span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <Select
+                label="Assigned Salesperson *"
+                required
+                value={leadForm.assigned_to}
+                onChange={(e) => handleSalespersonChange(e.target.value)}
+                options={[
+                  { value: '', label: 'Select Salesperson...' },
+                  ...usersList.map((u) => ({ value: u.id, label: `${u.full_name} (${u.role})` })),
+                ]}
+              />
+              <Select
+                label="Regional Manager"
+                value={leadForm.regional_manager_id}
+                onChange={(e) => setLeadForm({ ...leadForm, regional_manager_id: e.target.value })}
+                options={[
+                  { value: '', label: 'Auto-assigned from reporting manager' },
+                  ...usersList.filter((u) => u.role === 'regional_manager' || u.role === 'management' || u.role === 'admin').map((u) => ({ value: u.id, label: `${u.full_name} (${u.role})` })),
+                ]}
+              />
+            </div>
+          </div>
+
+          {/* 5. Last Interaction, Next Follow-Up & Remarks */}
+          <div className="p-4 rounded-xl bg-[#F7FBFF] border border-[#D6E3F5] space-y-3">
+            <div className="flex items-center gap-2 border-b border-[#D6E3F5] pb-2">
+              <Clock className="h-4 w-4 text-[#223FA7]" />
+              <span className="text-xs font-bold text-[#1A1A1A] uppercase tracking-wider">
+                5. Interactions, Follow-Up & Remarks
+              </span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <Input
+                label="Last Interaction Date *"
+                type="date"
+                required
+                value={leadForm.last_interaction_date}
+                onChange={(e) => setLeadForm({ ...leadForm, last_interaction_date: e.target.value })}
+              />
+              <Select
+                label="Last Interaction Type"
+                value={leadForm.last_interaction_type}
+                onChange={(e) => setLeadForm({ ...leadForm, last_interaction_type: e.target.value })}
+                options={INTERACTION_TYPE_OPTIONS}
+              />
+              <Input
+                label="Next Follow-up Date (Optional)"
+                type="date"
+                value={leadForm.next_followup_date}
+                onChange={(e) => setLeadForm({ ...leadForm, next_followup_date: e.target.value })}
+              />
+            </div>
+            <Textarea
+              label="Remarks & Discussion Summary"
+              value={leadForm.remarks}
+              onChange={(e) => setLeadForm({ ...leadForm, remarks: e.target.value })}
+              placeholder="Record procurement timeline, budget sanction details, trial requirements, or interaction feedback..."
+              rows={3}
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Input
-              label="Estimated Deal Value (₹ Lakh)"
-              type="number"
-              step="0.1"
-              value={leadForm.value_lakh}
-              onChange={(e) => setLeadForm({ ...leadForm, value_lakh: e.target.value })}
-              placeholder="e.g. 45.0"
-            />
-            <Select
-              label="Primary Product Interest"
-              value={leadForm.product_ids[0] || ''}
-              onChange={(e) => setLeadForm({ ...leadForm, product_ids: e.target.value ? [e.target.value] : [] })}
-              options={[
-                { value: '', label: 'None' },
-                ...productsList.map((p) => ({ value: p.id, label: `${p.name} (${p.category || 'Defence'})` })),
-              ]}
-            />
-          </div>
-
-          <Textarea
-            label="Initial Discussion Remarks"
-            value={leadForm.remarks}
-            onChange={(e) => setLeadForm({ ...leadForm, remarks: e.target.value })}
-            placeholder="Preliminary requirements, procurement calendar, target deadlines..."
-          />
-
-          <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#D6E3F5]">
-            <Button type="button" variant="ghost" size="sm" onClick={() => setIsCreateLeadOpen(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" variant="primary" size="sm" isLoading={actionLoading}>
-              Create Opportunity
-            </Button>
+          <div className="flex items-center justify-between pt-3 border-t border-[#D6E3F5]">
+            <span className="text-[11px] text-[#5871A5]">
+              * Required fields. All 18 parameters will be synced into the live pipeline.
+            </span>
+            <div className="flex items-center gap-2">
+              <Button type="button" variant="ghost" size="sm" onClick={() => setIsCreateLeadOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" variant="primary" size="sm" isLoading={actionLoading}>
+                Register Lead Opportunity
+              </Button>
+            </div>
           </div>
         </form>
       </Modal>
@@ -2029,17 +2280,25 @@ export default function LeadsPage() {
                   <ShieldCheck className="h-4 w-4 text-[#223FA7]" />
                   <span>Salesperson Ownership Audit History</span>
                 </span>
-                <Button
-                  size="xs"
-                  variant="outline"
-                  onClick={() => {
-                    setNewSalespersonId(selectedLead.assigned_to || '');
-                    setReassignReason('');
-                    setIsReassignModalOpen(true);
-                  }}
-                >
-                  Reassign Lead
-                </Button>
+                <div className="flex items-center gap-2">
+                  {!canReassign && (
+                    <span className="text-[10px] font-medium text-[#5871A5] bg-[#EAF2FF] px-2 py-0.5 rounded-full border border-[#D6E3F5]">
+                      Managerial Action
+                    </span>
+                  )}
+                  <Button
+                    size="xs"
+                    variant="outline"
+                    onClick={() => {
+                      setNewSalespersonId(selectedLead.assigned_to || '');
+                      setReassignReason('');
+                      setFormError(null);
+                      setIsReassignModalOpen(true);
+                    }}
+                  >
+                    Reassign Lead
+                  </Button>
+                </div>
               </div>
 
               {selectedLead.assignment_history && selectedLead.assignment_history.length > 0 ? (
@@ -2188,6 +2447,39 @@ export default function LeadsPage() {
         maxWidth="md"
       >
         <form onSubmit={handleReassign} className="space-y-4 text-xs">
+          {!canReassign && (
+            <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 space-y-2.5">
+              <div className="flex items-center gap-2 font-semibold text-xs text-amber-800">
+                <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0" />
+                <span>Managerial Authorization Required</span>
+              </div>
+              <p className="text-[11px] text-amber-700 leading-relaxed">
+                Under Arihant BOS territorial governance, lead ownership reassignment is restricted to <strong>Regional Manager</strong>, <strong>Management</strong>, or <strong>Admin</strong> roles to ensure account integrity. Your current active role is <span className="font-mono font-medium px-1.5 py-0.5 rounded bg-amber-100/70 border border-amber-300 text-amber-900">{user?.role}</span>.
+              </p>
+              <div className="pt-1 flex flex-wrap items-center gap-2">
+                <Button
+                  type="button"
+                  size="xs"
+                  variant="primary"
+                  isLoading={isSwitchingPersona}
+                  onClick={() => handleQuickSwitchRole('regional_manager')}
+                >
+                  <UserCheck className="h-3.5 w-3.5 mr-1" />
+                  Switch to Regional Manager (Vikram Sharma)
+                </Button>
+                <Button
+                  type="button"
+                  size="xs"
+                  variant="outline"
+                  isLoading={isSwitchingPersona}
+                  onClick={() => handleQuickSwitchRole('management')}
+                >
+                  Switch to Management (Rajiv Arihant)
+                </Button>
+              </div>
+            </div>
+          )}
+
           {formError && (
             <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-700">
               {formError}
@@ -2212,13 +2504,30 @@ export default function LeadsPage() {
             placeholder="e.g. Territory reorganization / officer transferred to Delhi HQ"
           />
 
-          <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#D6E3F5]">
-            <Button type="button" variant="ghost" size="sm" onClick={() => setIsReassignModalOpen(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" variant="primary" size="sm" isLoading={actionLoading}>
-              Reassign & Dispatch Event
-            </Button>
+          <div className="flex items-center justify-between pt-2 border-t border-[#D6E3F5]">
+            {!canReassign ? (
+              <span className="text-[11px] text-amber-700 font-medium">
+                Switch role above to enable transfer.
+              </span>
+            ) : (
+              <span className="text-[11px] text-[#5871A5]">
+                Authorized as {user?.role.replace('_', ' ')}
+              </span>
+            )}
+            <div className="flex items-center gap-2">
+              <Button type="button" variant="ghost" size="sm" onClick={() => setIsReassignModalOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                variant="primary"
+                size="sm"
+                isLoading={actionLoading}
+                disabled={!canReassign}
+              >
+                Reassign & Dispatch Event
+              </Button>
+            </div>
           </div>
         </form>
       </Modal>
@@ -2246,15 +2555,15 @@ export default function LeadsPage() {
               value={interactionForm.type}
               onChange={(e) => setInteractionForm({ ...interactionForm, type: e.target.value })}
               options={[
-                { value: 'call', label: 'Phone Call' },
-                { value: 'physical_visit', label: 'Face-to-Face Visit' },
-                { value: 'demo', label: 'Demonstration / Trial' },
-                { value: 'proposal', label: 'Proposal Submission' },
-                { value: 'whatsapp', label: 'WhatsApp Message' },
-                { value: 'email', label: 'Email Correspondence' },
-                { value: 'tender_discussion', label: 'Pre-Tender Discussion' },
-                { value: 'follow_up', label: 'Routine Follow-up' },
-                { value: 'service_discussion', label: 'Service / Warranty Review' },
+                { value: 'call', label: '📞 Phone Call' },
+                { value: 'physical_visit', label: '🏢 Physical Visit (In-Person)' },
+                { value: 'demo', label: '🎯 Product Demonstration / Trial' },
+                { value: 'proposal', label: '📄 Proposal Submission' },
+                { value: 'whatsapp', label: '💬 WhatsApp Message' },
+                { value: 'email', label: '✉️ Email Correspondence' },
+                { value: 'tender_discussion', label: '⚖️ Pre-Tender Discussion' },
+                { value: 'follow_up', label: '⏰ Routine Follow-up' },
+                { value: 'service_discussion', label: '🔧 Service / Warranty Review' },
               ]}
             />
             <Input
@@ -2265,6 +2574,21 @@ export default function LeadsPage() {
               onChange={(e) => setInteractionForm({ ...interactionForm, date: e.target.value })}
             />
           </div>
+
+          {customerContacts.length > 0 && (
+            <Select
+              label="Contact Person (Optional)"
+              value={interactionForm.contact_id}
+              onChange={(e) => setInteractionForm({ ...interactionForm, contact_id: e.target.value })}
+              options={[
+                { value: '', label: 'General / Primary Contact' },
+                ...customerContacts.map((c) => ({
+                  value: c.id,
+                  label: `${c.name || c.full_name || 'Contact'}${c.designation ? ` (${c.designation})` : ''}`,
+                })),
+              ]}
+            />
+          )}
 
           <Textarea
             label="Minutes / Discussion Notes *"
@@ -2339,162 +2663,713 @@ export default function LeadsPage() {
         isOpen={isCustomer360Open}
         onClose={() => setIsCustomer360Open(false)}
         title={selectedCustomer?.name || 'Customer 360° Account View'}
-        description={`${selectedCustomer?.city || 'Delhi'}, ${selectedCustomer?.state || 'Delhi'} • Sector: ${selectedCustomer?.sector || 'Defence'}`}
+        description={`${selectedCustomer?.city || 'Delhi'}, ${selectedCustomer?.state || 'Delhi'} • Sector: ${selectedCustomer?.sector || 'Defence'} • Zone: ${selectedCustomer?.zone_name || 'North'}`}
         maxWidth="4xl"
       >
         {selectedCustomer && (
-          <div className="space-y-6 text-xs">
-            {/* Account Overview Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 rounded-xl bg-[#F7FBFF] border border-[#D6E3F5]">
+          <div className="space-y-5 text-xs">
+            {/* Account Quick Intelligence Bar */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3.5 rounded-xl bg-[#F7FBFF] border border-[#D6E3F5]">
               <div>
                 <span className="text-[10px] uppercase text-[#5871A5] font-bold block">Account Sector</span>
-                <span className="font-semibold text-[#1A1A1A] mt-1 block">
-                  {selectedCustomer.sector || 'Government'}
+                <span className="font-semibold text-[#1A1A1A] mt-0.5 block">
+                  {selectedCustomer.sector || 'Government / PSU'}
+                </span>
+                {selectedCustomer.department && (
+                  <span className="text-[10px] text-[#5871A5] block truncate">{selectedCustomer.department}</span>
+                )}
+              </div>
+              <div>
+                <span className="text-[10px] uppercase text-[#5871A5] font-bold block">Territory & Zone</span>
+                <span className="font-semibold text-[#1A1A1A] mt-0.5 block">
+                  {selectedCustomer.zone_name || 'North'} ({selectedCustomer.region_name || selectedCustomer.city || 'HQ'})
+                </span>
+                <span className="text-[10px] text-[#5871A5] block">
+                  {selectedCustomer.city || '—'}, {selectedCustomer.state || '—'}
                 </span>
               </div>
               <div>
-                <span className="text-[10px] uppercase text-[#5871A5] font-bold block">Zone / Region</span>
-                <span className="font-semibold text-[#1A1A1A] mt-1 block">
-                  {selectedCustomer.zone_name || 'North'} ({selectedCustomer.region_name || 'Delhi'})
+                <span className="text-[10px] uppercase text-[#5871A5] font-bold block">Current Sales Lead</span>
+                <span className="font-bold text-[#223FA7] mt-0.5 block">
+                  {customerManagementSummary?.current_salesperson || selectedCustomer.current_salesperson || 'Assigned Rep'}
                 </span>
+                <span className="text-[10px] text-emerald-600 font-semibold block">Active Territory Owner</span>
               </div>
               <div>
-                <span className="text-[10px] uppercase text-[#5871A5] font-bold block">Active Opportunities</span>
-                <span className="font-extrabold text-[#223FA7] mt-1 block">
-                  {customerLeads.length} Deals
+                <span className="text-[10px] uppercase text-[#5871A5] font-bold block">Pipeline Volume</span>
+                <span className="font-extrabold text-[#1A1A1A] mt-0.5 block">
+                  {customerLeads.length} Leads • {customerTimeline.length} Touchpoints
                 </span>
-              </div>
-              <div>
-                <span className="text-[10px] uppercase text-[#5871A5] font-bold block">Total Interactions</span>
-                <span className="font-bold text-gray-800 mt-1 block">
-                  {customerTimeline.length} Touchpoints
+                <span className="text-[10px] text-[#5871A5] block">
+                  {customerContacts.length} Registered Contacts
                 </span>
               </div>
             </div>
 
-            {/* Contacts Roster */}
-            <div className="p-4 rounded-xl bg-white border border-[#D6E3F5] space-y-3">
-              <span className="text-xs font-bold text-[#1A1A1A] uppercase tracking-wider block flex items-center gap-1.5">
-                <Users className="h-4 w-4 text-[#223FA7]" />
-                <span>Account Contacts Roster</span>
-              </span>
-              {customerContacts.length === 0 ? (
-                <span className="text-[11px] text-[#5871A5] italic">No contacts registered.</span>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {customerContacts.map((c) => (
-                    <div
-                      key={c.id}
-                      className="p-2.5 rounded-lg bg-[#F8FAFC] border border-[#D6E3F5] space-y-1"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="font-bold text-[#1A1A1A]">{c.name}</span>
-                        {c.is_primary && (
-                          <Badge variant="info" size="sm" className="text-[9px]">PRIMARY</Badge>
-                        )}
-                      </div>
-                      <div className="text-[11px] text-[#5871A5]">{c.designation || 'Officer'}</div>
-                      <div className="flex items-center gap-3 text-[10px] text-gray-600 font-mono">
-                        {c.phone && <span>📞 {c.phone}</span>}
-                        {c.email && <span>✉️ {c.email}</span>}
-                      </div>
+            {/* Sub-Navigation Tabs */}
+            <div className="flex items-center gap-1.5 border-b border-[#D6E3F5] pb-2">
+              <button
+                type="button"
+                onClick={() => setC360Tab('management')}
+                className={`px-3 py-1.5 rounded-lg font-semibold text-xs transition-all flex items-center gap-1.5 ${
+                  c360Tab === 'management'
+                    ? 'bg-[#223FA7] text-white shadow-xs'
+                    : 'bg-[#F8FAFC] text-[#5871A5] hover:bg-[#EAF2FF] hover:text-[#223FA7] border border-[#D6E3F5]'
+                }`}
+              >
+                <ShieldCheck className="h-3.5 w-3.5" />
+                <span>Executive Management HUD</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setC360Tab('timeline')}
+                className={`px-3 py-1.5 rounded-lg font-semibold text-xs transition-all flex items-center gap-1.5 ${
+                  c360Tab === 'timeline'
+                    ? 'bg-[#223FA7] text-white shadow-xs'
+                    : 'bg-[#F8FAFC] text-[#5871A5] hover:bg-[#EAF2FF] hover:text-[#223FA7] border border-[#D6E3F5]'
+                }`}
+              >
+                <History className="h-3.5 w-3.5" />
+                <span>Chronological Timeline</span>
+                <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${c360Tab === 'timeline' ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-700'}`}>
+                  {customerTimeline.length}
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setC360Tab('contacts')}
+                className={`px-3 py-1.5 rounded-lg font-semibold text-xs transition-all flex items-center gap-1.5 ${
+                  c360Tab === 'contacts'
+                    ? 'bg-[#223FA7] text-white shadow-xs'
+                    : 'bg-[#F8FAFC] text-[#5871A5] hover:bg-[#EAF2FF] hover:text-[#223FA7] border border-[#D6E3F5]'
+                }`}
+              >
+                <Users className="h-3.5 w-3.5" />
+                <span>Contacts Roster</span>
+                <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${c360Tab === 'contacts' ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-700'}`}>
+                  {customerContacts.length}
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setC360Tab('deals')}
+                className={`px-3 py-1.5 rounded-lg font-semibold text-xs transition-all flex items-center gap-1.5 ${
+                  c360Tab === 'deals'
+                    ? 'bg-[#223FA7] text-white shadow-xs'
+                    : 'bg-[#F8FAFC] text-[#5871A5] hover:bg-[#EAF2FF] hover:text-[#223FA7] border border-[#D6E3F5]'
+                }`}
+              >
+                <Briefcase className="h-3.5 w-3.5" />
+                <span>Opportunities</span>
+                <span className={`px-1.5 py-0.2 rounded-full text-[10px] ${c360Tab === 'deals' ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-700'}`}>
+                  {customerLeads.length}
+                </span>
+              </button>
+            </div>
+
+            {/* TAB 1: EXECUTIVE MANAGEMENT INTELLIGENCE HUD */}
+            {c360Tab === 'management' && (
+              <div className="space-y-4">
+                {/* 1. Touchpoint Horizons: First vs Latest Interaction */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {/* First Interaction Card */}
+                  <div className="p-3.5 rounded-xl bg-white border border-[#D6E3F5] space-y-2 shadow-2xs">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-[#1A1A1A] text-xs uppercase tracking-wide flex items-center gap-1.5">
+                        <Activity className="h-3.5 w-3.5 text-[#223FA7]" />
+                        <span>First Interaction (Prospect Onboarding)</span>
+                      </span>
+                      {customerManagementSummary?.first_interaction?.occurred_on && (
+                        <Badge variant="info" size="sm" className="font-mono text-[10px]">
+                          {new Date(customerManagementSummary.first_interaction.occurred_on).toLocaleDateString('en-IN')}
+                        </Badge>
+                      )}
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Chronological 360° Interaction Timeline */}
-            <div className="p-4 rounded-xl bg-[#F7FBFF] border border-[#D6E3F5] space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-[#1A1A1A] uppercase tracking-wider flex items-center gap-1.5">
-                  <MessageSquare className="h-4 w-4 text-[#223FA7]" />
-                  <span>Chronological Account Interaction Timeline</span>
-                </span>
-                <Button
-                  size="xs"
-                  variant="secondary"
-                  onClick={() => {
-                    setInteractionForm({
-                      ...interactionForm,
-                      lead_id: customerLeads[0]?.id || '',
-                      organisation_id: selectedCustomer.id,
-                      contact_id: customerContacts[0]?.id || '',
-                    });
-                    setIsLogInteractionOpen(true);
-                  }}
-                  leftIcon={<Plus className="h-3 w-3" />}
-                >
-                  Log Discussion
-                </Button>
-              </div>
-
-              {customerTimelineLoading ? (
-                <div className="p-6 text-center text-[#5871A5]">Loading account timeline...</div>
-              ) : customerTimeline.length === 0 ? (
-                <div className="p-6 rounded-lg bg-white border border-[#D6E3F5] text-center text-[#5871A5]">
-                  No interactions recorded yet. Click "Log Discussion" to add minutes.
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {customerTimeline.map((it) => (
-                    <div
-                      key={it.id}
-                      className="p-3.5 rounded-xl bg-white border border-[#D6E3F5] space-y-2 shadow-2xs"
-                    >
-                      <div className="flex items-center justify-between">
+                    {customerManagementSummary?.first_interaction ? (
+                      <div className="space-y-1.5 pt-1 text-[11px]">
                         <div className="flex items-center gap-2">
-                          <Badge variant="outline" size="sm" className="uppercase font-bold text-[10px]">
-                            {it.type}
+                          <Badge variant="outline" size="sm" className="uppercase font-bold text-[9px]">
+                            {customerManagementSummary.first_interaction.type}
                           </Badge>
-                          <span className="text-[11px] text-[#5871A5] font-medium">
-                            {new Date(it.interaction_date).toLocaleDateString('en-IN')}
+                          <span className="text-[#5871A5]">
+                            Conducted by: <strong className="text-[#1A1A1A]">{customerManagementSummary.first_interaction.employee_name || 'Executive'}</strong>
                           </span>
                         </div>
-                        <span className="text-[10px] text-[#5871A5] font-medium">
-                          By {it.created_by_name || 'Executive'}
-                        </span>
+                        {customerManagementSummary.first_interaction.contact_name && (
+                          <div className="text-[#5871A5]">
+                            Client Contact: <span className="font-medium text-[#1A1A1A]">{customerManagementSummary.first_interaction.contact_name}</span>
+                          </div>
+                        )}
+                        <p className="text-gray-700 italic bg-[#F8FAFC] p-2 rounded-lg border border-[#D6E3F5]">
+                          "{customerManagementSummary.first_interaction.remarks || customerManagementSummary.first_interaction.notes || 'Initial prospect connection established.'}"
+                        </p>
+                        {customerManagementSummary.first_interaction.outcome && (
+                          <div className="text-[10px] text-emerald-700 font-semibold">
+                            Outcome: {customerManagementSummary.first_interaction.outcome}
+                          </div>
+                        )}
                       </div>
+                    ) : (
+                      <div className="p-3 text-center text-[#5871A5] italic">No first interaction on record.</div>
+                    )}
+                  </div>
 
-                      <p className="text-gray-800 text-xs leading-relaxed font-sans">{it.notes}</p>
-
-                      {it.next_action && (
-                        <div className="flex items-center gap-2 text-[11px] text-[#223FA7] font-medium pt-1">
-                          <Clock className="h-3 w-3 text-[#5871A5]" />
-                          <span>Next Action: {it.next_action}</span>
-                          {it.next_action_date && (
-                            <span className="text-[#5871A5] font-mono">
-                              (Target: {new Date(it.next_action_date).toLocaleDateString('en-IN')})
-                            </span>
-                          )}
-                        </div>
-                      )}
-
-                      {it.attachments && it.attachments.length > 0 && (
-                        <div className="pt-1 flex flex-wrap gap-1.5">
-                          {it.attachments.map((att: any) => (
-                            <a
-                              key={att.id}
-                              href={att.file_url}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-[#F8FAFC] border border-[#D6E3F5] text-[10px] text-[#223FA7] hover:underline"
-                            >
-                              <Paperclip className="h-3 w-3" />
-                              <span>{att.file_name}</span>
-                            </a>
-                          ))}
-                        </div>
+                  {/* Latest Interaction Card */}
+                  <div className="p-3.5 rounded-xl bg-white border border-[#D6E3F5] space-y-2 shadow-2xs">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-[#1A1A1A] text-xs uppercase tracking-wide flex items-center gap-1.5">
+                        <Clock className="h-3.5 w-3.5 text-[#223FA7]" />
+                        <span>Latest Interaction (Recent Touchpoint)</span>
+                      </span>
+                      {customerManagementSummary?.latest_interaction?.occurred_on && (
+                        <Badge variant="success" size="sm" className="font-mono text-[10px]">
+                          {new Date(customerManagementSummary.latest_interaction.occurred_on).toLocaleDateString('en-IN')}
+                        </Badge>
                       )}
                     </div>
-                  ))}
+                    {customerManagementSummary?.latest_interaction ? (
+                      <div className="space-y-1.5 pt-1 text-[11px]">
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" size="sm" className="uppercase font-bold text-[9px]">
+                            {customerManagementSummary.latest_interaction.type}
+                          </Badge>
+                          <span className="text-[#5871A5]">
+                            Conducted by: <strong className="text-[#1A1A1A]">{customerManagementSummary.latest_interaction.employee_name || 'Executive'}</strong>
+                          </span>
+                        </div>
+                        {customerManagementSummary.latest_interaction.contact_name && (
+                          <div className="text-[#5871A5]">
+                            Client Contact: <span className="font-medium text-[#1A1A1A]">{customerManagementSummary.latest_interaction.contact_name}</span>
+                          </div>
+                        )}
+                        <p className="text-gray-700 italic bg-[#F8FAFC] p-2 rounded-lg border border-[#D6E3F5]">
+                          "{customerManagementSummary.latest_interaction.remarks || customerManagementSummary.latest_interaction.notes || 'Interaction discussion recorded.'}"
+                        </p>
+                        {customerManagementSummary.latest_interaction.outcome && (
+                          <div className="text-[10px] text-emerald-700 font-semibold">
+                            Outcome: {customerManagementSummary.latest_interaction.outcome}
+                          </div>
+                        )}
+                        {customerManagementSummary.latest_interaction.next_action && (
+                          <div className="text-[10px] text-[#223FA7] font-semibold flex items-center gap-1">
+                            <ArrowRight className="h-3 w-3" />
+                            <span>Next Action: {customerManagementSummary.latest_interaction.next_action}</span>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="p-3 text-center text-[#5871A5] italic">No touchpoints recorded yet.</div>
+                    )}
+                  </div>
                 </div>
-              )}
-            </div>
 
-            <div className="flex items-center justify-end pt-2 border-t border-[#D6E3F5]">
+                {/* 2. Salesperson Continuity & Product Interests */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {/* Salesperson Continuity Audit */}
+                  <div className="p-3.5 rounded-xl bg-white border border-[#D6E3F5] space-y-2 shadow-2xs">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-[#1A1A1A] text-xs uppercase tracking-wide flex items-center gap-1.5">
+                        <UserCheck className="h-3.5 w-3.5 text-[#223FA7]" />
+                        <span>Salesperson Ownership Continuity</span>
+                      </span>
+                    </div>
+
+                    <div className="p-2.5 rounded-lg bg-[#EAF2FF]/50 border border-[#D6E3F5] flex items-center justify-between">
+                      <div>
+                        <span className="text-[10px] uppercase text-[#5871A5] font-bold block">Current Active Salesperson</span>
+                        <span className="font-bold text-[#223FA7] text-xs">
+                          {customerManagementSummary?.current_salesperson || 'Unassigned'}
+                        </span>
+                      </div>
+                      <Badge variant="info" size="sm">CURRENT OWNER</Badge>
+                    </div>
+
+                    {customerManagementSummary?.previous_salespersons && customerManagementSummary.previous_salespersons.length > 0 ? (
+                      <div className="space-y-1.5 pt-1">
+                        <span className="text-[10px] uppercase font-bold text-[#5871A5] block">Previous Reassignment History:</span>
+                        {customerManagementSummary.previous_salespersons.map((h: any, idx: number) => (
+                          <div
+                            key={idx}
+                            className="p-2 rounded-lg bg-[#F8FAFC] border border-[#D6E3F5] flex items-center justify-between text-[10px]"
+                          >
+                            <div>
+                              <span className="font-semibold text-gray-800">
+                                {h.previous_salesperson_name || 'Unassigned'} → {h.new_salesperson_name}
+                              </span>
+                              {h.reason && <span className="text-[#5871A5] block">Reason: {h.reason}</span>}
+                            </div>
+                            <span className="text-[#5871A5] font-mono text-[9px]">
+                              {new Date(h.changed_at).toLocaleDateString('en-IN')}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-[10px] text-[#5871A5] italic pt-1">
+                        Initial salesperson assignment active. No previous transfers on record.
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Product Interest Landscape */}
+                  <div className="p-3.5 rounded-xl bg-white border border-[#D6E3F5] space-y-2 shadow-2xs">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-[#1A1A1A] text-xs uppercase tracking-wide flex items-center gap-1.5">
+                        <Tag className="h-3.5 w-3.5 text-[#223FA7]" />
+                        <span>Product Interest Landscape</span>
+                      </span>
+                      <Badge variant="outline" size="sm">
+                        {customerManagementSummary?.product_interests?.length || 0} Products
+                      </Badge>
+                    </div>
+
+                    {customerManagementSummary?.product_interests && customerManagementSummary.product_interests.length > 0 ? (
+                      <div className="flex flex-wrap gap-1.5 pt-1">
+                        {customerManagementSummary.product_interests.map((pName: string, idx: number) => (
+                          <span
+                            key={idx}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#F7FBFF] border border-[#D6E3F5] text-[11px] font-semibold text-[#223FA7]"
+                          >
+                            <Check className="h-3 w-3 text-[#223FA7]" />
+                            <span>{pName}</span>
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-[10px] text-[#5871A5] italic pt-2">
+                        No product interests linked to opportunities yet.
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* 3. Previous Meetings & Field Demonstrations */}
+                <div className="p-3.5 rounded-xl bg-white border border-[#D6E3F5] space-y-2 shadow-2xs">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-[#1A1A1A] text-xs uppercase tracking-wide flex items-center gap-1.5">
+                      <Building className="h-3.5 w-3.5 text-[#223FA7]" />
+                      <span>Previous In-Person Meetings & Demonstrations (Face-to-Face Field Touchpoints)</span>
+                    </span>
+                    <Badge variant="info" size="sm">
+                      {customerManagementSummary?.previous_meetings?.length || 0} Meetings Held
+                    </Badge>
+                  </div>
+
+                  {customerManagementSummary?.previous_meetings && customerManagementSummary.previous_meetings.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                      {customerManagementSummary.previous_meetings.map((m: any) => (
+                        <div
+                          key={m.id}
+                          className="p-2.5 rounded-lg bg-[#F8FAFC] border border-[#D6E3F5] space-y-1 text-[11px]"
+                        >
+                          <div className="flex items-center justify-between">
+                            <Badge variant="outline" size="sm" className="uppercase font-bold text-[9px]">
+                              {m.type === 'physical_visit' ? 'Face-to-Face Visit' : m.type === 'demo' ? 'Demonstration' : m.type}
+                            </Badge>
+                            <span className="text-[#5871A5] font-mono text-[10px]">
+                              {new Date(m.occurred_on || m.interaction_date).toLocaleDateString('en-IN')}
+                            </span>
+                          </div>
+                          <div className="text-[#5871A5] text-[10px]">
+                            Conducted by: <strong className="text-[#1A1A1A]">{m.employee_name || 'Executive'}</strong>
+                            {m.contact_name && <span> • Contact: <strong className="text-[#1A1A1A]">{m.contact_name}</strong></span>}
+                          </div>
+                          <p className="text-gray-700 line-clamp-2">
+                            {m.remarks || m.notes || 'Meeting concluded.'}
+                          </p>
+                          {m.outcome && (
+                            <div className="text-[10px] text-emerald-700 font-semibold">
+                              Outcome: {m.outcome}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-[11px] text-[#5871A5] italic p-2 bg-[#F8FAFC] rounded-lg border border-[#D6E3F5] text-center">
+                      No physical visits or product demonstrations recorded yet.
+                    </div>
+                  )}
+                </div>
+
+                {/* 4. Follow-Up History & Compliance */}
+                <div className="p-3.5 rounded-xl bg-white border border-[#D6E3F5] space-y-3 shadow-2xs">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-[#1A1A1A] text-xs uppercase tracking-wide flex items-center gap-1.5">
+                      <CalendarDays className="h-3.5 w-3.5 text-[#223FA7]" />
+                      <span>Follow-up History & Compliance Status</span>
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    <div className="p-2.5 rounded-lg bg-[#F8FAFC] border border-[#D6E3F5] text-center">
+                      <span className="text-[10px] text-[#5871A5] uppercase font-bold block">Total Scheduled</span>
+                      <span className="text-sm font-extrabold text-[#1A1A1A] mt-0.5 block">
+                        {customerManagementSummary?.follow_up_history?.total || 0}
+                      </span>
+                    </div>
+                    <div className="p-2.5 rounded-lg bg-amber-50 border border-amber-200 text-center">
+                      <span className="text-[10px] text-amber-800 uppercase font-bold block">Pending</span>
+                      <span className="text-sm font-extrabold text-amber-800 mt-0.5 block">
+                        {customerManagementSummary?.follow_up_history?.pending || 0}
+                      </span>
+                    </div>
+                    <div className="p-2.5 rounded-lg bg-emerald-50 border border-emerald-200 text-center">
+                      <span className="text-[10px] text-emerald-800 uppercase font-bold block">Completed</span>
+                      <span className="text-sm font-extrabold text-emerald-800 mt-0.5 block">
+                        {customerManagementSummary?.follow_up_history?.completed || 0}
+                      </span>
+                    </div>
+                    <div className="p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-center">
+                      <span className="text-[10px] text-rose-800 uppercase font-bold block">Overdue</span>
+                      <span className="text-sm font-extrabold text-rose-800 mt-0.5 block">
+                        {customerManagementSummary?.follow_up_history?.overdue || 0}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 5. Current Opportunity Status */}
+                <div className="p-3.5 rounded-xl bg-white border border-[#D6E3F5] space-y-2 shadow-2xs">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-[#1A1A1A] text-xs uppercase tracking-wide flex items-center gap-1.5">
+                      <Target className="h-3.5 w-3.5 text-[#223FA7]" />
+                      <span>Current Opportunity Status Across Account</span>
+                    </span>
+                    <Badge variant="info" size="sm">
+                      {customerManagementSummary?.current_opportunity_status?.length || 0} Active Leads
+                    </Badge>
+                  </div>
+
+                  {customerManagementSummary?.current_opportunity_status && customerManagementSummary.current_opportunity_status.length > 0 ? (
+                    <div className="divide-y divide-[#D6E3F5] border border-[#D6E3F5] rounded-lg overflow-hidden">
+                      {customerManagementSummary.current_opportunity_status.map((opp: any) => (
+                        <div key={opp.id} className="p-2.5 bg-white flex items-center justify-between text-[11px] hover:bg-[#F8FAFC]">
+                          <div>
+                            <div className="font-bold text-[#1A1A1A] flex items-center gap-2">
+                              <span>{opp.product_name}</span>
+                              {opp.lead_type === 're_approached' ? (
+                                <Badge variant="warning" size="sm" className="font-bold text-[9px]">
+                                  RE-APPROACHED
+                                </Badge>
+                              ) : (
+                                <Badge variant="info" size="sm" className="font-bold text-[9px]">
+                                  FRESH
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="text-[10px] text-[#5871A5] mt-0.5">
+                              Assigned: <strong className="text-[#1A1A1A]">{opp.assigned_salesperson || 'Unassigned'}</strong>
+                              {opp.next_followup_date && (
+                                <span> • Next Due: <strong className="text-[#223FA7]">{new Date(opp.next_followup_date).toLocaleDateString('en-IN')}</strong></span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className="font-mono font-bold text-gray-800">
+                              {formatLakh(opp.value_lakh || 0)}
+                            </span>
+                            {getStatusBadge(opp.status)}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-[11px] text-[#5871A5] italic p-3 text-center bg-[#F8FAFC] rounded-lg border border-[#D6E3F5]">
+                      No opportunities registered for this organization.
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* TAB 2: CHRONOLOGICAL CUSTOMER INTERACTION TIMELINE */}
+            {c360Tab === 'timeline' && (
+              <div className="p-4 rounded-xl bg-[#F7FBFF] border border-[#D6E3F5] space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-xs font-bold text-[#1A1A1A] uppercase tracking-wider flex items-center gap-1.5">
+                      <History className="h-4 w-4 text-[#223FA7]" />
+                      <span>Chronological Customer Interaction Timeline</span>
+                    </span>
+                    <span className="text-[10px] text-[#5871A5] block mt-0.5">
+                      Tracks all calls, visits, demos, WhatsApp, emails, tenders, proposals, and service discussions in one continuous customer record.
+                    </span>
+                  </div>
+                  <Button
+                    size="xs"
+                    variant="primary"
+                    onClick={() => {
+                      setInteractionForm({
+                        ...interactionForm,
+                        lead_id: customerLeads[0]?.id || '',
+                        organisation_id: selectedCustomer.id,
+                        contact_id: customerContacts[0]?.id || '',
+                      });
+                      setIsLogInteractionOpen(true);
+                    }}
+                    leftIcon={<Plus className="h-3 w-3" />}
+                  >
+                    Log Discussion
+                  </Button>
+                </div>
+
+                {customerTimelineLoading ? (
+                  <div className="p-8 text-center text-[#5871A5]">Loading chronological customer history...</div>
+                ) : customerTimeline.length === 0 ? (
+                  <div className="p-8 rounded-lg bg-white border border-[#D6E3F5] text-center text-[#5871A5] space-y-2">
+                    <p>No interactions recorded yet for this organisation.</p>
+                    <Button
+                      size="xs"
+                      variant="secondary"
+                      onClick={() => {
+                        setInteractionForm({
+                          ...interactionForm,
+                          lead_id: customerLeads[0]?.id || '',
+                          organisation_id: selectedCustomer.id,
+                          contact_id: customerContacts[0]?.id || '',
+                        });
+                        setIsLogInteractionOpen(true);
+                      }}
+                      leftIcon={<Plus className="h-3 w-3" />}
+                    >
+                      Record First Touchpoint
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {customerTimeline.map((it) => {
+                      const channelIcons: Record<string, string> = {
+                        call: '📞',
+                        physical_visit: '🏢',
+                        demo: '🎯',
+                        proposal: '📄',
+                        whatsapp: '💬',
+                        email: '✉️',
+                        tender_discussion: '⚖️',
+                        follow_up: '⏰',
+                        service_discussion: '🔧',
+                      };
+                      const icon = channelIcons[it.type] || '💬';
+
+                      return (
+                        <div
+                          key={it.id}
+                          className="p-3.5 rounded-xl bg-white border border-[#D6E3F5] space-y-2 shadow-2xs hover:border-[#9FC0F5] transition-colors"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <span className="text-base">{icon}</span>
+                              <Badge variant="outline" size="sm" className="uppercase font-bold text-[10px]">
+                                {it.type?.replace('_', ' ')}
+                              </Badge>
+                              <span className="text-[11px] text-[#5871A5] font-medium font-mono">
+                                {new Date(it.occurred_on || it.interaction_date || it.created_at).toLocaleDateString('en-IN')}
+                              </span>
+                            </div>
+                            <div className="text-right text-[10px] text-[#5871A5]">
+                              Employee: <strong className="text-[#1A1A1A]">{it.employee_name || it.created_by_name || 'Executive'}</strong>
+                            </div>
+                          </div>
+
+                          {it.contact_name && (
+                            <div className="text-[10px] text-[#5871A5] flex items-center gap-1">
+                              <User className="h-3 w-3 text-[#5871A5]" />
+                              <span>Contact Person: <strong className="text-[#1A1A1A]">{it.contact_name}</strong></span>
+                              {it.contact_mobile && <span className="font-mono">({it.contact_mobile})</span>}
+                            </div>
+                          )}
+
+                          <p className="text-gray-800 text-xs leading-relaxed font-sans bg-[#F8FAFC] p-2.5 rounded-lg border border-[#D6E3F5]">
+                            {it.remarks || it.notes || 'No discussion notes provided.'}
+                          </p>
+
+                          {it.outcome && (
+                            <div className="text-[11px] text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200 font-medium">
+                              Outcome: {it.outcome}
+                            </div>
+                          )}
+
+                          {(it.next_action || it.followup_date || it.next_action_date) && (
+                            <div className="flex flex-wrap items-center gap-3 text-[11px] text-[#223FA7] font-medium pt-0.5">
+                              {it.next_action && (
+                                <div className="flex items-center gap-1.5">
+                                  <ArrowRight className="h-3.5 w-3.5" />
+                                  <span>Next Action: {it.next_action}</span>
+                                </div>
+                              )}
+                              {(it.followup_date || it.next_action_date) && (
+                                <div className="flex items-center gap-1 text-[#5871A5] font-mono text-[10px]">
+                                  <Clock className="h-3 w-3" />
+                                  <span>Target Due: {new Date(it.followup_date || it.next_action_date).toLocaleDateString('en-IN')}</span>
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {it.attachments && it.attachments.length > 0 && (
+                            <div className="pt-1 flex flex-wrap gap-1.5">
+                              {it.attachments.map((att: any) => (
+                                <a
+                                  key={att.id}
+                                  href={att.file_url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-[#F8FAFC] border border-[#D6E3F5] text-[10px] text-[#223FA7] hover:underline"
+                                >
+                                  <Paperclip className="h-3 w-3" />
+                                  <span>{att.file_name}</span>
+                                </a>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* TAB 3: CONTACTS ROSTER */}
+            {c360Tab === 'contacts' && (
+              <div className="p-4 rounded-xl bg-white border border-[#D6E3F5] space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-[#1A1A1A] uppercase tracking-wider flex items-center gap-1.5">
+                    <Users className="h-4 w-4 text-[#223FA7]" />
+                    <span>Account Contacts Roster</span>
+                  </span>
+                </div>
+
+                {customerContacts.length === 0 ? (
+                  <span className="text-[11px] text-[#5871A5] italic">No contacts registered for this organization.</span>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    {customerContacts.map((c) => (
+                      <div
+                        key={c.id}
+                        className="p-3 rounded-lg bg-[#F8FAFC] border border-[#D6E3F5] space-y-1.5"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-[#1A1A1A]">{c.name || c.full_name}</span>
+                          {c.is_primary && (
+                            <Badge variant="info" size="sm" className="text-[9px]">PRIMARY</Badge>
+                          )}
+                        </div>
+                        <div className="text-[11px] text-[#5871A5]">{c.designation || 'Officer'}</div>
+                        <div className="flex flex-col gap-1 text-[10px] text-gray-600 font-mono">
+                          {(c.phone || c.mobile) && <span>📞 {c.phone || c.mobile}</span>}
+                          {c.email && <span>✉️ {c.email}</span>}
+                        </div>
+                        <div className="pt-1 border-t border-[#D6E3F5]">
+                          <Button
+                            size="xs"
+                            variant="secondary"
+                            onClick={() => {
+                              setInteractionForm({
+                                ...interactionForm,
+                                organisation_id: selectedCustomer.id,
+                                contact_id: c.id,
+                              });
+                              setIsLogInteractionOpen(true);
+                            }}
+                            leftIcon={<Plus className="h-3 w-3" />}
+                          >
+                            Log Touchpoint with Contact
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* TAB 4: ACTIVE OPPORTUNITIES */}
+            {c360Tab === 'deals' && (
+              <div className="p-4 rounded-xl bg-white border border-[#D6E3F5] space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-[#1A1A1A] uppercase tracking-wider flex items-center gap-1.5">
+                    <Briefcase className="h-4 w-4 text-[#223FA7]" />
+                    <span>Active Pipeline & Opportunities</span>
+                  </span>
+                </div>
+
+                {customerLeads.length === 0 ? (
+                  <div className="p-6 text-center text-[#5871A5] italic bg-[#F8FAFC] rounded-lg border border-[#D6E3F5]">
+                    No deals or opportunities registered under this organisation.
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {customerLeads.map((ld) => (
+                      <div
+                        key={ld.id}
+                        className="p-3 rounded-xl bg-[#F8FAFC] border border-[#D6E3F5] flex items-center justify-between hover:border-[#9FC0F5] transition-colors cursor-pointer"
+                        onClick={() => {
+                          setIsCustomer360Open(false);
+                          handleOpenLead(ld.id);
+                        }}
+                      >
+                        <div className="space-y-1">
+                          <div className="font-bold text-[#1A1A1A] flex items-center gap-2">
+                            <span>{ld.title || ld.product_name || 'Procurement Opportunity'}</span>
+                            {ld.lead_type === 're_approached' ? (
+                              <Badge variant="warning" size="sm" className="font-bold text-[9px]">
+                                RE-APPROACHED
+                              </Badge>
+                            ) : (
+                              <Badge variant="info" size="sm" className="font-bold text-[9px]">
+                                FRESH
+                              </Badge>
+                            )}
+                          </div>
+                          <div className="text-[10px] text-[#5871A5]">
+                            Assigned to: <strong className="text-[#1A1A1A]">{ld.assignee_name || ld.assigned_salesperson_name || 'Unassigned'}</strong>
+                            {ld.next_followup_date && (
+                              <span> • Follow-up Due: <strong className="text-[#223FA7]">{new Date(ld.next_followup_date).toLocaleDateString('en-IN')}</strong></span>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <span className="font-mono font-bold text-gray-800">
+                            {formatLakh(ld.value_lakh || ld.estimated_value_lakh || 0)}
+                          </span>
+                          {getStatusBadge(ld.lead_status || ld.status)}
+                          <Button size="xs" variant="secondary" rightIcon={<ChevronRight className="h-3 w-3" />}>
+                            Details
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Modal Footer */}
+            <div className="flex items-center justify-between pt-3 border-t border-[#D6E3F5]">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  setInteractionForm({
+                    ...interactionForm,
+                    lead_id: customerLeads[0]?.id || '',
+                    organisation_id: selectedCustomer.id,
+                    contact_id: customerContacts[0]?.id || '',
+                  });
+                  setIsLogInteractionOpen(true);
+                }}
+                leftIcon={<Plus className="h-4 w-4" />}
+              >
+                Log New Interaction
+              </Button>
               <Button variant="ghost" size="sm" onClick={() => setIsCustomer360Open(false)}>
-                Close
+                Close View
               </Button>
             </div>
           </div>

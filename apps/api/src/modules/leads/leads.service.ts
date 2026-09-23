@@ -380,31 +380,11 @@ export class LeadsService {
   }
 
   async create(dto: CreateLeadDto, user: AuthUser) {
-    // 1. Verify Organisation exists
-    const org = await this.db
-      .selectFrom('organisations')
-      .select(['id', 'name', 'region_id', 'zone_id'])
-      .where('id', '=', dto.organisation_id)
-      .executeTakeFirst();
-
-    if (!org) {
-      throw new NotFoundException(`Organisation with id '${dto.organisation_id}' not found`);
+    if (!dto.organisation_id && !dto.organisation_name?.trim()) {
+      throw new BadRequestException('Organisation ID or Organisation Name is required');
     }
 
-    // 2. Verify Contact if supplied
-    if (dto.primary_contact_id) {
-      const contact = await this.db
-        .selectFrom('contacts')
-        .select('id')
-        .where('id', '=', dto.primary_contact_id)
-        .where('organisation_id', '=', dto.organisation_id)
-        .executeTakeFirst();
-      if (!contact) {
-        throw new BadRequestException('Specified contact person does not belong to this organisation');
-      }
-    }
-
-    // 3. Resolve assigned salesperson and regional manager
+    // 1. Resolve assigned salesperson and regional manager
     const assignedTo = dto.assigned_to || user.id;
     const assignee = await this.db
       .selectFrom('users')
@@ -418,29 +398,129 @@ export class LeadsService {
 
     const rmId = dto.regional_manager_id || assignee.reporting_manager_id || null;
 
-    // 4. Derive Fresh vs Re-Approached
-    // Rule: check if organisation already has previous interactions or prior closed/historical leads
-    const priorInteractionsCount = await this.db
-      .selectFrom('interactions')
-      .select(sql<number>`count(id)::int`.as('count'))
-      .where('organisation_id', '=', dto.organisation_id)
-      .executeTakeFirst();
-
-    const hasPriorInteractions = (priorInteractionsCount?.count || 0) > 0;
-    const derivedType: LeadType = dto.lead_type || (hasPriorInteractions ? 're_approached' : 'fresh');
+    // 2. Resolve primary product ID and product list
+    const productIds = new Set<string>();
+    if (dto.product_id) productIds.add(dto.product_id);
+    if (dto.product_ids && Array.isArray(dto.product_ids)) {
+      for (const pid of dto.product_ids) {
+        if (pid) productIds.add(pid);
+      }
+    }
+    const primaryProductId = dto.product_id || (productIds.size > 0 ? Array.from(productIds)[0] : null);
 
     const leadStatus = (dto.lead_status || dto.status || 'new').toLowerCase() as LeadStatus;
     const initialStatus = leadStatus;
 
-    // 5. Execute within a transactional boundary
+    const lastInteractionDate = dto.last_interaction_date || new Date().toISOString().split('T')[0];
+    const lastInteractionAt = new Date(lastInteractionDate);
+    const nextFollowupDate = dto.next_followup_date || null;
+    const nextFollowupAt = nextFollowupDate ? new Date(nextFollowupDate) : null;
+
+    // 3. Execute within a transactional boundary
     const result = await this.db.transaction().execute(async (trx) => {
-      // Insert lead
+      let orgId = dto.organisation_id;
+      let orgName = dto.organisation_name?.trim() || '';
+
+      if (orgId) {
+        const existingOrg = await trx
+          .selectFrom('organisations')
+          .select(['id', 'name', 'region_id', 'zone_id', 'city', 'state', 'sector'])
+          .where('id', '=', orgId)
+          .executeTakeFirst();
+
+        if (!existingOrg) {
+          throw new NotFoundException(`Organisation with id '${orgId}' not found`);
+        }
+        orgName = existingOrg.name;
+
+        // Optionally update missing location/sector fields if passed
+        const orgUpdates: any = {};
+        if (dto.city && !existingOrg.city) orgUpdates.city = dto.city.trim();
+        if (dto.state && !existingOrg.state) orgUpdates.state = dto.state.trim();
+        if (dto.zone_id && !existingOrg.zone_id) orgUpdates.zone_id = dto.zone_id;
+        if (dto.region_id && !existingOrg.region_id) orgUpdates.region_id = dto.region_id;
+        if (dto.sector && !existingOrg.sector) orgUpdates.sector = dto.sector.trim();
+
+        if (Object.keys(orgUpdates).length > 0) {
+          orgUpdates.updated_at = new Date();
+          await trx.updateTable('organisations').set(orgUpdates).where('id', '=', orgId).execute();
+        }
+      } else {
+        // Find existing by name (case-insensitive deduplication) or create new
+        const existingOrg = await trx
+          .selectFrom('organisations')
+          .select(['id', 'name', 'region_id', 'zone_id'])
+          .where(sql<boolean>`lower(trim(name)) = lower(trim(${orgName}))`)
+          .executeTakeFirst();
+
+        if (existingOrg) {
+          orgId = existingOrg.id;
+          orgName = existingOrg.name;
+        } else {
+          const newOrg = await trx
+            .insertInto('organisations')
+            .values({
+              name: orgName,
+              city: dto.city?.trim() || null,
+              state: dto.state?.trim() || null,
+              zone_id: dto.zone_id || null,
+              region_id: dto.region_id || null,
+              sector: dto.sector?.trim() || dto.department?.trim() || null,
+              is_govt: true,
+              created_by: user.id,
+            })
+            .returning(['id', 'name'])
+            .executeTakeFirstOrThrow();
+          orgId = newOrg.id;
+          orgName = newOrg.name;
+        }
+      }
+
+      // Handle Primary Contact Person
+      let contactId = dto.primary_contact_id || null;
+      if (contactId) {
+        const contact = await trx
+          .selectFrom('contacts')
+          .select('id')
+          .where('id', '=', contactId)
+          .where('organisation_id', '=', orgId)
+          .executeTakeFirst();
+        if (!contact) {
+          throw new BadRequestException('Specified contact person does not belong to this organisation');
+        }
+      } else if (dto.contact_name?.trim()) {
+        const newContact = await trx
+          .insertInto('contacts')
+          .values({
+            organisation_id: orgId,
+            full_name: dto.contact_name.trim(),
+            designation: dto.contact_designation?.trim() || null,
+            mobile: dto.contact_mobile?.trim() || null,
+            email: dto.contact_email?.trim() || null,
+            is_primary: true,
+          })
+          .returning('id')
+          .executeTakeFirstOrThrow();
+        contactId = newContact.id;
+      }
+
+      // Derive Fresh vs Re-Approached
+      const priorInteractionsCount = await trx
+        .selectFrom('interactions')
+        .select(sql<number>`count(id)::int`.as('count'))
+        .where('organisation_id', '=', orgId)
+        .executeTakeFirst();
+
+      const hasPriorInteractions = (priorInteractionsCount?.count || 0) > 0;
+      const derivedType: LeadType = dto.lead_type || (hasPriorInteractions ? 're_approached' : 'fresh');
+
+      // Insert Lead
       const lead = await trx
         .insertInto('leads')
         .values({
-          organisation_id: dto.organisation_id,
-          primary_contact_id: dto.primary_contact_id || null,
-          product_id: dto.product_id || null,
+          organisation_id: orgId,
+          primary_contact_id: contactId,
+          product_id: primaryProductId,
           source: dto.source || 'Direct',
           category: dto.category || 'follow_up',
           probability: dto.probability || 'medium',
@@ -449,12 +529,13 @@ export class LeadsService {
           lead_status: leadStatus,
           lead_type: derivedType,
           loss_reason: dto.loss_reason || null,
-          last_interaction_at: new Date(),
-          next_followup_at: dto.next_followup_date ? new Date(dto.next_followup_date) : null,
+          last_interaction_at: lastInteractionAt,
+          last_contact_date: lastInteractionDate,
+          next_followup_at: nextFollowupAt,
+          next_followup_date: nextFollowupDate,
           assigned_to: assignedTo,
           regional_manager_id: rmId,
           bill_qtr: dto.bill_qtr || null,
-          next_followup_date: dto.next_followup_date || null,
           qty: dto.qty || null,
           quot_price: dto.quot_price || null,
           order_price: dto.order_price || null,
@@ -467,15 +548,7 @@ export class LeadsService {
         .returningAll()
         .executeTakeFirstOrThrow();
 
-      // Product Interests (primary + extra)
-      const productIds = new Set<string>();
-      if (dto.product_id) productIds.add(dto.product_id);
-      if (dto.product_ids && Array.isArray(dto.product_ids)) {
-        for (const pid of dto.product_ids) {
-          if (pid) productIds.add(pid);
-        }
-      }
-
+      // Product Interests
       for (const pid of productIds) {
         await trx
           .insertInto('lead_product_interests')
@@ -491,33 +564,36 @@ export class LeadsService {
       const interaction = await trx
         .insertInto('interactions')
         .values({
-          organisation_id: dto.organisation_id,
-          contact_id: dto.primary_contact_id || null,
+          organisation_id: orgId,
+          contact_id: contactId,
           lead_id: lead.id,
-          type: 'call',
+          type: dto.last_interaction_type || 'call',
           employee_id: user.id,
-          occurred_on: new Date().toISOString().split('T')[0],
-          remarks: dto.remarks || `Opportunity created [${derivedType.toUpperCase()}]: Initial inquiry registered.`,
+          occurred_on: lastInteractionDate,
+          remarks:
+            dto.last_interaction_notes ||
+            dto.remarks ||
+            `Opportunity registered [${derivedType.toUpperCase()}]: Initial touchpoint logged.`,
           outcome: 'Lead registered in pipeline',
-          next_action: dto.next_followup_date ? `Scheduled follow-up for ${dto.next_followup_date}` : null,
-          followup_date: dto.next_followup_date || null,
+          next_action: nextFollowupDate ? `Scheduled follow-up for ${nextFollowupDate}` : null,
+          followup_date: nextFollowupDate,
         })
         .returningAll()
         .executeTakeFirstOrThrow();
 
       // If next follow-up date was set, create a follow-up record
-      if (dto.next_followup_date) {
+      if (nextFollowupDate) {
         await trx
           .insertInto('follow_ups')
           .values({
-            organisation_id: dto.organisation_id,
-            contact_id: dto.primary_contact_id || null,
+            organisation_id: orgId,
+            contact_id: contactId,
             lead_id: lead.id,
             interaction_id: interaction.id,
             assigned_to: assignedTo,
-            due_date: dto.next_followup_date,
+            due_date: nextFollowupDate,
             status: 'pending',
-            remarks: dto.remarks || 'Initial follow-up scheduled on lead creation',
+            remarks: dto.remarks ? `Follow-up: ${dto.remarks}` : 'Initial follow-up scheduled on lead creation',
           })
           .execute();
       }
@@ -535,7 +611,7 @@ export class LeadsService {
           leadStatus: leadStatus,
           assignedTo,
           regionalManagerId: rmId,
-          organisationName: org.name,
+          organisationName: orgName,
         },
       });
 
@@ -551,8 +627,7 @@ export class LeadsService {
             organisationId: lead.organisation_id,
             assignedTo,
             regionalManagerId: rmId,
-            organisationName: org.name,
-            reason: 'Existing account re-approached for new sales cycle',
+            organisationName: orgName,
           },
         });
       }
@@ -570,7 +645,7 @@ export class LeadsService {
       newValue: result,
     });
 
-    return result;
+    return this.findOne(result.id, user);
   }
 
   async update(id: string, dto: UpdateLeadDto, user: AuthUser) {

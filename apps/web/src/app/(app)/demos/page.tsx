@@ -53,6 +53,85 @@ import {
   Checkbox,
 } from '@/components/ui';
 
+// =========================================================================
+// STRUCTURED FAILURE TAXONOMY METADATA (§17 & §18)
+// 9 Canonical Categories for Management Recurring Pattern Analysis
+// =========================================================================
+const FAILURE_REASON_METADATA: Record<
+  string,
+  {
+    label: string;
+    description: string;
+    severity: 'critical' | 'high' | 'moderate';
+    typicalRootCause: string;
+    recommendedCountermeasure: string;
+  }
+> = {
+  PRODUCT_LIMITATION: {
+    label: 'Product limitation',
+    description: 'Product specifications or physical form factor did not meet operational criteria.',
+    severity: 'critical',
+    typicalRootCause: 'Tender RFP required technical capabilities exceeding standard product BOM.',
+    recommendedCountermeasure: 'Trigger engineering R&D feasibility review; propose custom modular variant.',
+  },
+  EQUIPMENT_ISSUE: {
+    label: 'Equipment issue',
+    description: 'Hardware calibration fault, battery exhaustion, or accessory failure during field trial.',
+    severity: 'high',
+    typicalRootCause: 'Depot dispatch protocol lacked full 48-hour battery burn-in and calibration pass.',
+    recommendedCountermeasure: 'Mandate depot equipment custodian checklist and pack 2x hot-swappable backup batteries.',
+  },
+  TECHNICAL_FAILURE: {
+    label: 'Technical failure',
+    description: 'Unexpected sensor crash, thermal sensor blackout, or software communication disconnection.',
+    severity: 'critical',
+    typicalRootCause: 'Firmware stability flaw or environmental electromagnetic/RF interference.',
+    recommendedCountermeasure: 'Deploy latest certified firmware patch; conduct pre-deployment RF noise audit.',
+  },
+  CUSTOMER_REQUIREMENT_MISMATCH: {
+    label: 'Customer requirement mismatch',
+    description: 'Prospect expected capabilities or integrations outside the agreed trial scope.',
+    severity: 'moderate',
+    typicalRootCause: 'Pre-demo technical scoping between sales rep and client procurement was vague.',
+    recommendedCountermeasure: 'Mandate signed Pre-Demo Technical Questionnaire prior to equipment dispatch.',
+  },
+  PRICING_CONCERN: {
+    label: 'Pricing concern',
+    description: 'Customer found unit cost, AMC rate, or consumable pricing beyond budgetary limits.',
+    severity: 'moderate',
+    typicalRootCause: 'Client operating under lower departmental sanction; price-to-spec ratio perceived high.',
+    recommendedCountermeasure: 'Escalate to Regional Manager for bundled GeM terms, multi-year AMC, or financing options.',
+  },
+  DECISION_MAKER_UNAVAILABLE: {
+    label: 'Decision-maker unavailable',
+    description: 'Key approving authority (SP, DIG, Procurement Director) was absent from trial.',
+    severity: 'high',
+    typicalRootCause: 'Sudden VIP movement or lack of senior officer calendar re-confirmation.',
+    recommendedCountermeasure: 'Require 24-hour written confirmation of senior officer presence before deploying depot assets.',
+  },
+  COMPETITOR_PREFERENCE: {
+    label: 'Competitor preference',
+    description: 'Client inclined toward or heavily favored a competitor product/brand demonstrated.',
+    severity: 'high',
+    typicalRootCause: 'Competitor established early specification lock-in or aggressive local dealer influence.',
+    recommendedCountermeasure: 'Prepare head-to-head DGQA compliance matrix and request secondary comparative trial.',
+  },
+  DEMO_PREPARATION_ISSUE: {
+    label: 'Demo preparation issue',
+    description: 'Site unprepared, inadequate target samples, test power unavailable, or lighting issues.',
+    severity: 'moderate',
+    typicalRootCause: 'Failure to verify site conditions (mains power, darkroom, test targets) before arrival.',
+    recommendedCountermeasure: 'Equip demo vans with portable silent generators and self-contained calibration target kits.',
+  },
+  OTHER: {
+    label: 'Other',
+    description: 'Custom, environmental, or situational factors not captured by standard taxonomy.',
+    severity: 'moderate',
+    typicalRootCause: 'Force majeure, sudden operational dispatch of target unit, weather cancellation.',
+    recommendedCountermeasure: 'Review supervisor remarks and reschedule under priority planning protocol.',
+  },
+};
+
 export default function DemosPage() {
   const { user, hasRole } = useAuth();
 
@@ -79,6 +158,8 @@ export default function DemosPage() {
   const [filterLocation, setFilterLocation] = useState('');
   const [filterDateFrom, setFilterDateFrom] = useState('');
   const [filterDateTo, setFilterDateTo] = useState('');
+  const [filterResult, setFilterResult] = useState('');
+  const [filterFailureReason, setFilterFailureReason] = useState('');
 
   // Live Equipment Availability Checker State
   const [availFilterProduct, setAvailFilterProduct] = useState('');
@@ -103,18 +184,24 @@ export default function DemosPage() {
   const [isOutcomeOpen, setIsOutcomeOpen] = useState(false);
   const [isAuditOpen, setIsAuditOpen] = useState(false);
   const [isEquipmentModalOpen, setIsEquipmentModalOpen] = useState(false);
+  const [isRejectOpen, setIsRejectOpen] = useState(false);
+  const [isAllocateOpen, setIsAllocateOpen] = useState(false);
+
+  // Selected reservation for custodian actions
+  const [selectedReservation, setSelectedReservation] = useState<any | null>(null);
 
   // Submitting / Error states
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
 
-  // 1. Create Demo Request Form
+  // 1. Create Demo Request Form (9 specifications)
   const [newDemo, setNewDemo] = useState({
     organisation_id: '',
     product_id: '',
     location: '',
     requested_date: new Date(Date.now() + 5 * 86400000).toISOString().split('T')[0],
+    assigned_to: '', // Salesperson
     purpose: '',
     expected_audience: '',
     equipment_required: '',
@@ -166,7 +253,7 @@ export default function DemosPage() {
     remarks: '',
   });
 
-  // 7. Outcome & Structured Failure Analysis Form
+  // 7. Outcome & Structured Failure Analysis Form (9 failure categories)
   const [outcomeForm, setOutcomeForm] = useState({
     completed: true,
     result: 'success' as 'success' | 'fail' | 'partial',
@@ -181,14 +268,31 @@ export default function DemosPage() {
     remarks: 'Demonstration successfully witnessed by procurement committee.',
   });
 
-  // 8. Add / Edit Equipment Form
+  // 8. Add / Edit Equipment Form (with custodian & availability status)
   const [equipmentForm, setEquipmentForm] = useState({
     id: '',
     product_id: '',
     model: '',
     serial_no: '',
     current_location: 'Delhi',
+    responsible_person: '',
+    availability_status: 'available',
     condition: 'Operational',
+    remarks: '',
+  });
+
+  // 9. Custodian Reject Form
+  const [rejectForm, setRejectForm] = useState({
+    rejection_reason: 'Unit booked for another high-priority client trial',
+    remarks: '',
+  });
+
+  // 10. Custodian Allocate Alternative Unit Form
+  const [allocateForm, setAllocateForm] = useState({
+    equipment_id: '',
+    reason: 'Primary unit undergoing scheduled maintenance; alternative operational unit allocated',
+    reserved_from: '',
+    reserved_to: '',
     remarks: '',
   });
 
@@ -207,18 +311,21 @@ export default function DemosPage() {
         orgsRes,
         productsRes,
         analyticsRes,
+        teamRes,
       ] = await Promise.all([
         api.get('/demos', { limit: 100 }),
         api.get('/demos/equipment'),
         api.get('/organisations', { limit: 100 }),
         api.get('/masters/products'),
         api.get('/demos/analytics').catch(() => null),
+        api.get('/demos/team/availability').catch(() => []),
       ]);
 
       setDemos(demosRes.data || []);
       setEquipmentList(equipRes || []);
       setOrganisations(orgsRes.data || orgsRes || []);
       setProducts(productsRes || []);
+      setTeamMembers(teamRes || []);
       if (analyticsRes) setAnalyticsData(analyticsRes);
     } catch (err: any) {
       console.error('Failed to load demo data:', err);
@@ -297,6 +404,8 @@ export default function DemosPage() {
         const d = demo.confirmed_date || demo.requested_date;
         if (d && d > filterDateTo) return false;
       }
+      if (filterResult && demo.outcome?.result !== filterResult) return false;
+      if (filterFailureReason && demo.outcome?.failure_reason !== filterFailureReason) return false;
       if (filterSearch) {
         const s = filterSearch.toLowerCase();
         const match =
@@ -317,6 +426,8 @@ export default function DemosPage() {
     filterLocation,
     filterDateFrom,
     filterDateTo,
+    filterResult,
+    filterFailureReason,
     filterSearch,
   ]);
 
@@ -331,7 +442,25 @@ export default function DemosPage() {
     setIsSubmitting(true);
 
     try {
-      const created = await api.post('/demos', newDemo);
+      const payload: any = {
+        ...newDemo,
+        product_id: newDemo.product_id || undefined,
+        assigned_to: newDemo.assigned_to || undefined,
+        visit_id: newDemo.visit_id || undefined,
+        travel_from: newDemo.travel_required ? newDemo.travel_from : undefined,
+        travel_to: newDemo.travel_required ? newDemo.travel_to : undefined,
+        travel_date: newDemo.travel_required ? newDemo.travel_date : undefined,
+        travel_remarks: newDemo.travel_required ? newDemo.travel_remarks : undefined,
+      };
+
+      // Strip all empty string properties so class-validator doesn't attempt UUID regex on ""
+      Object.keys(payload).forEach((key) => {
+        if (payload[key] === '') {
+          delete payload[key];
+        }
+      });
+
+      const created = await api.post('/demos', payload);
       setActionSuccess(`Demo request ${created.demo_no} created successfully.`);
       setIsCreateOpen(false);
       setNewDemo({
@@ -339,6 +468,7 @@ export default function DemosPage() {
         product_id: '',
         location: '',
         requested_date: new Date(Date.now() + 5 * 86400000).toISOString().split('T')[0],
+        assigned_to: '',
         purpose: '',
         expected_audience: '',
         equipment_required: '',
@@ -430,6 +560,86 @@ export default function DemosPage() {
     }
   };
 
+  // Custodian Approve Reservation
+  const handleApproveReservation = async (reservation: any) => {
+    setActionError(null);
+    setIsSubmitting(true);
+    try {
+      await api.post(`/demos/reservations/${reservation.id}/approve`, {
+        remarks: 'Approved by depot equipment custodian',
+      });
+      setActionSuccess(
+        `Equipment reservation for ${reservation.model} (${reservation.serial_no || 'unit'}) approved.`,
+      );
+      await fetchDemosData();
+    } catch (err: any) {
+      setActionError(err.message || 'Failed to approve reservation.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Custodian Open Reject Modal
+  const handleOpenReject = (reservation: any, demo: any) => {
+    setSelectedReservation(reservation);
+    setSelectedDemo(demo);
+    setRejectForm({
+      rejection_reason: 'Unit booked for another high-priority client trial',
+      remarks: '',
+    });
+    setIsRejectOpen(true);
+  };
+
+  // Custodian Reject Reservation Submit
+  const handleRejectReservationSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedReservation) return;
+    setActionError(null);
+    setIsSubmitting(true);
+    try {
+      await api.post(`/demos/reservations/${selectedReservation.id}/reject`, rejectForm);
+      setActionSuccess(`Reservation rejected: ${rejectForm.rejection_reason}`);
+      setIsRejectOpen(false);
+      await fetchDemosData();
+    } catch (err: any) {
+      setActionError(err.message || 'Failed to reject reservation.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Custodian Open Allocate Alternative Unit Modal
+  const handleOpenAllocate = (reservation: any, demo: any) => {
+    setSelectedReservation(reservation);
+    setSelectedDemo(demo);
+    setAllocateForm({
+      equipment_id: '',
+      reason: 'Primary unit undergoing scheduled maintenance; alternative operational unit allocated',
+      reserved_from: reservation.reserved_from || demo.confirmed_date || demo.requested_date,
+      reserved_to: reservation.reserved_to || demo.confirmed_date || demo.requested_date,
+      remarks: '',
+    });
+    setIsAllocateOpen(true);
+  };
+
+  // Custodian Allocate Alternative Unit Submit
+  const handleAllocateAnotherSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedReservation || !allocateForm.equipment_id) return;
+    setActionError(null);
+    setIsSubmitting(true);
+    try {
+      await api.post(`/demos/reservations/${selectedReservation.id}/allocate`, allocateForm);
+      setActionSuccess('Alternative depot equipment unit successfully allocated.');
+      setIsAllocateOpen(false);
+      await fetchDemosData();
+    } catch (err: any) {
+      setActionError(err.message || 'Failed to allocate alternative unit.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleConfirmDateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedDemo) return;
@@ -486,19 +696,35 @@ export default function DemosPage() {
 
   const handleOpenOutcome = (demo: any) => {
     setSelectedDemo(demo);
-    setOutcomeForm({
-      completed: true,
-      result: 'success',
-      failure_reason: 'TECHNICAL_FAILURE',
-      customer_response: 'Customer appreciated live sensitivity and false-alarm rejection',
-      technical_performance: 'Zero misfires during comprehensive field trial',
-      product_suitability: 'Met all DGQA & MHA security trial parameters',
-      decision_maker_present: true,
-      competitor_involved: '',
-      next_step: 'Commercial negotiation & tender participation',
-      opportunity_stage: 'Proposal',
-      remarks: 'Signed trial certificate obtained from site commandant.',
-    });
+    if (demo.outcome) {
+      setOutcomeForm({
+        completed: demo.outcome.completed ?? true,
+        result: demo.outcome.result || 'success',
+        failure_reason: demo.outcome.failure_reason || 'TECHNICAL_FAILURE',
+        customer_response: demo.outcome.customer_response || '',
+        technical_performance: demo.outcome.technical_performance || '',
+        product_suitability: demo.outcome.product_suitability || '',
+        decision_maker_present: demo.outcome.decision_maker_present ?? true,
+        competitor_involved: demo.outcome.competitor_involved || '',
+        next_step: demo.outcome.next_step || '',
+        opportunity_stage: demo.outcome.opportunity_stage || 'Proposal',
+        remarks: demo.outcome.remarks || '',
+      });
+    } else {
+      setOutcomeForm({
+        completed: true,
+        result: 'success',
+        failure_reason: 'TECHNICAL_FAILURE',
+        customer_response: 'Customer appreciated live sensitivity and false-alarm rejection',
+        technical_performance: 'Zero misfires during comprehensive field trial',
+        product_suitability: 'Met all DGQA & MHA security trial parameters',
+        decision_maker_present: true,
+        competitor_involved: '',
+        next_step: 'Commercial quotation & tender participation',
+        opportunity_stage: 'Proposal',
+        remarks: 'Demonstration successfully witnessed by procurement committee.',
+      });
+    }
     setIsOutcomeOpen(true);
   };
 
@@ -537,11 +763,22 @@ export default function DemosPage() {
     setIsSubmitting(true);
 
     try {
+      const equipPayload: any = {
+        ...equipmentForm,
+        product_id: equipmentForm.product_id || undefined,
+        responsible_person: equipmentForm.responsible_person || undefined,
+        condition: equipmentForm.condition || undefined,
+        remarks: equipmentForm.remarks || undefined,
+      };
+      Object.keys(equipPayload).forEach((k) => {
+        if (equipPayload[k] === '') delete equipPayload[k];
+      });
+
       if (equipmentForm.id) {
-        await api.patch(`/demos/equipment/${equipmentForm.id}`, equipmentForm);
+        await api.patch(`/demos/equipment/${equipmentForm.id}`, equipPayload);
         setActionSuccess(`Equipment unit ${equipmentForm.serial_no} updated.`);
       } else {
-        await api.post('/demos/equipment', equipmentForm);
+        await api.post('/demos/equipment', equipPayload);
         setActionSuccess(`New equipment unit ${equipmentForm.serial_no} added to depot fleet.`);
       }
       setIsEquipmentModalOpen(false);
@@ -721,6 +958,34 @@ export default function DemosPage() {
                 onChange={(e) => setFilterLocation(e.target.value)}
               />
 
+              <Select
+                value={filterResult}
+                onChange={(e) => {
+                  setFilterResult(e.target.value);
+                  if (e.target.value !== 'fail') setFilterFailureReason('');
+                }}
+                options={[
+                  { label: 'All Outcomes', value: '' },
+                  { label: 'Successful Pass Only', value: 'success' },
+                  { label: 'Unsuccessful / Fail Only', value: 'fail' },
+                  { label: 'Partial Trials', value: 'partial' },
+                ]}
+              />
+
+              {filterResult === 'fail' && (
+                <Select
+                  value={filterFailureReason}
+                  onChange={(e) => setFilterFailureReason(e.target.value)}
+                  options={[
+                    { label: 'All 9 Failure Reasons', value: '' },
+                    ...Object.entries(FAILURE_REASON_METADATA).map(([key, meta]) => ({
+                      label: `${meta.label}`,
+                      value: key,
+                    })),
+                  ]}
+                />
+              )}
+
               <div className="flex items-center gap-2">
                 <Input
                   type="date"
@@ -738,6 +1003,8 @@ export default function DemosPage() {
                     setFilterLocation('');
                     setFilterDateFrom('');
                     setFilterDateTo('');
+                    setFilterResult('');
+                    setFilterFailureReason('');
                   }}
                   className="text-xs px-2"
                 >
@@ -886,6 +1153,215 @@ export default function DemosPage() {
                       <span>
                         <strong>Cancellation Reason:</strong> {demo.cancellation_reason}
                       </span>
+                    </div>
+                  )}
+
+                  {/* Equipment Bookings & Custodian Status (§16) */}
+                  {demo.reservations && demo.reservations.length > 0 && (
+                    <div className="mb-3 space-y-2 border-t border-[#E2ECF8] pt-3">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-bold text-[#1A1A1A] flex items-center gap-1.5">
+                          <Package className="h-3.5 w-3.5 text-[#223FA7]" />
+                          Equipment Reservations & Custodian Status ({demo.reservations.length})
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        {demo.reservations.map((res: any) => (
+                          <div
+                            key={res.id}
+                            className="p-2.5 rounded-lg bg-[#F8FAFC] border border-[#D6E3F5] text-xs flex flex-col justify-between gap-2"
+                          >
+                            <div className="space-y-1">
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="font-semibold text-[#1A1A1A]">
+                                  {res.model} — {res.serial_no || 'Unserialized'}
+                                </span>
+                                {res.status === 'approved' && <Badge variant="success">APPROVED</Badge>}
+                                {res.status === 'requested' && <Badge variant="warning">AWAITING CUSTODIAN</Badge>}
+                                {res.status === 'rejected' && <Badge variant="danger">REJECTED</Badge>}
+                                {res.status === 'allocated_alternative' && <Badge variant="info">REALLOCATED</Badge>}
+                                {res.status === 'cancelled' && <Badge variant="outline">CANCELLED</Badge>}
+                              </div>
+                              <p className="text-[11px] text-[#5871A5]">
+                                Depot: <strong>{res.current_location}</strong> • Window: {res.reserved_from} to {res.reserved_to}
+                              </p>
+                              {res.approved_by_name && (
+                                <p className="text-[11px] text-emerald-700">
+                                  Approved by: {res.approved_by_name}
+                                </p>
+                              )}
+                              {res.rejection_reason && (
+                                <p className="text-[11px] text-rose-700">
+                                  Rejection: {res.rejection_reason}
+                                </p>
+                              )}
+                              {res.alt_model && (
+                                <p className="text-[11px] text-indigo-700">
+                                  Alt Unit: {res.alt_model} ({res.alt_serial_no || 'N/A'}) @ {res.alt_location}
+                                </p>
+                              )}
+                            </div>
+
+                            {/* Custodian actions if requested */}
+                            {res.status === 'requested' &&
+                              hasRole(['demo_team', 'service_team', 'management', 'admin']) && (
+                                <div className="flex items-center gap-1.5 pt-1.5 border-t border-[#E2ECF8]">
+                                  <Button
+                                    variant="outline"
+                                    size="xs"
+                                    onClick={() => handleApproveReservation(res)}
+                                    className="bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100"
+                                  >
+                                    <Check className="h-3 w-3 mr-1" />
+                                    Approve
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="xs"
+                                    onClick={() => handleOpenAllocate(res, demo)}
+                                    className="bg-blue-50 text-[#223FA7] border-blue-200 hover:bg-blue-100"
+                                  >
+                                    Allocate Alt Unit
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="xs"
+                                    onClick={() => handleOpenReject(res, demo)}
+                                    className="bg-rose-50 text-rose-700 border-rose-300 hover:bg-rose-100"
+                                  >
+                                    <X className="h-3 w-3 mr-1" />
+                                    Reject
+                                  </Button>
+                                </div>
+                              )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Demo Outcome Banner (§17 & §18) - 9 Specifications Captured */}
+                  {demo.outcome && (
+                    <div
+                      className={`p-3.5 mb-3 rounded-xl border text-xs space-y-2.5 ${
+                        demo.outcome.result === 'success'
+                          ? 'bg-emerald-50/60 border-emerald-200 text-emerald-950'
+                          : demo.outcome.result === 'fail'
+                          ? 'bg-rose-50/60 border-rose-200 text-rose-950'
+                          : 'bg-amber-50/60 border-amber-200 text-amber-950'
+                      }`}
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-black/5 pb-2">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wide border ${
+                              demo.outcome.result === 'success'
+                                ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                                : demo.outcome.result === 'fail'
+                                ? 'bg-rose-100 text-rose-800 border-rose-300'
+                                : 'bg-amber-100 text-amber-800 border-amber-300'
+                            }`}
+                          >
+                            {demo.outcome.result === 'success'
+                              ? 'Trial Result: Pass'
+                              : demo.outcome.result === 'fail'
+                              ? 'Trial Result: Fail / Deficiency'
+                              : 'Trial Result: Partial'}
+                          </span>
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white/90 border border-[#D6E3F5] text-gray-700">
+                            Opportunity Stage: {demo.outcome.opportunity_stage || 'Not set'}
+                          </span>
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
+                              demo.outcome.completed
+                                ? 'bg-blue-50 text-blue-700 border-blue-200'
+                                : 'bg-gray-100 text-gray-600 border-gray-200'
+                            }`}
+                          >
+                            {demo.outcome.completed ? '✓ Demo Completed on Site' : '⚠ Incomplete / Cut Short'}
+                          </span>
+                        </div>
+
+                        <div>
+                          {demo.outcome.decision_maker_present ? (
+                            <span className="inline-flex items-center gap-1 font-semibold text-[11px] text-emerald-800 bg-emerald-100/70 px-2 py-0.5 rounded-full border border-emerald-200">
+                              <CheckCircle2 className="h-3 w-3" />
+                              Decision-Maker Attended
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 font-medium text-[11px] text-gray-600 bg-gray-100 px-2 py-0.5 rounded-full border border-gray-200">
+                              Decision-Maker Absent
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {demo.outcome.result === 'fail' && demo.outcome.failure_reason && (
+                        <div className="p-2 rounded-lg bg-rose-100/80 border border-rose-300 text-rose-900 flex flex-wrap items-center justify-between gap-1 text-[11px]">
+                          <span className="font-bold flex items-center gap-1.5">
+                            <AlertTriangle className="h-3.5 w-3.5 text-rose-600 shrink-0" />
+                            <span>
+                              Failure Reason:{' '}
+                              {FAILURE_REASON_METADATA[demo.outcome.failure_reason]?.label ||
+                                demo.outcome.failure_reason.replace(/_/g, ' ')}
+                            </span>
+                          </span>
+                          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white text-rose-800 border border-rose-200">
+                            {demo.outcome.failure_reason}
+                          </span>
+                        </div>
+                      )}
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 text-[11px] pt-1 text-gray-700">
+                        {demo.outcome.customer_response && (
+                          <div className="bg-white/80 p-2 rounded-lg border border-[#D6E3F5]">
+                            <span className="text-[10px] font-bold text-[#5871A5] uppercase tracking-wider block">
+                              Customer Response
+                            </span>
+                            <span className="font-medium text-[#1A1A1A]">{demo.outcome.customer_response}</span>
+                          </div>
+                        )}
+                        {demo.outcome.technical_performance && (
+                          <div className="bg-white/80 p-2 rounded-lg border border-[#D6E3F5]">
+                            <span className="text-[10px] font-bold text-[#5871A5] uppercase tracking-wider block">
+                              Technical Performance
+                            </span>
+                            <span className="font-medium text-[#1A1A1A]">{demo.outcome.technical_performance}</span>
+                          </div>
+                        )}
+                        {demo.outcome.product_suitability && (
+                          <div className="bg-white/80 p-2 rounded-lg border border-[#D6E3F5]">
+                            <span className="text-[10px] font-bold text-[#5871A5] uppercase tracking-wider block">
+                              Product Suitability
+                            </span>
+                            <span className="font-medium text-[#1A1A1A]">{demo.outcome.product_suitability}</span>
+                          </div>
+                        )}
+                        {demo.outcome.competitor_involved && (
+                          <div className="bg-white/80 p-2 rounded-lg border border-[#D6E3F5]">
+                            <span className="text-[10px] font-bold text-[#5871A5] uppercase tracking-wider block">
+                              Competitor Involved
+                            </span>
+                            <span className="font-medium text-[#1A1A1A]">{demo.outcome.competitor_involved}</span>
+                          </div>
+                        )}
+                        {demo.outcome.next_step && (
+                          <div className="bg-white/80 p-2 rounded-lg border border-[#D6E3F5]">
+                            <span className="text-[10px] font-bold text-[#5871A5] uppercase tracking-wider block">
+                              Next Commercial Step
+                            </span>
+                            <span className="font-medium text-[#1A1A1A]">{demo.outcome.next_step}</span>
+                          </div>
+                        )}
+                        {demo.outcome.remarks && (
+                          <div className="bg-white/80 p-2 rounded-lg border border-[#D6E3F5]">
+                            <span className="text-[10px] font-bold text-[#5871A5] uppercase tracking-wider block">
+                              Remarks / Field Notes
+                            </span>
+                            <span className="font-medium text-[#1A1A1A]">{demo.outcome.remarks}</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
 
@@ -1107,6 +1583,82 @@ export default function DemosPage() {
                       </Button>
                     </div>
                   </div>
+
+                  {/* Coordinator View of Reservations (§16) */}
+                  {demo.reservations && demo.reservations.length > 0 && (
+                    <div className="mt-3 pt-3 border-t border-[#E2ECF8] space-y-2">
+                      <span className="text-xs font-bold text-[#1A1A1A] flex items-center gap-1.5">
+                        <Package className="h-3.5 w-3.5 text-[#223FA7]" />
+                        Allocated Fleet Units & Custodian Status:
+                      </span>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        {demo.reservations.map((res: any) => (
+                          <div
+                            key={res.id}
+                            className="p-2.5 rounded-lg bg-[#F8FAFC] border border-[#D6E3F5] text-xs flex flex-col justify-between gap-1.5"
+                          >
+                            <div>
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="font-semibold text-[#1A1A1A]">
+                                  {res.model} ({res.serial_no || 'No Serial'})
+                                </span>
+                                {res.status === 'approved' && <Badge variant="success">APPROVED</Badge>}
+                                {res.status === 'requested' && <Badge variant="warning">PENDING APPROVAL</Badge>}
+                                {res.status === 'rejected' && <Badge variant="danger">REJECTED</Badge>}
+                                {res.status === 'allocated_alternative' && <Badge variant="info">REALLOCATED</Badge>}
+                                {res.status === 'cancelled' && <Badge variant="outline">CANCELLED</Badge>}
+                              </div>
+                              <p className="text-[11px] text-[#5871A5] mt-0.5">
+                                Depot: {res.current_location} • {res.reserved_from} to {res.reserved_to}
+                              </p>
+                              {res.approved_by_name && (
+                                <p className="text-[11px] text-emerald-700">Approved by: {res.approved_by_name}</p>
+                              )}
+                              {res.rejection_reason && (
+                                <p className="text-[11px] text-rose-700">Reason: {res.rejection_reason}</p>
+                              )}
+                              {res.alt_model && (
+                                <p className="text-[11px] text-indigo-700">
+                                  Alternative: {res.alt_model} ({res.alt_serial_no || 'N/A'})
+                                </p>
+                              )}
+                            </div>
+
+                            {res.status === 'requested' && (
+                              <div className="flex items-center gap-1.5 pt-1.5 border-t border-[#E2ECF8]">
+                                <Button
+                                  variant="outline"
+                                  size="xs"
+                                  onClick={() => handleApproveReservation(res)}
+                                  className="bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100"
+                                >
+                                  <Check className="h-3 w-3 mr-1" />
+                                  Approve
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="xs"
+                                  onClick={() => handleOpenAllocate(res, demo)}
+                                  className="bg-blue-50 text-[#223FA7] border-blue-200 hover:bg-blue-100"
+                                >
+                                  Allocate Alt Unit
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="xs"
+                                  onClick={() => handleOpenReject(res, demo)}
+                                  className="bg-rose-50 text-rose-700 border-rose-300 hover:bg-rose-100"
+                                >
+                                  <X className="h-3 w-3 mr-1" />
+                                  Reject
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </Card>
               ))}
           </div>
@@ -1143,6 +1695,8 @@ export default function DemosPage() {
                       model: '',
                       serial_no: '',
                       current_location: 'Delhi',
+                      responsible_person: '',
+                      availability_status: 'available',
                       condition: 'Operational',
                       remarks: '',
                     });
@@ -1236,9 +1790,10 @@ export default function DemosPage() {
                     <th className="py-3 px-4">Model & Serial</th>
                     <th className="py-3 px-4">Product</th>
                     <th className="py-3 px-4">Current Depot</th>
+                    <th className="py-3 px-4">Responsible Custodian</th>
                     <th className="py-3 px-4">Status</th>
                     <th className="py-3 px-4">Condition</th>
-                    <th className="py-3 px-4">Reserved Until</th>
+                    <th className="py-3 px-4">Reserved / Expected Avail</th>
                     <th className="py-3 px-4 text-right">Actions</th>
                   </tr>
                 </thead>
@@ -1256,6 +1811,11 @@ export default function DemosPage() {
                         <span className="inline-flex items-center gap-1 font-medium text-[#1A1A1A]">
                           <MapPin className="h-3.5 w-3.5 text-[#223FA7]" />
                           {unit.current_location}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-xs">
+                        <span className="font-medium text-[#1A1A1A]">
+                          {unit.responsible_person_name || 'Depot Service Team'}
                         </span>
                       </td>
                       <td className="py-3 px-4">
@@ -1276,7 +1836,7 @@ export default function DemosPage() {
                         {unit.condition || 'Operational'}
                       </td>
                       <td className="py-3 px-4 text-xs font-mono text-[#5871A5]">
-                        {unit.reserved_until || '—'}
+                        {unit.reserved_until ? `Until ${unit.reserved_until}` : 'Immediate'}
                       </td>
                       <td className="py-3 px-4 text-right">
                         {hasRole(['demo_team', 'service_team', 'admin']) && (
@@ -1290,6 +1850,8 @@ export default function DemosPage() {
                                 model: unit.model,
                                 serial_no: unit.serial_no || '',
                                 current_location: unit.current_location || 'Delhi',
+                                responsible_person: unit.responsible_person || '',
+                                availability_status: unit.availability_status || 'available',
                                 condition: unit.condition || 'Operational',
                                 remarks: unit.remarks || '',
                               });
@@ -1352,14 +1914,13 @@ export default function DemosPage() {
                 />
               </StatGrid>
 
-              {/* Structured Failure Analysis Breakdown (§18 & §19) */}
-              <Card className="p-6 bg-white border border-[#D6E3F5] rounded-xl shadow-2xs">
+              {/* Structured Failure Analysis Breakdown & Recurring Pattern Matrix (§18 & §19) */}
+              <Card className="p-6 bg-white border border-[#D6E3F5] rounded-xl shadow-2xs space-y-6">
                 <SectionHeader
                   icon={<AlertTriangle className="h-5 w-5 text-rose-500" />}
-                  title="Structured Demo Failure Analysis"
-                  description="Categorized breakdown of trial deficiencies to guide technical R&D, product tuning, and sales training."
-                  badge={<Badge variant="danger">{analyticsData.overview.unsuccessful} Total Failures</Badge>}
-                  className="mb-4"
+                  title="Management Recurring Failure Pattern Analysis (§17 & §18)"
+                  description="Systematic taxonomy of trial deficiencies to understand why demonstrations fail and direct engineering R&D, commercial terms, and field prep protocols."
+                  badge={<Badge variant="danger">{analyticsData.overview.unsuccessful} Total Failures Recorded</Badge>}
                 />
 
                 {analyticsData.failure_analysis.length === 0 ? (
@@ -1367,28 +1928,227 @@ export default function DemosPage() {
                     Zero unsuccessful demo trials recorded.
                   </p>
                 ) : (
-                  <div className="space-y-3">
-                    {analyticsData.failure_analysis.map((item: any) => (
-                      <div key={item.reason} className="space-y-1">
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="font-semibold text-[#1A1A1A]">
-                            {item.reason.replace(/_/g, ' ')}
+                  <>
+                    {/* Visual Progress Distribution */}
+                    <div className="space-y-3 pb-4 border-b border-[#D6E3F5]">
+                      <div className="text-xs font-bold text-[#1A1A1A] uppercase tracking-wider">
+                        Failure Category Distribution
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {analyticsData.failure_analysis.map((item: any) => {
+                          const meta = FAILURE_REASON_METADATA[item.reason];
+                          return (
+                            <div key={item.reason} className="p-3 rounded-lg bg-[#F7FBFF] border border-[#D6E3F5] space-y-1.5">
+                              <div className="flex items-center justify-between text-xs">
+                                <span className="font-bold text-[#1A1A1A]">
+                                  {meta?.label || item.reason.replace(/_/g, ' ')}
+                                </span>
+                                <span className="text-[#5871A5] font-mono font-semibold">
+                                  {item.count} trials ({item.percentage}%)
+                                </span>
+                              </div>
+                              <div className="w-full bg-[#E2ECF8] h-2 rounded-full overflow-hidden">
+                                <div
+                                  className="bg-rose-500 h-full rounded-full transition-all"
+                                  style={{ width: `${Math.max(item.percentage, 4)}%` }}
+                                />
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Executive Root Cause & Mitigation Table */}
+                    <div className="space-y-3">
+                      <div className="text-xs font-bold text-[#1A1A1A] uppercase tracking-wider flex items-center justify-between">
+                        <span>Recurring Pattern Taxonomy & Corrective Countermeasures</span>
+                        <span className="text-[11px] font-normal text-[#5871A5]">
+                          Covers all 9 operational failure categories
+                        </span>
+                      </div>
+
+                      <div className="overflow-x-auto rounded-xl border border-[#D6E3F5]">
+                        <table className="w-full text-left text-xs">
+                          <thead className="bg-[#F7FBFF] border-b border-[#D6E3F5] text-[#5871A5] uppercase font-bold text-[10px]">
+                            <tr>
+                              <th className="py-2.5 px-3">Failure Reason</th>
+                              <th className="py-2.5 px-2">Severity</th>
+                              <th className="py-2.5 px-2 text-center">Occurrences</th>
+                              <th className="py-2.5 px-3">Typical Root Cause Pattern</th>
+                              <th className="py-2.5 px-3">Recommended Management Countermeasure</th>
+                              <th className="py-2.5 px-2 text-right">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-[#D6E3F5]">
+                            {Object.entries(FAILURE_REASON_METADATA).map(([key, meta]) => {
+                              const found = analyticsData.failure_analysis.find((f: any) => f.reason === key);
+                              const count = found?.count || 0;
+                              const pct = found?.percentage || 0;
+
+                              return (
+                                <tr key={key} className={count > 0 ? 'bg-rose-50/20' : 'hover:bg-[#F7FBFF]'}>
+                                  <td className="py-3 px-3">
+                                    <div className="font-bold text-[#1A1A1A]">{meta.label}</div>
+                                    <div className="text-[11px] text-[#5871A5]">{meta.description}</div>
+                                  </td>
+                                  <td className="py-3 px-2">
+                                    <span
+                                      className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide border ${
+                                        meta.severity === 'critical'
+                                          ? 'bg-rose-100 text-rose-800 border-rose-200'
+                                          : meta.severity === 'high'
+                                          ? 'bg-amber-100 text-amber-800 border-amber-200'
+                                          : 'bg-blue-50 text-blue-700 border-blue-200'
+                                      }`}
+                                    >
+                                      {meta.severity}
+                                    </span>
+                                  </td>
+                                  <td className="py-3 px-2 text-center">
+                                    <span className={`font-mono font-bold ${count > 0 ? 'text-rose-600' : 'text-gray-400'}`}>
+                                      {count} ({pct}%)
+                                    </span>
+                                  </td>
+                                  <td className="py-3 px-3 text-[11px] text-gray-700">
+                                    {meta.typicalRootCause}
+                                  </td>
+                                  <td className="py-3 px-3 text-[11px] text-[#223FA7] font-medium">
+                                    {meta.recommendedCountermeasure}
+                                  </td>
+                                  <td className="py-3 px-2 text-right">
+                                    {count > 0 && (
+                                      <Button
+                                        size="xs"
+                                        variant="outline"
+                                        onClick={() => {
+                                          setFilterResult('fail');
+                                          setFilterFailureReason(key);
+                                          setActiveTab('pipeline');
+                                        }}
+                                      >
+                                        Filter ({count})
+                                      </Button>
+                                    )}
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </Card>
+
+              {/* Product Failure Correlation (if available) */}
+              {analyticsData.product_failures && analyticsData.product_failures.length > 0 && (
+                <Card className="p-6 bg-white border border-[#D6E3F5] rounded-xl shadow-2xs space-y-4">
+                  <SectionHeader
+                    icon={<Box className="h-5 w-5 text-[#223FA7]" />}
+                    title="Product-Level Trial Failure Distribution"
+                    description="Analysis of which hardware units and catalog models encounter recurring field objections or technical failures."
+                  />
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    {analyticsData.product_failures.map((pf: any, idx: number) => (
+                      <div key={idx} className="p-3.5 rounded-xl bg-[#F7FBFF] border border-[#D6E3F5] space-y-1">
+                        <div className="font-bold text-[#1A1A1A] text-xs">{pf.product_name}</div>
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="text-rose-700 font-medium">
+                            {FAILURE_REASON_METADATA[pf.failure_reason]?.label || pf.failure_reason.replace(/_/g, ' ')}
                           </span>
-                          <span className="text-[#5871A5] font-mono">
-                            {item.count} trials ({item.percentage}%)
+                          <span className="font-mono font-bold bg-rose-100 text-rose-800 px-1.5 py-0.2 rounded border border-rose-200">
+                            {pf.fail_count} failed
                           </span>
-                        </div>
-                        <div className="w-full bg-[#E2ECF8] h-2 rounded-full overflow-hidden">
-                          <div
-                            className="bg-rose-500 h-full rounded-full transition-all"
-                            style={{ width: `${Math.max(item.percentage, 4)}%` }}
-                          />
                         </div>
                       </div>
                     ))}
                   </div>
-                )}
-              </Card>
+                </Card>
+              )}
+
+              {/* Decision-Maker Attendance Impact Analysis (§17) */}
+              {analyticsData.decision_maker_impact && (
+                <Card className="p-6 bg-white border border-[#D6E3F5] rounded-xl shadow-2xs">
+                  <SectionHeader
+                    icon={<Users className="h-5 w-5 text-[#223FA7]" />}
+                    title="Senior Decision-Maker Attendance Impact"
+                    description="Correlation between trial success rate and executive/commanding officer physical attendance at the demonstration."
+                    badge={
+                      <Badge
+                        variant={
+                          analyticsData.decision_maker_impact.attended.rate_percent >= 50
+                            ? 'success'
+                            : 'warning'
+                        }
+                      >
+                        {analyticsData.decision_maker_impact.attended.rate_percent}% Win Rate When Attended
+                      </Badge>
+                    }
+                    className="mb-4"
+                  />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="p-4 rounded-xl bg-emerald-50/50 border border-emerald-200">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider">
+                          Decision-Maker Attended Trial
+                        </span>
+                        <span className="text-xs font-bold text-emerald-700">
+                          {analyticsData.decision_maker_impact.attended.rate_percent}% Success Rate
+                        </span>
+                      </div>
+                      <p className="text-2xl font-bold text-emerald-950">
+                        {analyticsData.decision_maker_impact.attended.successful} /{' '}
+                        {analyticsData.decision_maker_impact.attended.total}
+                        <span className="text-xs font-normal text-emerald-700 ml-1.5">
+                          trials succeeded
+                        </span>
+                      </p>
+                      <div className="w-full bg-emerald-200 h-2 rounded-full overflow-hidden mt-3">
+                        <div
+                          className="bg-emerald-600 h-full rounded-full transition-all"
+                          style={{
+                            width: `${Math.max(
+                              analyticsData.decision_maker_impact.attended.rate_percent,
+                              4,
+                            )}%`,
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="p-4 rounded-xl bg-slate-50 border border-[#D6E3F5]">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-bold text-[#5871A5] uppercase tracking-wider">
+                          Decision-Maker Absent
+                        </span>
+                        <span className="text-xs font-bold text-[#5871A5]">
+                          {analyticsData.decision_maker_impact.absent.rate_percent}% Success Rate
+                        </span>
+                      </div>
+                      <p className="text-2xl font-bold text-[#1A1A1A]">
+                        {analyticsData.decision_maker_impact.absent.successful} /{' '}
+                        {analyticsData.decision_maker_impact.absent.total}
+                        <span className="text-xs font-normal text-[#5871A5] ml-1.5">
+                          trials succeeded
+                        </span>
+                      </p>
+                      <div className="w-full bg-[#E2ECF8] h-2 rounded-full overflow-hidden mt-3">
+                        <div
+                          className="bg-[#5871A5] h-full rounded-full transition-all"
+                          style={{
+                            width: `${Math.max(
+                              analyticsData.decision_maker_impact.absent.rate_percent,
+                              4,
+                            )}%`,
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              )}
 
               {/* Depot Utilization Grid */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -1569,6 +2329,19 @@ export default function DemosPage() {
               onChange={(e) => setNewDemo({ ...newDemo, expected_audience: e.target.value })}
             />
           </div>
+
+          <Select
+            label="Assigned Salesperson / Account Representative"
+            value={newDemo.assigned_to}
+            onChange={(e) => setNewDemo({ ...newDemo, assigned_to: e.target.value })}
+            options={[
+              { label: '— Current User / Default Field Sales Rep —', value: '' },
+              ...teamMembers.map((m) => ({
+                label: `${m.full_name} (${m.role.replace(/_/g, ' ')})`,
+                value: m.id,
+              })),
+            ]}
+          />
 
           <Input
             label="Purpose of Demonstration *"
@@ -2019,118 +2792,160 @@ export default function DemosPage() {
         isOpen={isOutcomeOpen}
         onClose={() => setIsOutcomeOpen(false)}
         title={`Record Demo Outcome & Failure Analysis — ${selectedDemo?.demo_no}`}
+        description="Capture complete trial execution data, customer feedback, technical performance, and structured failure root cause analysis."
+        maxWidth="lg"
       >
         <form onSubmit={handleOutcomeSubmit} className="space-y-4 text-sm">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <Select
-              label="Overall Demo Result *"
-              value={outcomeForm.result}
-              onChange={(e: any) => setOutcomeForm({ ...outcomeForm, result: e.target.value })}
-              options={[
-                { label: 'Successful Trial (Specs Verified)', value: 'success' },
-                { label: 'Unsuccessful Trial (Deficiency / Issue)', value: 'fail' },
-                { label: 'Partial Demonstration', value: 'partial' },
-              ]}
-              required
-            />
-
-            <div className="flex items-center pt-6">
-              <Checkbox
-                checked={outcomeForm.decision_maker_present}
-                onChange={(e) =>
-                  setOutcomeForm({ ...outcomeForm, decision_maker_present: e.target.checked })
-                }
-                label="Decision-Maker Attended Trial"
+          {/* Section 1: Demonstration Execution & Result */}
+          <div className="p-3.5 rounded-xl bg-[#F7FBFF] border border-[#D6E3F5] space-y-3">
+            <span className="text-xs font-bold text-[#1A1A1A] uppercase tracking-wider block">
+              1. Demonstration Execution & Outcome
+            </span>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-center">
+              <Select
+                label="Overall Demo Result *"
+                value={outcomeForm.result}
+                onChange={(e: any) => setOutcomeForm({ ...outcomeForm, result: e.target.value })}
+                options={[
+                  { label: 'Successful Trial (Pass)', value: 'success' },
+                  { label: 'Unsuccessful Trial (Deficiency / Fail)', value: 'fail' },
+                  { label: 'Partial Demonstration', value: 'partial' },
+                ]}
+                required
               />
+
+              <div className="pt-2">
+                <Checkbox
+                  checked={outcomeForm.completed}
+                  onChange={(e) => setOutcomeForm({ ...outcomeForm, completed: e.target.checked })}
+                  label="Demo Completed"
+                  description="Field trial executed on site"
+                />
+              </div>
+
+              <div className="pt-2">
+                <Checkbox
+                  checked={outcomeForm.decision_maker_present}
+                  onChange={(e) =>
+                    setOutcomeForm({ ...outcomeForm, decision_maker_present: e.target.checked })
+                  }
+                  label="Decision-Maker Attended"
+                  description="Key officer / decision-maker present"
+                />
+              </div>
             </div>
           </div>
 
-          {/* Structured Failure Reason (§18) - STRICTLY REQUIRED IF RESULT IS FAIL */}
+          {/* Section 2: Structured Failure Reason (§18) - STRICTLY REQUIRED IF RESULT IS FAIL */}
           {outcomeForm.result === 'fail' && (
-            <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 space-y-2">
-              <span className="text-xs font-bold text-rose-700 block">
-                Structured Failure Reason *
-              </span>
+            <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-rose-800 flex items-center gap-1.5 uppercase tracking-wider">
+                  <AlertTriangle className="h-4 w-4 text-rose-600" />
+                  <span>2. Primary Failure Reason Taxonomy *</span>
+                </span>
+                <span className="text-[10px] font-semibold text-rose-700 bg-rose-100 px-2 py-0.5 rounded-full border border-rose-200">
+                  Required for Failure Analysis
+                </span>
+              </div>
               <Select
                 value={outcomeForm.failure_reason}
                 onChange={(e) => setOutcomeForm({ ...outcomeForm, failure_reason: e.target.value })}
                 options={[
-                  { label: 'TECHNICAL_FAILURE — Device malfunctional / disconnected', value: 'TECHNICAL_FAILURE' },
-                  { label: 'EQUIPMENT_ISSUE — Battery / power / hardware calibration fault', value: 'EQUIPMENT_ISSUE' },
-                  { label: 'PRODUCT_LIMITATION — Product specs did not meet tender criteria', value: 'PRODUCT_LIMITATION' },
-                  { label: 'CUSTOMER_REQUIREMENT_MISMATCH — Client requested unfeasible custom spec', value: 'CUSTOMER_REQUIREMENT_MISMATCH' },
-                  { label: 'PRICING_CONCERN — Target price expectation exceeded', value: 'PRICING_CONCERN' },
-                  { label: 'DECISION_MAKER_UNAVAILABLE — Key procurement officer absent', value: 'DECISION_MAKER_UNAVAILABLE' },
-                  { label: 'COMPETITOR_PREFERENCE — Client inclined towards competitor brand', value: 'COMPETITOR_PREFERENCE' },
-                  { label: 'DEMO_PREPARATION_ISSUE — Site test targets / power unprepared', value: 'DEMO_PREPARATION_ISSUE' },
-                  { label: 'OTHER — Custom operational failure reason', value: 'OTHER' },
+                  { label: 'Product limitation — Product specifications did not meet operational criteria', value: 'PRODUCT_LIMITATION' },
+                  { label: 'Equipment issue — Battery, power, or hardware calibration fault', value: 'EQUIPMENT_ISSUE' },
+                  { label: 'Technical failure — Sensor blackout, software crash, or signal loss', value: 'TECHNICAL_FAILURE' },
+                  { label: 'Customer requirement mismatch — Prospect required custom spec outside standard BOM', value: 'CUSTOMER_REQUIREMENT_MISMATCH' },
+                  { label: 'Pricing concern — Budget expectation exceeded / pricing resistance', value: 'PRICING_CONCERN' },
+                  { label: 'Decision-maker unavailable — Approving authority / SP / DIG absent', value: 'DECISION_MAKER_UNAVAILABLE' },
+                  { label: 'Competitor preference — Client inclined towards competitor brand/device', value: 'COMPETITOR_PREFERENCE' },
+                  { label: 'Demo preparation issue — Site test targets or power source unprepared', value: 'DEMO_PREPARATION_ISSUE' },
+                  { label: 'Other — Custom operational failure reason', value: 'OTHER' },
                 ]}
                 required
               />
+              {outcomeForm.failure_reason && FAILURE_REASON_METADATA[outcomeForm.failure_reason] && (
+                <div className="text-[11px] text-rose-800 bg-white/80 p-2.5 rounded-lg border border-rose-200 space-y-1">
+                  <div><strong>Identified Pattern:</strong> {FAILURE_REASON_METADATA[outcomeForm.failure_reason].typicalRootCause}</div>
+                  <div><strong>Mitigation Protocol:</strong> {FAILURE_REASON_METADATA[outcomeForm.failure_reason].recommendedCountermeasure}</div>
+                </div>
+              )}
             </div>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <Input
-              label="Customer Response *"
-              placeholder="e.g. Positive response; requested formal quote"
-              value={outcomeForm.customer_response}
-              onChange={(e) => setOutcomeForm({ ...outcomeForm, customer_response: e.target.value })}
-              required
-            />
-            <Input
-              label="Technical Performance"
-              placeholder="e.g. 100% detection rate during 50-pass trial"
-              value={outcomeForm.technical_performance}
-              onChange={(e) =>
-                setOutcomeForm({ ...outcomeForm, technical_performance: e.target.value })
-              }
-            />
+          {/* Section 3: Field Assessment & Technical Evaluation */}
+          <div className="p-3.5 rounded-xl bg-white border border-[#D6E3F5] space-y-3">
+            <span className="text-xs font-bold text-[#1A1A1A] uppercase tracking-wider block">
+              3. Field Assessment & Technical Evaluation
+            </span>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <Input
+                label="Customer Response *"
+                placeholder="e.g. Positive response; requested formal quote"
+                value={outcomeForm.customer_response}
+                onChange={(e) => setOutcomeForm({ ...outcomeForm, customer_response: e.target.value })}
+                required
+              />
+              <Input
+                label="Technical Performance"
+                placeholder="e.g. 100% detection rate during 50-pass trial"
+                value={outcomeForm.technical_performance}
+                onChange={(e) =>
+                  setOutcomeForm({ ...outcomeForm, technical_performance: e.target.value })
+                }
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <Input
+                label="Product Suitability"
+                placeholder="e.g. Fully compliant with MHA guidelines"
+                value={outcomeForm.product_suitability}
+                onChange={(e) => setOutcomeForm({ ...outcomeForm, product_suitability: e.target.value })}
+              />
+              <Input
+                label="Competitor Involved (if any)"
+                placeholder="e.g. Godrej, Smiths Detection, Rapiscan"
+                value={outcomeForm.competitor_involved}
+                onChange={(e) => setOutcomeForm({ ...outcomeForm, competitor_involved: e.target.value })}
+              />
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {/* Section 4: Commercial Progression & Follow-Up */}
+          <div className="p-3.5 rounded-xl bg-white border border-[#D6E3F5] space-y-3">
+            <span className="text-xs font-bold text-[#1A1A1A] uppercase tracking-wider block">
+              4. Commercial Progression & Follow-Up
+            </span>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <Select
+                label="Opportunity Stage"
+                value={outcomeForm.opportunity_stage}
+                onChange={(e) => setOutcomeForm({ ...outcomeForm, opportunity_stage: e.target.value })}
+                options={[
+                  { label: 'Prospect — Early stage scoping', value: 'Prospect' },
+                  { label: 'Qualification — Specs matched', value: 'Qualification' },
+                  { label: 'Proposal — Commercial quotation requested', value: 'Proposal' },
+                  { label: 'GeM Tender Bid — Official procurement bid', value: 'Tender' },
+                  { label: 'Closed Won — Purchase order in progress', value: 'Closed Won' },
+                  { label: 'Closed Lost — Deal cancelled or lost to competitor', value: 'Closed Lost' },
+                ]}
+              />
+              <Input
+                label="Next Commercial Step"
+                placeholder="e.g. Commercial proposal submission & follow-up meeting"
+                value={outcomeForm.next_step}
+                onChange={(e) => setOutcomeForm({ ...outcomeForm, next_step: e.target.value })}
+              />
+            </div>
+
             <Input
-              label="Product Suitability"
-              placeholder="e.g. Fully compliant with MHA guidelines"
-              value={outcomeForm.product_suitability}
-              onChange={(e) => setOutcomeForm({ ...outcomeForm, product_suitability: e.target.value })}
-            />
-            <Input
-              label="Competitor Involved (if any)"
-              placeholder="e.g. Godrej, Smiths Detection"
-              value={outcomeForm.competitor_involved}
-              onChange={(e) => setOutcomeForm({ ...outcomeForm, competitor_involved: e.target.value })}
+              label="Detailed Outcome Remarks / Trial Notes"
+              placeholder="e.g. Demonstrated to DIG and 4 DSPs. Clean technical pass."
+              value={outcomeForm.remarks}
+              onChange={(e) => setOutcomeForm({ ...outcomeForm, remarks: e.target.value })}
             />
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <Input
-              label="Next Commercial Step"
-              placeholder="e.g. Commercial proposal submission"
-              value={outcomeForm.next_step}
-              onChange={(e) => setOutcomeForm({ ...outcomeForm, next_step: e.target.value })}
-            />
-            <Select
-              label="Opportunity Stage"
-              value={outcomeForm.opportunity_stage}
-              onChange={(e) => setOutcomeForm({ ...outcomeForm, opportunity_stage: e.target.value })}
-              options={[
-                { label: 'Prospect', value: 'Prospect' },
-                { label: 'Qualification', value: 'Qualification' },
-                { label: 'Proposal', value: 'Proposal' },
-                { label: 'GeM Tender Bid', value: 'Tender' },
-                { label: 'Closed Won', value: 'Closed Won' },
-                { label: 'Closed Lost', value: 'Closed Lost' },
-              ]}
-            />
-          </div>
-
-          <Input
-            label="Detailed Outcome Remarks / Trial Notes"
-            placeholder="e.g. Demonstrated to DIG and 4 DSPs. Clean technical pass."
-            value={outcomeForm.remarks}
-            onChange={(e) => setOutcomeForm({ ...outcomeForm, remarks: e.target.value })}
-          />
 
           <div className="flex justify-end gap-3 pt-3 border-t border-[#D6E3F5]">
             <Button variant="outline" type="button" onClick={() => setIsOutcomeOpen(false)}>
@@ -2256,6 +3071,37 @@ export default function DemosPage() {
             />
           </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <Select
+              label="Responsible Custodian / Specialist"
+              value={equipmentForm.responsible_person}
+              onChange={(e) =>
+                setEquipmentForm({ ...equipmentForm, responsible_person: e.target.value })
+              }
+              options={[
+                { label: '— Select Custodian / Officer —', value: '' },
+                ...teamMembers.map((m) => ({
+                  label: `${m.full_name} (${m.role.replace(/_/g, ' ')})`,
+                  value: m.id,
+                })),
+              ]}
+            />
+
+            <Select
+              label="Availability Status"
+              value={equipmentForm.availability_status}
+              onChange={(e) =>
+                setEquipmentForm({ ...equipmentForm, availability_status: e.target.value })
+              }
+              options={[
+                { label: 'Available for Field Demos', value: 'available' },
+                { label: 'Reserved for Demo', value: 'reserved' },
+                { label: 'In Field Trial', value: 'in_use' },
+                { label: 'Under Maintenance / Calibration', value: 'maintenance' },
+              ]}
+            />
+          </div>
+
           <Input
             label="Remarks / Notes"
             placeholder="e.g. Staged with heavy-duty wheeled flight case"
@@ -2269,6 +3115,171 @@ export default function DemosPage() {
             </Button>
             <Button variant="primary" type="submit" isLoading={isSubmitting}>
               Save Equipment Unit
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* 10. Reject Equipment Reservation Modal (§16) */}
+      <Modal
+        isOpen={isRejectOpen}
+        onClose={() => setIsRejectOpen(false)}
+        title="Reject Equipment Reservation Request"
+      >
+        <form onSubmit={handleRejectReservationSubmit} className="space-y-4 text-sm">
+          <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-xs text-rose-900">
+            Rejecting reservation for <strong>{selectedReservation?.model}</strong> (Serial:{' '}
+            {selectedReservation?.serial_no || 'N/A'}) requested for Demo{' '}
+            <strong>{selectedDemo?.demo_no}</strong>.
+          </div>
+
+          <Select
+            label="Rejection Reason *"
+            value={rejectForm.rejection_reason}
+            onChange={(e) => setRejectForm({ ...rejectForm, rejection_reason: e.target.value })}
+            options={[
+              {
+                label: 'Unit booked for another high-priority client trial',
+                value: 'Unit booked for another high-priority client trial',
+              },
+              {
+                label: 'Equipment undergoing mandatory factory calibration / repair',
+                value: 'Equipment undergoing mandatory factory calibration / repair',
+              },
+              {
+                label: 'Transit time between depots exceeds demo timeframe',
+                value: 'Transit time between depots exceeds demo timeframe',
+              },
+              {
+                label: 'Technical limitation for client proving site specifications',
+                value: 'Technical limitation for client proving site specifications',
+              },
+              {
+                label: 'Other operational reservation conflict',
+                value: 'Other operational reservation conflict',
+              },
+            ]}
+            required
+          />
+
+          <Input
+            label="Custodian Remarks / Explanation"
+            placeholder="e.g. Advised salesperson to request alternative unit from Patna depot"
+            value={rejectForm.remarks}
+            onChange={(e) => setRejectForm({ ...rejectForm, remarks: e.target.value })}
+          />
+
+          <div className="flex justify-end gap-3 pt-3 border-t border-[#D6E3F5]">
+            <Button variant="outline" type="button" onClick={() => setIsRejectOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="danger" type="submit" isLoading={isSubmitting}>
+              Confirm Rejection
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* 11. Suggest / Allocate Alternative Unit Modal (§16) */}
+      <Modal
+        isOpen={isAllocateOpen}
+        onClose={() => setIsAllocateOpen(false)}
+        title="Allocate Alternative Equipment Unit"
+      >
+        <form onSubmit={handleAllocateAnotherSubmit} className="space-y-4 text-sm">
+          <div className="p-3 rounded-lg bg-blue-50 border border-blue-200 text-xs text-blue-900">
+            Reallocating equipment for Demo <strong>{selectedDemo?.demo_no}</strong> (Site:{' '}
+            {selectedDemo?.location}). Currently requested: <strong>{selectedReservation?.model}</strong>.
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-[#1A1A1A] mb-1.5">
+              Select Alternative Fleet Unit *
+            </label>
+            <div className="space-y-2 max-h-52 overflow-y-auto border border-[#D6E3F5] rounded-lg p-2 bg-[#F7FBFF]">
+              {equipmentList
+                .filter((unit) => unit.id !== selectedReservation?.equipment_id)
+                .map((unit) => (
+                  <label
+                    key={unit.id}
+                    className={`block p-2.5 rounded-lg border cursor-pointer transition-all ${
+                      allocateForm.equipment_id === unit.id
+                        ? 'bg-[#EAF2FF] border-[#223FA7] text-[#1A1A1A]'
+                        : 'bg-white border-[#D6E3F5] text-[#1A1A1A] hover:bg-[#F0F5FF]'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="radio"
+                          name="allocate_unit"
+                          value={unit.id}
+                          checked={allocateForm.equipment_id === unit.id}
+                          onChange={() =>
+                            setAllocateForm({ ...allocateForm, equipment_id: unit.id })
+                          }
+                        />
+                        <div>
+                          <p className="font-semibold text-xs text-[#1A1A1A]">
+                            {unit.model} — {unit.serial_no || 'Unserialized'}
+                          </p>
+                          <span className="text-[10px] text-[#5871A5]">
+                            Depot: {unit.current_location} • Condition: {unit.condition}
+                          </span>
+                        </div>
+                      </div>
+                      <Badge
+                        variant={unit.availability_status === 'available' ? 'success' : 'warning'}
+                      >
+                        {unit.availability_status.toUpperCase()}
+                      </Badge>
+                    </div>
+                  </label>
+                ))}
+            </div>
+          </div>
+
+          <Input
+            label="Reason for Reallocation *"
+            placeholder="e.g. Primary unit reserved; allocating alternate calibrated unit from Delhi depot"
+            value={allocateForm.reason}
+            onChange={(e) => setAllocateForm({ ...allocateForm, reason: e.target.value })}
+            required
+          />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <Input
+              label="Reservation From"
+              type="date"
+              value={allocateForm.reserved_from}
+              onChange={(e) => setAllocateForm({ ...allocateForm, reserved_from: e.target.value })}
+            />
+            <Input
+              label="Reservation To"
+              type="date"
+              value={allocateForm.reserved_to}
+              onChange={(e) => setAllocateForm({ ...allocateForm, reserved_to: e.target.value })}
+            />
+          </div>
+
+          <Input
+            label="Logistics Remarks"
+            placeholder="e.g. Priority dispatch via road express"
+            value={allocateForm.remarks}
+            onChange={(e) => setAllocateForm({ ...allocateForm, remarks: e.target.value })}
+          />
+
+          <div className="flex justify-end gap-3 pt-3 border-t border-[#D6E3F5]">
+            <Button variant="outline" type="button" onClick={() => setIsAllocateOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              type="submit"
+              isLoading={isSubmitting}
+              disabled={!allocateForm.equipment_id || !allocateForm.reason}
+            >
+              Confirm Reallocation
             </Button>
           </div>
         </form>

@@ -22,6 +22,9 @@ import type {
   CancelDemoDto,
   ReserveEquipmentDto,
   SuggestAlternativeDto,
+  ApproveReservationDto,
+  RejectReservationDto,
+  AllocateAnotherUnitDto,
   SubmitDemoOutcomeDto,
   CreateEquipmentDto,
   UpdateEquipmentDto,
@@ -402,7 +405,60 @@ export class DemosService {
       .offset(offset)
       .execute();
 
-    return buildPaginatedResult(demos, total, page, limit);
+    const demoIds = demos.map((d) => d.id);
+    const reservationsByDemo: Record<string, any[]> = {};
+    const outcomesByDemo: Record<string, any> = {};
+
+    if (demoIds.length > 0) {
+      const reservations = await this.db
+        .selectFrom('demo_reservations')
+        .innerJoin('demo_equipment', 'demo_reservations.equipment_id', 'demo_equipment.id')
+        .leftJoin('products', 'demo_equipment.product_id', 'products.id')
+        .leftJoin('users as approver', 'demo_reservations.approved_by', 'approver.id')
+        .leftJoin('demo_equipment as altEquip', 'demo_reservations.alternative_equipment_id', 'altEquip.id')
+        .selectAll('demo_reservations')
+        .select([
+          'demo_equipment.model',
+          'demo_equipment.serial_no',
+          'demo_equipment.current_location',
+          'demo_equipment.condition as equipment_condition',
+          'products.name as product_name',
+          'approver.full_name as approved_by_name',
+          'altEquip.model as alt_model',
+          'altEquip.serial_no as alt_serial_no',
+          'altEquip.current_location as alt_location',
+        ])
+        .where('demo_reservations.demo_id', 'in', demoIds)
+        .orderBy('demo_reservations.created_at', 'desc')
+        .execute();
+
+      for (const res of reservations) {
+        if (!reservationsByDemo[res.demo_id]) {
+          reservationsByDemo[res.demo_id] = [];
+        }
+        reservationsByDemo[res.demo_id].push(res);
+      }
+
+      const outcomes = await this.db
+        .selectFrom('demo_outcomes')
+        .leftJoin('users as submitter', 'demo_outcomes.submitted_by', 'submitter.id')
+        .selectAll('demo_outcomes')
+        .select(['submitter.full_name as submitted_by_name'])
+        .where('demo_outcomes.demo_id', 'in', demoIds)
+        .execute();
+
+      for (const out of outcomes) {
+        outcomesByDemo[out.demo_id] = out;
+      }
+    }
+
+    const enhancedDemos = demos.map((d) => ({
+      ...d,
+      reservations: reservationsByDemo[d.id] || [],
+      outcome: outcomesByDemo[d.id] || null,
+    }));
+
+    return buildPaginatedResult(enhancedDemos, total, page, limit);
   }
 
   async findOneDemo(id: string) {
@@ -962,6 +1018,245 @@ export class DemosService {
         entityType: 'demo',
         entityId: reservation.demo_id,
         action: 'EQUIPMENT_ALTERNATIVE_SUGGESTED',
+        previousValue: reservation,
+        newValue: updated,
+      });
+
+      return updated;
+    });
+  }
+
+  async approveReservation(
+    reservationId: string,
+    dto: ApproveReservationDto,
+    user: AuthUser,
+  ) {
+    return this.db.transaction().execute(async (trx) => {
+      const reservation = await trx
+        .selectFrom('demo_reservations')
+        .selectAll()
+        .where('id', '=', reservationId)
+        .forUpdate()
+        .executeTakeFirst();
+
+      if (!reservation) {
+        throw new NotFoundException('Reservation not found');
+      }
+
+      const updated = await trx
+        .updateTable('demo_reservations')
+        .set({
+          status: 'approved',
+          approved_by: user.id,
+          remarks: dto.remarks || reservation.remarks,
+          updated_at: new Date(),
+        })
+        .where('id', '=', reservationId)
+        .returningAll()
+        .executeTakeFirstOrThrow();
+
+      // Lock equipment availability status to 'reserved'
+      await trx
+        .updateTable('demo_equipment')
+        .set({
+          availability_status: 'reserved',
+          reserved_until: reservation.reserved_to,
+          updated_at: new Date(),
+        })
+        .where('id', '=', reservation.equipment_id)
+        .execute();
+
+      // Update demo status to equipment_reserved if still in requested or under_planning
+      await trx
+        .updateTable('demos')
+        .set({
+          status: 'equipment_reserved',
+          updated_at: new Date(),
+        })
+        .where('id', '=', reservation.demo_id)
+        .where('status', 'in', ['requested', 'under_planning'])
+        .execute();
+
+      this.eventEmitter.emit('audit.log', {
+        actorId: user.id,
+        entityType: 'demo',
+        entityId: reservation.demo_id,
+        action: 'EQUIPMENT_RESERVATION_APPROVED',
+        previousValue: reservation,
+        newValue: updated,
+      });
+
+      return updated;
+    });
+  }
+
+  async rejectReservation(
+    reservationId: string,
+    dto: RejectReservationDto,
+    user: AuthUser,
+  ) {
+    return this.db.transaction().execute(async (trx) => {
+      const reservation = await trx
+        .selectFrom('demo_reservations')
+        .selectAll()
+        .where('id', '=', reservationId)
+        .forUpdate()
+        .executeTakeFirst();
+
+      if (!reservation) {
+        throw new NotFoundException('Reservation not found');
+      }
+
+      const updated = await trx
+        .updateTable('demo_reservations')
+        .set({
+          status: 'rejected',
+          approved_by: user.id,
+          alternative_reason: dto.rejection_reason,
+          remarks: dto.remarks || reservation.remarks,
+          updated_at: new Date(),
+        })
+        .where('id', '=', reservationId)
+        .returningAll()
+        .executeTakeFirstOrThrow();
+
+      const todayStr = new Date().toISOString().split('T')[0];
+
+      // Check if equipment has any other active approved reservations
+      const otherActiveReservations = await trx
+        .selectFrom('demo_reservations')
+        .select('id')
+        .where('equipment_id', '=', reservation.equipment_id)
+        .where('id', '!=', reservationId)
+        .where('status', '=', 'approved')
+        .where('reserved_to', '>=', todayStr)
+        .executeTakeFirst();
+
+      if (!otherActiveReservations) {
+        await trx
+          .updateTable('demo_equipment')
+          .set({
+            availability_status: 'available',
+            reserved_until: null,
+            updated_at: new Date(),
+          })
+          .where('id', '=', reservation.equipment_id)
+          .execute();
+      }
+
+      this.eventEmitter.emit('audit.log', {
+        actorId: user.id,
+        entityType: 'demo',
+        entityId: reservation.demo_id,
+        action: 'EQUIPMENT_RESERVATION_REJECTED',
+        previousValue: reservation,
+        newValue: updated,
+      });
+
+      return updated;
+    });
+  }
+
+  async allocateAnotherUnit(
+    reservationId: string,
+    dto: AllocateAnotherUnitDto,
+    user: AuthUser,
+  ) {
+    return this.db.transaction().execute(async (trx) => {
+      const reservation = await trx
+        .selectFrom('demo_reservations')
+        .selectAll()
+        .where('id', '=', reservationId)
+        .forUpdate()
+        .executeTakeFirst();
+
+      if (!reservation) {
+        throw new NotFoundException('Reservation not found');
+      }
+
+      const newUnit = await trx
+        .selectFrom('demo_equipment')
+        .selectAll()
+        .where('id', '=', dto.equipment_id)
+        .executeTakeFirst();
+
+      if (!newUnit) {
+        throw new NotFoundException('Target equipment unit not found');
+      }
+
+      const todayStr = new Date().toISOString().split('T')[0];
+
+      // Release previous equipment unit if no other active reservation
+      const oldEquipId = reservation.equipment_id;
+      if (oldEquipId !== dto.equipment_id) {
+        const otherApproved = await trx
+          .selectFrom('demo_reservations')
+          .select('id')
+          .where('equipment_id', '=', oldEquipId)
+          .where('id', '!=', reservationId)
+          .where('status', '=', 'approved')
+          .where('reserved_to', '>=', todayStr)
+          .executeTakeFirst();
+
+        if (!otherApproved) {
+          await trx
+            .updateTable('demo_equipment')
+            .set({
+              availability_status: 'available',
+              reserved_until: null,
+              updated_at: new Date(),
+            })
+            .where('id', '=', oldEquipId)
+            .execute();
+        }
+      }
+
+      const reservedFrom = dto.reserved_from || reservation.reserved_from;
+      const reservedTo = dto.reserved_to || reservation.reserved_to;
+
+      const updated = await trx
+        .updateTable('demo_reservations')
+        .set({
+          equipment_id: dto.equipment_id,
+          status: 'approved',
+          approved_by: user.id,
+          alternative_reason: dto.reason || null,
+          remarks: dto.remarks || reservation.remarks,
+          reserved_from: reservedFrom,
+          reserved_to: reservedTo,
+          updated_at: new Date(),
+        })
+        .where('id', '=', reservationId)
+        .returningAll()
+        .executeTakeFirstOrThrow();
+
+      // Lock new unit availability status to 'reserved'
+      await trx
+        .updateTable('demo_equipment')
+        .set({
+          availability_status: 'reserved',
+          reserved_until: reservedTo,
+          updated_at: new Date(),
+        })
+        .where('id', '=', dto.equipment_id)
+        .execute();
+
+      // Update demo status
+      await trx
+        .updateTable('demos')
+        .set({
+          status: 'equipment_reserved',
+          updated_at: new Date(),
+        })
+        .where('id', '=', reservation.demo_id)
+        .where('status', 'in', ['requested', 'under_planning'])
+        .execute();
+
+      this.eventEmitter.emit('audit.log', {
+        actorId: user.id,
+        entityType: 'demo',
+        entityId: reservation.demo_id,
+        action: 'EQUIPMENT_REALLOCATED_AND_APPROVED',
         previousValue: reservation,
         newValue: updated,
       });
@@ -1535,6 +1830,39 @@ export class DemosService {
       .limit(5)
       .execute();
 
+    // Decision-maker attendance correlation
+    const dmStats = await this.db
+      .selectFrom('demo_outcomes')
+      .select([
+        sql<number>`count(*) filter (where decision_maker_present = true)::int`.as('dm_present_total'),
+        sql<number>`count(*) filter (where decision_maker_present = true and result = 'success')::int`.as('dm_present_success'),
+        sql<number>`count(*) filter (where decision_maker_present = false)::int`.as('dm_absent_total'),
+        sql<number>`count(*) filter (where decision_maker_present = false and result = 'success')::int`.as('dm_absent_success'),
+      ])
+      .executeTakeFirst();
+
+    const dmPresentTotal = dmStats?.dm_present_total || 0;
+    const dmPresentSuccess = dmStats?.dm_present_success || 0;
+    const dmAbsentTotal = dmStats?.dm_absent_total || 0;
+    const dmAbsentSuccess = dmStats?.dm_absent_success || 0;
+
+    // Product Failure Correlation
+    const productFailureRows = await this.db
+      .selectFrom('demo_outcomes')
+      .innerJoin('demos', 'demo_outcomes.demo_id', 'demos.id')
+      .leftJoin('products', 'demos.product_id', 'products.id')
+      .select([
+        sql<string>`coalesce(products.name, 'Unspecified Product')`.as('product_name'),
+        'demo_outcomes.failure_reason',
+        sql<number>`count(*)::int`.as('fail_count'),
+      ])
+      .where('demo_outcomes.result', '=', 'fail')
+      .where('demo_outcomes.failure_reason', 'is not', null)
+      .groupBy(['products.name', 'demo_outcomes.failure_reason'])
+      .orderBy('fail_count', 'desc')
+      .limit(6)
+      .execute();
+
     return {
       overview: {
         total_demos: statusCounts?.total_demos || 0,
@@ -1548,8 +1876,27 @@ export class DemosService {
         success_rate_percent: successRate,
       },
       failure_analysis: failureBreakdown,
+      product_failures: productFailureRows,
       depot_fleet: depotBreakdown,
       competitors: competitorRows,
+      decision_maker_impact: {
+        present_total: dmPresentTotal,
+        present_success: dmPresentSuccess,
+        present_success_rate: dmPresentTotal > 0 ? Math.round((dmPresentSuccess / dmPresentTotal) * 100) : 0,
+        absent_total: dmAbsentTotal,
+        absent_success: dmAbsentSuccess,
+        absent_success_rate: dmAbsentTotal > 0 ? Math.round((dmAbsentSuccess / dmAbsentTotal) * 100) : 0,
+        attended: {
+          total: dmPresentTotal,
+          successful: dmPresentSuccess,
+          rate_percent: dmPresentTotal > 0 ? Math.round((dmPresentSuccess / dmPresentTotal) * 100) : 0,
+        },
+        absent: {
+          total: dmAbsentTotal,
+          successful: dmAbsentSuccess,
+          rate_percent: dmAbsentTotal > 0 ? Math.round((dmAbsentSuccess / dmAbsentTotal) * 100) : 0,
+        },
+      },
     };
   }
 
