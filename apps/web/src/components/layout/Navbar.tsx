@@ -8,8 +8,6 @@ import {
   Clock,
   ShieldCheck,
   LogOut,
-  PanelLeftClose,
-  PanelLeftOpen,
   Menu,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
@@ -22,7 +20,7 @@ export const Navbar: React.FC<{ onOpenCommand?: () => void }> = ({
   onOpenCommand,
 }) => {
   const { user, logout } = useAuth();
-  const { isCollapsed, toggleCollapse, toggleMobile } = useSidebar();
+  const { toggleMobile } = useSidebar();
   const [unreadCount, setUnreadCount] = useState(0);
   const [istTime, setIstTime] = useState('');
 
@@ -76,23 +74,8 @@ export const Navbar: React.FC<{ onOpenCommand?: () => void }> = ({
 
   return (
     <header className="h-[64px] border-b border-[#D6E3F5] bg-white/95 backdrop-blur-md px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30 select-none text-[#1A1A1A]">
-      {/* Search / Cmd+K Trigger & Sidebar Toggle */}
+      {/* Search / Cmd+K Trigger */}
       <div className="flex items-center flex-1 max-w-md min-w-[200px] mr-3">
-        {/* Desktop Sidebar Toggle Button */}
-        <button
-          type="button"
-          onClick={toggleCollapse}
-          className="hidden lg:flex items-center justify-center p-2 mr-2.5 rounded-lg bg-white hover:bg-[#EAF2FF] border border-[#D6E3F5] hover:border-[#9FC0F5] text-[#5871A5] hover:text-[#223FA7] transition-all cursor-pointer shrink-0 shadow-2xs group"
-          title={isCollapsed ? 'Open / Expand Sidebar (Ctrl+B)' : 'Close / Collapse Sidebar (Ctrl+B)'}
-          aria-label={isCollapsed ? 'Open Sidebar' : 'Close Sidebar'}
-        >
-          {isCollapsed ? (
-            <PanelLeftOpen className="h-4 w-4 text-[#223FA7] transition-transform group-hover:scale-105" />
-          ) : (
-            <PanelLeftClose className="h-4 w-4 transition-transform group-hover:scale-105" />
-          )}
-        </button>
-
         {/* Mobile Drawer Trigger Button */}
         <button
           type="button"
