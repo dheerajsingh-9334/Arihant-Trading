@@ -191,7 +191,7 @@ export default function TasksPage() {
         badge="Task Execution Hub"
         title="Action Deliverables & Blocker Management"
         subtitle="Track operational milestones, bid submissions, and unblock cross-functional dependencies."
-        icon={<CheckSquare className="h-5 w-5 text-[#223FA7]" />}
+        icon={<CheckSquare className="h-5 w-5 text-[#0F5E63]" />}
         actions={
           <Button
             onClick={() => setIsCreateOpen(true)}
@@ -219,7 +219,7 @@ export default function TasksPage() {
       {/* Task List */}
       <div className="space-y-3">
         {isLoading ? (
-          <div className="p-8 text-center text-xs text-[#5871A5] bg-white border border-[#D6E3F5] rounded-xl">Loading tasks...</div>
+          <div className="p-8 text-center text-xs text-[#4A5568] bg-white border border-[#DCD8CE] rounded-xl">Loading tasks...</div>
         ) : tasks.length === 0 ? (
           <EmptyState
             icon={CheckSquare}
@@ -254,18 +254,18 @@ export default function TasksPage() {
                     >
                       {task.status.toUpperCase()}
                     </Badge>
-                    <span className="font-bold text-[#1A1A1A] text-sm">{task.title}</span>
+                    <span className="font-bold text-[#14213D] text-sm">{task.title}</span>
                   </div>
 
-                  <p className="text-xs text-[#1A1A1A] font-medium">{task.description}</p>
+                  <p className="text-xs text-[#14213D] font-medium">{task.description}</p>
 
-                  <div className="flex flex-wrap items-center gap-x-4 text-[11px] text-[#5871A5]">
-                    <span className="flex items-center gap-1 text-[#5871A5]">
-                      <User className="h-3.5 w-3.5 text-[#5871A5]" />
+                  <div className="flex flex-wrap items-center gap-x-4 text-[11px] text-[#4A5568]">
+                    <span className="flex items-center gap-1 text-[#4A5568]">
+                      <User className="h-3.5 w-3.5 text-[#4A5568]" />
                       Assignee: {task.assignee_name || 'Self'}
                     </span>
-                    <span className="flex items-center gap-1 font-mono text-[#5871A5]">
-                      <Calendar className="h-3.5 w-3.5 text-[#5871A5]" />
+                    <span className="flex items-center gap-1 font-mono text-[#4A5568]">
+                      <Calendar className="h-3.5 w-3.5 text-[#4A5568]" />
                       Deadline: {new Date(task.deadline).toLocaleDateString('en-IN')}
                     </span>
                   </div>
@@ -321,7 +321,7 @@ export default function TasksPage() {
                       variant="secondary"
                       onClick={() => handleCompleteTask(task.id)}
                     >
-                      <CheckCircle2 className="h-3.5 w-3.5 mr-1 text-[#223FA7]" />
+                      <CheckCircle2 className="h-3.5 w-3.5 mr-1 text-[#0F5E63]" />
                       <span>Mark Complete</span>
                     </Button>
                   )}

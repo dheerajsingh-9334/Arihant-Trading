@@ -11,7 +11,7 @@ export const FilterBar = React.forwardRef<HTMLDivElement, FilterBarProps>(
       <div
         ref={ref}
         className={twMerge(
-          'p-4 bg-white border border-[#D6E3F5] rounded-xl shadow-2xs space-y-3',
+          'p-4 bg-white border border-[#DCD8CE] rounded-[14px] shadow-2xs space-y-3',
           className,
         )}
         {...props}

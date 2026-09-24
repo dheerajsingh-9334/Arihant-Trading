@@ -149,7 +149,7 @@ export default function ServicePage() {
         badge="Maintenance & Support"
         title="Service Desk, Spares & AMC Support"
         subtitle="Breakdown maintenance, on-site engineer deployment, and customer signoff vouchers."
-        icon={<Wrench className="h-5 w-5 text-[#223FA7]" />}
+        icon={<Wrench className="h-5 w-5 text-[#0F5E63]" />}
         actions={
           <Button
             onClick={() => setIsLogTicketOpen(true)}
@@ -175,7 +175,7 @@ export default function ServicePage() {
 
       <div className="space-y-3">
         {isLoading ? (
-          <div className="p-8 text-center text-xs text-[#5871A5] bg-white border border-[#D6E3F5] rounded-xl">Loading service tickets...</div>
+          <div className="p-8 text-center text-xs text-[#4A5568] bg-white border border-[#DCD8CE] rounded-xl">Loading service tickets...</div>
         ) : tickets.length === 0 ? (
           <EmptyState
             icon={Wrench}
@@ -191,7 +191,7 @@ export default function ServicePage() {
             >
               <div className="space-y-1.5 flex-1">
                 <div className="flex items-center space-x-2.5">
-                  <span className="font-mono text-xs font-bold text-[#223FA7]">
+                  <span className="font-mono text-xs font-bold text-[#0F5E63]">
                     {t.ticket_no}
                   </span>
                   <Badge
@@ -214,16 +214,16 @@ export default function ServicePage() {
                   </Badge>
                 </div>
 
-                <div className="text-sm font-bold text-[#1A1A1A]">
+                <div className="text-sm font-bold text-[#14213D]">
                   {t.organisation_name || 'Client Agency'}
                 </div>
 
-                <p className="text-xs text-[#1A1A1A] font-medium">
+                <p className="text-xs text-[#14213D] font-medium">
                   Complaint: {t.complaint}
                 </p>
 
-                <div className="flex flex-wrap items-center gap-x-4 text-[11px] text-[#5871A5]">
-                  <span>Assigned: <strong className="text-[#1A1A1A]">{t.assigned_name || 'Chief Service Engineer'}</strong></span>
+                <div className="flex flex-wrap items-center gap-x-4 text-[11px] text-[#4A5568]">
+                  <span>Assigned: <strong className="text-[#14213D]">{t.assigned_name || 'Chief Service Engineer'}</strong></span>
                   <span>Logged: {new Date(t.created_at).toLocaleDateString('en-IN')}</span>
                   {t.serial_no && <span className="font-mono">S/N: {t.serial_no}</span>}
                 </div>

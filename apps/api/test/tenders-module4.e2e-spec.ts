@@ -415,15 +415,86 @@ describe('Module 4: Tender Management E2E Test Suite', () => {
       expect(Array.isArray(res.body)).toBe(true);
       expect(res.body.length).toBeGreaterThanOrEqual(1);
     });
+
+    it('✓ Logs a global portal issue via POST /api/tenders/portal-issues (§25)', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/api/tenders/portal-issues')
+        .set('Authorization', `Bearer ${mgmtToken}`)
+        .send({
+          tender_id: createdTenderId,
+          issue: 'Required equipment does not appear on GeM portal category catalog',
+          responsible_person_id: salesUserId,
+          escalated_to: 'GeM Category Team & Ministry Nodal Officer',
+          remarks: 'Raised formal representation with procurement officer',
+        });
+
+      expect(res.status).toBe(201);
+      expect(res.body.id).toBeDefined();
+      expect(res.body.issue).toContain('Required equipment does not appear');
+    });
+
+    it('✓ Retrieves global portal issues list via GET /api/tenders/portal-issues (§25)', async () => {
+      const res = await request(app.getHttpServer())
+        .get('/api/tenders/portal-issues')
+        .set('Authorization', `Bearer ${mgmtToken}`);
+
+      expect(res.status).toBe(200);
+      expect(Array.isArray(res.body)).toBe(true);
+      expect(res.body.length).toBeGreaterThanOrEqual(1);
+      const found = res.body.find((i: any) => i.tender_id === createdTenderId);
+      expect(found).toBeDefined();
+      expect(found.tender_no).toBeDefined();
+    });
   });
 
   // =========================================================================
-  // 7. Win / Loss Outcome Recording & Mandatory Reasons
+  // 7. Win / Loss Outcome Recording & Mandatory Reasons (§26)
   // =========================================================================
   describe('Win / Loss Outcome Recording', () => {
+    let lostTenderId: string;
+    const lostTenderNo = `GEM/LOST/${Date.now().toString().slice(-6)}`;
+
+    beforeAll(async () => {
+      // Create a second tender to test LOST outcome analysis
+      const createRes = await request(app.getHttpServer())
+        .post('/api/tenders')
+        .set('Authorization', `Bearer ${mgmtToken}`)
+        .send({
+          tender_no: lostTenderNo,
+          organisation_id: testOrgId,
+          product_id: testProductId,
+          zone_id: testZoneId,
+          region_id: testRegionId,
+          category: 'general_mha',
+          publication_date: '2026-09-01',
+          submission_deadline: '2026-09-25T15:00:00Z',
+          estimated_value: 8500000,
+          assigned_person_id: salesUserId,
+          remarks: 'Second tender for post-mortem loss verification',
+        });
+      expect(createRes.status).toBe(201);
+      lostTenderId = createRes.body.id;
+
+      // Move through approval
+      await request(app.getHttpServer())
+        .post(`/api/tenders/${lostTenderId}/approval-request`)
+        .set('Authorization', `Bearer ${salesToken}`)
+        .send({ remarks: 'Participation request' });
+
+      await request(app.getHttpServer())
+        .post(`/api/tenders/${lostTenderId}/approve`)
+        .set('Authorization', `Bearer ${mgmtToken}`)
+        .send({ decision: 'approved', remarks: 'Approved' });
+
+      await request(app.getHttpServer())
+        .post(`/api/tenders/${lostTenderId}/transitions`)
+        .set('Authorization', `Bearer ${mgmtToken}`)
+        .send({ target_status: 'submitted', remarks: 'Bid submitted' });
+    });
+
     it('✕ Fails when recording LOST outcome without loss reason (400)', async () => {
       const res = await request(app.getHttpServer())
-        .post(`/api/tenders/${createdTenderId}/outcome`)
+        .post(`/api/tenders/${lostTenderId}/outcome`)
         .set('Authorization', `Bearer ${mgmtToken}`)
         .send({
           result: 'lost',
@@ -434,13 +505,40 @@ describe('Module 4: Tender Management E2E Test Suite', () => {
       expect(res.body.message).toMatch(/loss reason is mandatory/i);
     });
 
-    it('✓ Successfully records WON tender outcome with value and result date (201)', async () => {
+    it('✓ Records structured LOST outcome with all §26 post-mortem fields (201)', async () => {
+      const res = await request(app.getHttpServer())
+        .post(`/api/tenders/${lostTenderId}/outcome`)
+        .set('Authorization', `Bearer ${mgmtToken}`)
+        .send({
+          result: 'lost',
+          reason: 'pricing',
+          competitor: 'Zen Technologies Ltd',
+          technical_issue: 'Thermal refresh rate 50Hz required, offered 30Hz',
+          pricing_issue: 'Competitor quoted 15% below our bottom threshold',
+          eligibility_issue: 'Required 5-year past supply credentials in border states',
+          documentation_issue: 'Missing notarized OEM compliance matrix page 4',
+          other_reason: 'Preference clause exercised for local assembly unit',
+          result_date: '2026-09-22',
+          remarks: 'Detailed post-mortem reviewed with sales and engineering',
+        });
+
+      expect(res.status).toBe(201);
+      expect(res.body.status).toBe('lost');
+      expect(res.body.result).toBe('lost');
+      expect(res.body.loss_reason).toBe('pricing');
+    });
+
+    it('✓ Successfully records WON tender outcome with value, product, region, and result date (201)', async () => {
       const res = await request(app.getHttpServer())
         .post(`/api/tenders/${createdTenderId}/outcome`)
         .set('Authorization', `Bearer ${mgmtToken}`)
         .send({
           result: 'won',
           value_lakh: 145.5,
+          product_id: testProductId,
+          region_id: testRegionId,
+          responsible_person_id: salesUserId,
+          category: 'pq',
           result_date: '2026-09-21',
           remarks: 'Arihant ranked L1 in commercial bid opening',
         });
@@ -468,10 +566,10 @@ describe('Module 4: Tender Management E2E Test Suite', () => {
   });
 
   // =========================================================================
-  // 8. Multi-Dimensional Reporting & Executive Dashboard
+  // 8. Multi-Dimensional Reporting & Executive Dashboard (§24 & §27)
   // =========================================================================
   describe('Executive Dashboard & Multi-Dimensional Reports', () => {
-    it('✓ Retrieves executive dashboard metrics with accurate win rate calculation', async () => {
+    it('✓ Retrieves executive dashboard metrics with accurate win rate calculation & deadline tracking', async () => {
       const res = await request(app.getHttpServer())
         .get('/api/tenders/dashboard')
         .set('Authorization', `Bearer ${mgmtToken}`);
@@ -481,6 +579,8 @@ describe('Module 4: Tender Management E2E Test Suite', () => {
       expect(res.body.pq_tenders).toBeDefined();
       expect(res.body.general_mha_tenders).toBeDefined();
       expect(res.body.tenders_won).toBeGreaterThanOrEqual(1);
+      expect(res.body.tenders_lost).toBeGreaterThanOrEqual(1);
+      expect(res.body.incomplete_preparation).toBeDefined();
       expect(res.body.win_rate).toBeDefined();
       expect(typeof res.body.win_rate).toBe('number');
       expect(res.body.win_rate).toBeGreaterThanOrEqual(0);
@@ -498,18 +598,37 @@ describe('Module 4: Tender Management E2E Test Suite', () => {
       expect(res.body.categories).toBeDefined();
     });
 
-    it('✓ Retrieves win/loss analysis report with reason distribution', async () => {
+    it('✓ Retrieves win/loss analysis report with deep post-mortem intelligence (§26)', async () => {
       const res = await request(app.getHttpServer())
         .get('/api/tenders/reports/win-loss')
         .set('Authorization', `Bearer ${mgmtToken}`);
 
       expect(res.status).toBe(200);
       expect(res.body.won).toBeGreaterThanOrEqual(1);
+      expect(res.body.lost).toBeGreaterThanOrEqual(1);
       expect(res.body.win_rate).toBeDefined();
       expect(res.body.reasons).toBeDefined();
+
+      // §26 Won & Lost Breakdowns
+      expect(res.body.won_breakdown).toBeDefined();
+      expect(res.body.won_breakdown.by_product).toBeDefined();
+      expect(res.body.won_breakdown.by_region).toBeDefined();
+      expect(res.body.won_breakdown.by_category).toBeDefined();
+      expect(res.body.won_breakdown.by_salesperson).toBeDefined();
+
+      expect(res.body.lost_breakdown).toBeDefined();
+      expect(res.body.lost_breakdown.reasons).toBeDefined();
+      expect(res.body.lost_breakdown.competitors).toBeDefined();
+      expect(res.body.lost_breakdown.factors).toBeDefined();
+      expect(res.body.lost_breakdown.factors.technical).toBeGreaterThanOrEqual(1);
+      expect(res.body.lost_breakdown.factors.pricing).toBeGreaterThanOrEqual(1);
+
+      expect(res.body.recent_completed).toBeDefined();
+      expect(Array.isArray(res.body.recent_completed)).toBe(true);
+      expect(res.body.recent_completed.length).toBeGreaterThanOrEqual(2);
     });
 
-    it('✓ Retrieves zone-level tender performance report', async () => {
+    it('✓ Retrieves zone-level tender performance report with Vikas PQ & General/MHA counts (§27)', async () => {
       const res = await request(app.getHttpServer())
         .get('/api/tenders/reports/by-zone')
         .set('Authorization', `Bearer ${mgmtToken}`);
@@ -519,9 +638,11 @@ describe('Module 4: Tender Management E2E Test Suite', () => {
       expect(res.body.length).toBeGreaterThanOrEqual(1);
       expect(res.body[0].zone_name).toBeDefined();
       expect(res.body[0].total).toBeGreaterThanOrEqual(0);
+      expect(res.body[0].pq_count).toBeDefined();
+      expect(res.body[0].general_mha_count).toBeDefined();
     });
 
-    it('✓ Retrieves region-level tender performance report', async () => {
+    it('✓ Retrieves region-level tender performance report with Vikas PQ & General/MHA counts (§27)', async () => {
       const res = await request(app.getHttpServer())
         .get('/api/tenders/reports/by-region')
         .set('Authorization', `Bearer ${mgmtToken}`);
@@ -530,9 +651,11 @@ describe('Module 4: Tender Management E2E Test Suite', () => {
       expect(Array.isArray(res.body)).toBe(true);
       expect(res.body.length).toBeGreaterThanOrEqual(1);
       expect(res.body[0].region_name).toBeDefined();
+      expect(res.body[0].pq_count).toBeDefined();
+      expect(res.body[0].general_mha_count).toBeDefined();
     });
 
-    it('✓ Retrieves salesperson tender performance report', async () => {
+    it('✓ Retrieves salesperson tender performance report with Vikas PQ & General/MHA counts (§27)', async () => {
       const res = await request(app.getHttpServer())
         .get('/api/tenders/reports/by-salesperson')
         .set('Authorization', `Bearer ${mgmtToken}`);
@@ -541,6 +664,23 @@ describe('Module 4: Tender Management E2E Test Suite', () => {
       expect(Array.isArray(res.body)).toBe(true);
       expect(res.body.length).toBeGreaterThanOrEqual(1);
       expect(res.body[0].salesperson_name).toBeDefined();
+      expect(res.body[0].pq_count).toBeDefined();
+      expect(res.body[0].general_mha_count).toBeDefined();
+    });
+
+    it('✓ Retrieves organisation-level tender performance report with Vikas PQ & General/MHA counts (§27)', async () => {
+      const res = await request(app.getHttpServer())
+        .get('/api/tenders/reports/by-organisation')
+        .set('Authorization', `Bearer ${mgmtToken}`);
+
+      expect(res.status).toBe(200);
+      expect(Array.isArray(res.body)).toBe(true);
+      if (res.body.length > 0) {
+        expect(res.body[0].organisation_name).toBeDefined();
+        expect(res.body[0].total).toBeGreaterThanOrEqual(0);
+        expect(res.body[0].pq_count).toBeDefined();
+        expect(res.body[0].general_mha_count).toBeDefined();
+      }
     });
   });
 });

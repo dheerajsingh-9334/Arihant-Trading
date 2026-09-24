@@ -174,7 +174,7 @@ export default function AdminPage() {
       return (
         <div className="font-sans">
           <span className="font-semibold text-gray-900 capitalize">{entityTypeFormatted}: </span>
-          <span className="text-[#223FA7] font-medium">{name}</span>
+          <span className="text-[#0F5E63] font-medium">{name}</span>
         </div>
       );
     }
@@ -243,9 +243,9 @@ export default function AdminPage() {
 
   if (!hasRole(['management', 'admin'])) {
     return (
-      <div className="p-12 text-center text-[#5871A5] bg-white border border-[#D6E3F5] rounded-xl space-y-3 shadow-xs">
+      <div className="p-12 text-center text-[#4A5568] bg-white border border-[#DCD8CE] rounded-xl space-y-3 shadow-xs">
         <ShieldAlert className="h-12 w-12 text-red-500 mx-auto" />
-        <h2 className="text-lg font-bold text-[#1A1A1A]">Access Restricted</h2>
+        <h2 className="text-lg font-bold text-[#14213D]">Access Restricted</h2>
         <p className="text-xs">
           Only Top Management and System Administrators have permission to access master configurations, user administration, and role security policies.
         </p>
@@ -273,7 +273,7 @@ export default function AdminPage() {
         badge="Master Administration & Security Controls"
         title="Enterprise Administration & System Masters"
         subtitle="Role-Based Access Control (RBAC), personnel directory by department, equipment & MHA QRs, zones, and immutable security audit trails."
-        icon={<Settings className="h-5 w-5 text-[#223FA7]" />}
+        icon={<Settings className="h-5 w-5 text-[#0F5E63]" />}
       />
 
       <Tabs
@@ -292,9 +292,9 @@ export default function AdminPage() {
       {activeTab === 'permissions' && (
         <div className="space-y-6">
           {/* Status Alert Banner */}
-          <div className="rounded-xl border border-[#223FA7]/30 bg-gradient-to-r from-[#223FA7]/5 via-white to-blue-50/40 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
+          <div className="rounded-xl border border-[#0F5E63]/30 bg-gradient-to-r from-[#0F5E63]/5 via-white to-blue-50/40 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
             <div className="flex items-start sm:items-center gap-3.5">
-              <div className="w-10 h-10 rounded-xl bg-[#223FA7] text-white flex items-center justify-center shrink-0 shadow-sm">
+              <div className="w-10 h-10 rounded-xl bg-[#0F5E63] text-white flex items-center justify-center shrink-0 shadow-sm">
                 <Key className="w-5 h-5" />
               </div>
               <div>
@@ -302,7 +302,7 @@ export default function AdminPage() {
                   <h3 className="text-sm font-bold text-gray-950">Enterprise Role & Access Control Policy</h3>
                   <Badge variant="cyber" size="sm">Active Baseline</Badge>
                 </div>
-                <p className="text-xs text-[#5871A5] mt-0.5 max-w-3xl">
+                <p className="text-xs text-[#4A5568] mt-0.5 max-w-3xl">
                   <strong>Enterprise Security:</strong> Baseline policies and role scopes are enforced across all operational departments and territorial regions.
                 </p>
               </div>
@@ -328,23 +328,23 @@ export default function AdminPage() {
                   onClick={() => setSelectedRoleForConfig(r)}
                   className="text-left flex flex-col justify-between cursor-pointer"
                 >
-                  <div className="text-[10px] font-bold uppercase tracking-wider text-[#5871A5] truncate">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-[#4A5568] truncate">
                     {DEPARTMENT_NAMES[r]}
                   </div>
-                  <div className={`text-xs font-bold mt-1 truncate ${isSelected ? 'text-[#223FA7]' : 'text-[#1A1A1A]'}`}>
+                  <div className={`text-xs font-bold mt-1 truncate ${isSelected ? 'text-[#0F5E63]' : 'text-[#14213D]'}`}>
                     {profile.title}
                   </div>
                   <div className="mt-2 flex items-center gap-1">
                     <span
                       className={`inline-block w-1.5 h-1.5 rounded-full ${
                         profile.territorialScope === 'all_india'
-                          ? 'bg-[#223FA7]'
+                          ? 'bg-[#0F5E63]'
                           : profile.territorialScope === 'regional'
                           ? 'bg-purple-600'
                           : 'bg-emerald-600'
                       }`}
                     />
-                    <span className="text-[9px] font-bold text-[#5871A5] uppercase">
+                    <span className="text-[9px] font-bold text-[#4A5568] uppercase">
                       {profile.territorialScope.replace('_', ' ')}
                     </span>
                   </div>
@@ -357,10 +357,10 @@ export default function AdminPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Left Col: Scope & Functional Responsibilities */}
             <div className="lg:col-span-1 space-y-4">
-              <div className="rounded-xl border border-[#D6E3F5] bg-white p-5 shadow-xs space-y-4">
-                <div className="flex items-center justify-between pb-3 border-b border-[#D6E3F5]">
+              <div className="rounded-xl border border-[#DCD8CE] bg-white p-5 shadow-xs space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-[#DCD8CE]">
                   <div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#5871A5]">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#4A5568]">
                       Role Definition
                     </span>
                     <h3 className="text-base font-black text-gray-950">{activeRoleProfile.title}</h3>
@@ -371,14 +371,14 @@ export default function AdminPage() {
                 </div>
 
                 <div>
-                  <span className="text-[11px] font-bold uppercase text-[#5871A5]">Department</span>
+                  <span className="text-[11px] font-bold uppercase text-[#4A5568]">Department</span>
                   <div className="text-xs font-semibold text-gray-900 mt-0.5">
                     {activeRoleProfile.department}
                   </div>
                 </div>
 
                 <div>
-                  <span className="text-[11px] font-bold uppercase text-[#5871A5]">Territorial Visibility Scope</span>
+                  <span className="text-[11px] font-bold uppercase text-[#4A5568]">Territorial Visibility Scope</span>
                   <div className="mt-1">
                     <Badge
                       variant={
@@ -396,14 +396,14 @@ export default function AdminPage() {
                 </div>
 
                 <div>
-                  <span className="text-[11px] font-bold uppercase text-[#5871A5]">Mandated Scope Summary</span>
-                  <blockquote className="mt-1 p-2.5 rounded-lg bg-[#F7FBFF] border border-[#D6E3F5] text-xs font-medium text-[#223FA7] leading-relaxed italic">
+                  <span className="text-[11px] font-bold uppercase text-[#4A5568]">Mandated Scope Summary</span>
+                  <blockquote className="mt-1 p-2.5 rounded-lg bg-[#FBFAF7] border border-[#DCD8CE] text-xs font-medium text-[#0F5E63] leading-relaxed italic">
                     &ldquo;{activeRoleProfile.scopeSummary}&rdquo;
                   </blockquote>
                 </div>
 
                 <div>
-                  <span className="text-[11px] font-bold uppercase text-[#5871A5]">Core Operational Responsibilities</span>
+                  <span className="text-[11px] font-bold uppercase text-[#4A5568]">Core Operational Responsibilities</span>
                   <ul className="mt-2 space-y-1.5 text-xs text-gray-700">
                     {activeRoleProfile.responsibilities.map((resp, idx) => (
                       <li key={idx} className="flex items-start gap-2">
@@ -414,13 +414,13 @@ export default function AdminPage() {
                   </ul>
                 </div>
 
-                <div className="pt-3 border-t border-[#D6E3F5]">
-                  <span className="text-[11px] font-bold uppercase text-[#5871A5]">Allowed Modules in Sidebar</span>
+                <div className="pt-3 border-t border-[#DCD8CE]">
+                  <span className="text-[11px] font-bold uppercase text-[#4A5568]">Allowed Modules in Sidebar</span>
                   <div className="flex flex-wrap gap-1.5 mt-2">
                     {activeRoleProfile.allowedModules.map((mod) => (
                       <span
                         key={mod}
-                        className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#EAF2FF] text-[#223FA7] border border-[#D6E3F5]"
+                        className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#E3EFEE] text-[#0F5E63] border border-[#DCD8CE]"
                       >
                         /{mod}
                       </span>
@@ -432,14 +432,14 @@ export default function AdminPage() {
 
             {/* Right 2 Cols: Configurable Capabilities Matrix */}
             <div className="lg:col-span-2 space-y-4">
-              <div className="rounded-xl border border-[#D6E3F5] bg-white overflow-hidden shadow-xs">
-                <div className="p-4 sm:p-5 border-b border-[#D6E3F5] bg-[#F7FBFF] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="rounded-xl border border-[#DCD8CE] bg-white overflow-hidden shadow-xs">
+                <div className="p-4 sm:p-5 border-b border-[#DCD8CE] bg-[#FBFAF7] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
                     <h3 className="text-sm font-bold text-gray-950 flex items-center gap-2">
-                      <Sliders className="w-4 h-4 text-[#223FA7]" />
+                      <Sliders className="w-4 h-4 text-[#0F5E63]" />
                       <span>Configurable Capabilities Matrix: {activeRoleProfile.title}</span>
                     </h3>
-                    <p className="text-xs text-[#5871A5] mt-0.5">
+                    <p className="text-xs text-[#4A5568] mt-0.5">
                       Toggle operational and financial permissions for this persona. Changes are verified against backend RBAC guards.
                     </p>
                   </div>
@@ -449,7 +449,7 @@ export default function AdminPage() {
                   </Button>
                 </div>
 
-                <div className="divide-y divide-[#D6E3F5]">
+                <div className="divide-y divide-[#DCD8CE]">
                   {(Object.keys(CAPABILITY_LABELS) as Array<keyof RolePermissionProfile['capabilities']>).map((capKey) => {
                     const isEnabled = activeRoleCaps[capKey];
                     const info = CAPABILITY_LABELS[capKey];
@@ -473,14 +473,14 @@ export default function AdminPage() {
                               {isEnabled ? 'PERMITTED' : 'RESTRICTED'}
                             </span>
                           </div>
-                          <p className="text-xs text-[#5871A5] max-w-xl">{info.desc}</p>
+                          <p className="text-xs text-[#4A5568] max-w-xl">{info.desc}</p>
                         </div>
 
                         <button
                           type="button"
                           onClick={() => handleToggleCapability(capKey)}
                           className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                            isEnabled ? 'bg-[#223FA7]' : 'bg-gray-300'
+                            isEnabled ? 'bg-[#0F5E63]' : 'bg-gray-300'
                           }`}
                         >
                           <span
@@ -498,8 +498,8 @@ export default function AdminPage() {
 
               {/* Comparative Matrix Table across all 8 Roles */}
               <Card>
-                <div className="p-4 border-b border-[#D6E3F5] bg-[#F7FBFF]">
-                  <h4 className="text-xs font-bold text-[#1A1A1A] uppercase tracking-wider">
+                <div className="p-4 border-b border-[#DCD8CE] bg-[#FBFAF7]">
+                  <h4 className="text-xs font-bold text-[#14213D] uppercase tracking-wider">
                     Enterprise Role Governance Matrix
                   </h4>
                 </div>
@@ -524,12 +524,12 @@ export default function AdminPage() {
                       const prof = ROLE_PROFILES[r];
                       return (
                         <TableRow key={r}>
-                          <TableCell className="font-bold text-[#1A1A1A] whitespace-nowrap">
+                          <TableCell className="font-bold text-[#14213D] whitespace-nowrap">
                             <div>{prof.title}</div>
-                            <span className="text-[10px] text-[#5871A5] font-normal">{DEPARTMENT_NAMES[r]}</span>
+                            <span className="text-[10px] text-[#4A5568] font-normal">{DEPARTMENT_NAMES[r]}</span>
                           </TableCell>
                           <TableCell className="whitespace-nowrap">
-                            <span className="text-[10px] font-bold uppercase text-[#5871A5]">
+                            <span className="text-[10px] font-bold uppercase text-[#4A5568]">
                               {prof.territorialScope.replace('_', ' ')}
                             </span>
                           </TableCell>
@@ -584,8 +584,8 @@ export default function AdminPage() {
           </div>
 
           <Card>
-            <div className="p-4 border-b border-[#D6E3F5] bg-[#F7FBFF] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <span className="text-xs font-bold text-[#1A1A1A]">
+            <div className="p-4 border-b border-[#DCD8CE] bg-[#FBFAF7] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <span className="text-xs font-bold text-[#14213D]">
                 Active Personnel Directory ({filteredUsers.length} of {usersList.length})
               </span>
               <div className="w-full sm:w-72">
@@ -615,13 +615,13 @@ export default function AdminPage() {
               <TableBody>
                 {filteredUsers.map((u) => (
                   <TableRow key={u.id}>
-                    <TableCell className="font-bold text-[#1A1A1A] whitespace-nowrap">
+                    <TableCell className="font-bold text-[#14213D] whitespace-nowrap">
                       {u.full_name}
-                      <div className="text-[10px] text-[#5871A5] font-mono font-normal">
+                      <div className="text-[10px] text-[#4A5568] font-mono font-normal">
                         {u.email}
                       </div>
                     </TableCell>
-                    <TableCell className="text-[#1A1A1A] whitespace-nowrap font-medium">
+                    <TableCell className="text-[#14213D] whitespace-nowrap font-medium">
                       {DEPARTMENT_NAMES[u.role as UserRole] || 'General'}
                     </TableCell>
                     <TableCell className="whitespace-nowrap">
@@ -629,13 +629,13 @@ export default function AdminPage() {
                         {u.role.replace('_', ' ')}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-[#5871A5] font-mono whitespace-nowrap">
+                    <TableCell className="text-[#4A5568] font-mono whitespace-nowrap">
                       {u.phone || '-'}
                     </TableCell>
-                    <TableCell className="text-[#5871A5] whitespace-nowrap">
+                    <TableCell className="text-[#4A5568] whitespace-nowrap">
                       {u.manager_name || 'Top Management'}
                     </TableCell>
-                    <TableCell className="text-[#5871A5] whitespace-nowrap">
+                    <TableCell className="text-[#4A5568] whitespace-nowrap">
                       {u.zone_name || 'All India'}
                     </TableCell>
                     <TableCell className="text-center whitespace-nowrap">
@@ -651,7 +651,7 @@ export default function AdminPage() {
                         size="sm"
                         variant="ghost"
                         onClick={() => handleToggleUserActive(u.id, u.is_active)}
-                        className="text-xs text-[#223FA7]"
+                        className="text-xs text-[#0F5E63]"
                       >
                         {u.is_active ? 'Deactivate' : 'Activate'}
                       </Button>
@@ -675,7 +675,7 @@ export default function AdminPage() {
             >
               <div>
                 <div className="flex items-start justify-between gap-2">
-                  <span className="font-bold text-[#1A1A1A] text-xs leading-tight">
+                  <span className="font-bold text-[#14213D] text-xs leading-tight">
                     {p.name}
                   </span>
                   {p.is_mha_qr && (
@@ -684,16 +684,16 @@ export default function AdminPage() {
                     </Badge>
                   )}
                 </div>
-                <div className="mt-2 text-xs text-[#5871A5]">
-                  Category: <strong className="text-[#1A1A1A]">{p.category}</strong>
+                <div className="mt-2 text-xs text-[#4A5568]">
+                  Category: <strong className="text-[#14213D]">{p.category}</strong>
                 </div>
-                <div className="text-xs text-[#5871A5]">
-                  Make / OEM: <strong className="text-[#1A1A1A]">{p.make || 'Arihant Partner'}</strong>
+                <div className="text-xs text-[#4A5568]">
+                  Make / OEM: <strong className="text-[#14213D]">{p.make || 'Arihant Partner'}</strong>
                 </div>
               </div>
 
               {p.spec_ref && (
-                <div className="pt-2 border-t border-[#D6E3F5] text-[10px] font-mono text-[#5871A5]">
+                <div className="pt-2 border-t border-[#DCD8CE] text-[10px] font-mono text-[#4A5568]">
                   QR Ref: {p.spec_ref}
                 </div>
               )}
@@ -712,10 +712,10 @@ export default function AdminPage() {
               className="space-y-2"
             >
               <div className="flex items-center justify-between">
-                <span className="font-bold text-[#1A1A1A] text-sm">{z.name} Zone</span>
-                <span className="font-mono text-xs text-[#223FA7] uppercase font-bold">{z.code}</span>
+                <span className="font-bold text-[#14213D] text-sm">{z.name} Zone</span>
+                <span className="font-mono text-xs text-[#0F5E63] uppercase font-bold">{z.code}</span>
               </div>
-              <p className="text-xs text-[#5871A5]">
+              <p className="text-xs text-[#4A5568]">
                 Strategic defence & law enforcement operational theater.
               </p>
             </Card>
@@ -726,8 +726,8 @@ export default function AdminPage() {
       {/* ── TAB 5: SECURITY AUDIT LOG ── */}
       {activeTab === 'audit' && (
         <Card>
-          <div className="p-4 border-b border-[#D6E3F5] bg-[#F7FBFF]">
-            <span className="text-xs font-bold text-[#1A1A1A]">
+          <div className="p-4 border-b border-[#DCD8CE] bg-[#FBFAF7]">
+            <span className="text-xs font-bold text-[#14213D]">
               Immutable PostgreSQL Security Audit Trail (Last 50 Entries)
             </span>
           </div>
@@ -746,19 +746,19 @@ export default function AdminPage() {
               <TableBody>
                 {auditLogs.map((log) => (
                   <TableRow key={log.id}>
-                    <TableCell className="text-[#5871A5] font-mono text-[11px] whitespace-nowrap">
+                    <TableCell className="text-[#4A5568] font-mono text-[11px] whitespace-nowrap">
                       {new Date(log.created_at).toLocaleString('en-IN')}
                     </TableCell>
-                    <TableCell className="text-[#1A1A1A] font-sans font-semibold whitespace-nowrap">
+                    <TableCell className="text-[#14213D] font-sans font-semibold whitespace-nowrap">
                       {log.actor_name || 'System Engine'}
                     </TableCell>
-                    <TableCell className="text-[#223FA7] font-semibold whitespace-nowrap">
+                    <TableCell className="text-[#0F5E63] font-semibold whitespace-nowrap">
                       {log.action}
                     </TableCell>
-                    <TableCell className="text-[#5871A5] whitespace-nowrap">
+                    <TableCell className="text-[#4A5568] whitespace-nowrap">
                       {getEntityLabel(log)}
                     </TableCell>
-                    <TableCell className="text-[#5871A5] font-sans max-w-xs truncate">
+                    <TableCell className="text-[#4A5568] font-sans max-w-xs truncate">
                       {getPayloadSummary(log)}
                     </TableCell>
                   </TableRow>

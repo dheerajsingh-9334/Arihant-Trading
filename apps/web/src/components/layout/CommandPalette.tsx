@@ -221,41 +221,41 @@ export const CommandPalette: React.FC<{
         onClick={onClose}
       />
 
-      <div className="relative w-full max-w-xl rounded-2xl bg-white border border-[#D6E3F5] shadow-2xl overflow-hidden z-10 animate-in fade-in zoom-in-95 duration-150">
+      <div className="relative w-full max-w-xl rounded-2xl bg-white border border-[#DCD8CE] shadow-2xl overflow-hidden z-10 animate-in fade-in zoom-in-95 duration-150">
         {/* Search Input */}
-        <div className="flex items-center px-4 py-3.5 border-b border-[#D6E3F5] bg-[#F7FBFF]">
-          <Search className="h-5 w-5 text-[#223FA7] mr-3 shrink-0" />
+        <div className="flex items-center px-4 py-3.5 border-b border-[#ECE9E2] bg-[#FBFAF7]">
+          <Search className="h-5 w-5 text-[#0F5E63] mr-3 shrink-0" />
           <input
             type="text"
             autoFocus
             placeholder="Type a command or search tenders, leads, visits..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="w-full bg-transparent text-sm text-[#1A1A1A] placeholder:text-[#5871A5] focus:outline-none"
+            className="w-full bg-transparent text-sm text-[#14213D] placeholder:text-[#4A5568] focus:outline-none"
           />
           {query && (
             <button
               onClick={() => setQuery('')}
-              className="p-1 rounded text-[#5871A5] hover:text-[#1A1A1A]"
+              className="p-1 rounded text-[#4A5568] hover:text-[#14213D]"
             >
               <X className="h-4 w-4" />
             </button>
           )}
-          <kbd className="hidden sm:inline-block px-2 py-0.5 text-[10px] font-mono bg-[#EEF5FF] text-[#223FA7] rounded border border-[#D6E3F5] ml-2 font-semibold">
+          <kbd className="hidden sm:inline-block px-2 py-0.5 text-[10px] font-mono bg-[#E3EFEE] text-[#0F5E63] rounded border border-[#DCD8CE] ml-2 font-semibold">
             ESC
           </kbd>
         </div>
 
         {/* Results list */}
-        <div className="max-h-80 overflow-y-auto p-2 divide-y divide-[#D6E3F5]">
+        <div className="max-h-80 overflow-y-auto p-2 divide-y divide-[#ECE9E2]">
           {isLoading && (
-            <div className="p-4 text-center text-xs text-[#5871A5]">
+            <div className="p-4 text-center text-xs text-[#4A5568]">
               Searching database...
             </div>
           )}
 
           {!isLoading && results.length === 0 && (
-            <div className="p-6 text-center text-xs text-[#5871A5]">
+            <div className="p-6 text-center text-xs text-[#4A5568]">
               No matching records found for "{query}".
             </div>
           )}
@@ -268,24 +268,24 @@ export const CommandPalette: React.FC<{
                   router.push(item.href);
                   onClose();
                 }}
-                className="flex items-center justify-between p-3 rounded-xl hover:bg-[#F7FBFF] cursor-pointer transition-colors group"
+                className="flex items-center justify-between p-3 rounded-xl hover:bg-[#FBFAF7] cursor-pointer transition-colors group"
               >
                 <div className="flex items-center space-x-3 overflow-hidden">
-                  <div className="h-8 w-8 rounded-lg bg-[#EAF2FF] flex items-center justify-center text-[#223FA7] group-hover:bg-[#223FA7] group-hover:text-white transition-colors shrink-0 border border-[#D6E3F5]">
+                  <div className="h-8 w-8 rounded-lg bg-[#E3EFEE] flex items-center justify-center text-[#0F5E63] group-hover:bg-[#0F5E63] group-hover:text-white transition-colors shrink-0 border border-[#DCD8CE]">
                     {item.category === 'Tender' && <FileText className="h-4 w-4" />}
                     {item.category === 'Lead' && <Target className="h-4 w-4" />}
                     {item.category === 'Page' && <ArrowRight className="h-4 w-4" />}
                   </div>
                   <div className="truncate">
-                    <div className="text-xs font-semibold text-[#1A1A1A] group-hover:text-[#223FA7] transition-colors truncate">
+                    <div className="text-xs font-semibold text-[#14213D] group-hover:text-[#0F5E63] transition-colors truncate">
                       {item.title}
                     </div>
-                    <div className="text-[11px] text-[#5871A5] truncate">
+                    <div className="text-[11px] text-[#4A5568] truncate">
                       {item.subtitle}
                     </div>
                   </div>
                 </div>
-                <span className="text-[10px] uppercase font-bold text-[#223FA7] px-2 py-0.5 rounded bg-[#EAF2FF] border border-[#D6E3F5] shrink-0 ml-2">
+                <span className="text-[10px] uppercase font-bold text-[#0F5E63] px-2 py-0.5 rounded bg-[#E3EFEE] border border-[#DCD8CE] shrink-0 ml-2">
                   {item.category}
                 </span>
               </div>

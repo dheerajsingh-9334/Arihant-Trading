@@ -14,7 +14,7 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
 
     const sizeCls = {
       sm: 'h-3.5 w-3.5 rounded',
-      md: 'h-4 w-4 rounded-md',
+      md: 'h-4 w-4 rounded-[4px]',
     }[size];
 
     return (
@@ -32,7 +32,7 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
           id={inputId}
           disabled={disabled}
           className={twMerge(
-            'mt-0.5 border border-[#D6E3F5] text-[#223FA7] bg-white transition-colors focus:ring-2 focus:ring-[#223FA7]/20 focus:border-[#223FA7] cursor-pointer shrink-0',
+            'mt-0.5 border border-[#C9C4B8] text-[#0F5E63] accent-[#0F5E63] bg-white transition-colors focus:ring-2 focus:ring-[#0F5E63]/20 focus:border-[#0F5E63] cursor-pointer shrink-0',
             sizeCls,
           )}
           {...props}
@@ -40,12 +40,12 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
         {(label || description) && (
           <div className="flex flex-col">
             {label && (
-              <span className="text-xs font-semibold text-[#1A1A1A] leading-tight">
+              <span className="text-xs font-semibold text-[#14213D] leading-tight">
                 {label}
               </span>
             )}
             {description && (
-              <span className="text-[11px] text-[#5871A5] font-normal mt-0.5 leading-relaxed">
+              <span className="text-[11px] text-[#4A5568] font-normal mt-0.5 leading-relaxed">
                 {description}
               </span>
             )}

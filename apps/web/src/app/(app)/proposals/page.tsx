@@ -648,7 +648,7 @@ export default function ProposalsPage() {
       <PageHeader
         title="Commercial Proposal Register"
         description="Centralized tracker and lifecycle management for tender quotations, commercial bids, and customer follow-up actions."
-        icon={<FileSpreadsheet className="h-6 w-6 text-[#223FA7]" />}
+        icon={<FileSpreadsheet className="h-6 w-6 text-[#0F5E63]" />}
         actions={
           <div className="flex items-center gap-2">
             <Button
@@ -689,8 +689,8 @@ export default function ProposalsPage() {
           label="Total Proposals"
           value={stats.total_proposals || 0}
           subtext="Active & historical register"
-          icon={<FileSpreadsheet className="h-4 w-4 text-[#223FA7]" />}
-          className={activeHudCard === 'all' ? 'ring-2 ring-[#223FA7] border-[#223FA7]' : 'cursor-pointer'}
+          icon={<FileSpreadsheet className="h-4 w-4 text-[#0F5E63]" />}
+          className={activeHudCard === 'all' ? 'ring-2 ring-[#0F5E63] border-[#0F5E63]' : 'cursor-pointer'}
           onClick={() => handleStatCardClick('status', 'all', 'all')}
         />
         <StatCard
@@ -698,8 +698,8 @@ export default function ProposalsPage() {
           value={stats.pending_preparation || 0}
           valueColor="primary"
           subtext="Technical & price drafting"
-          icon={<Clock className="h-4 w-4 text-[#223FA7]" />}
-          className={activeHudCard === 'prep' ? 'ring-2 ring-[#223FA7] border-[#223FA7]' : 'cursor-pointer'}
+          icon={<Clock className="h-4 w-4 text-[#0F5E63]" />}
+          className={activeHudCard === 'prep' ? 'ring-2 ring-[#0F5E63] border-[#0F5E63]' : 'cursor-pointer'}
           onClick={() => handleStatCardClick('status', 'UNDER_PREPARATION', 'prep')}
         />
         <StatCard
@@ -734,15 +734,15 @@ export default function ProposalsPage() {
           value={stats.sent_to_customer || 0}
           valueColor="primary"
           subtext="Delivered offers"
-          icon={<Send className="h-4 w-4 text-[#223FA7]" />}
-          className={activeHudCard === 'sent' ? 'ring-2 ring-[#223FA7] border-[#223FA7]' : 'cursor-pointer'}
+          icon={<Send className="h-4 w-4 text-[#0F5E63]" />}
+          className={activeHudCard === 'sent' ? 'ring-2 ring-[#0F5E63] border-[#0F5E63]' : 'cursor-pointer'}
           onClick={() => handleStatCardClick('status', 'SENT_TO_CUSTOMER', 'sent')}
         />
         <StatCard
           label="Without Follow-up"
           value={stats.no_followup || 0}
           subtext="No next follow-up date"
-          icon={<AlertCircle className="h-4 w-4 text-[#5871A5]" />}
+          icon={<AlertCircle className="h-4 w-4 text-[#4A5568]" />}
           className={activeHudCard === 'no_followup' ? 'ring-2 ring-slate-500 border-slate-500' : 'cursor-pointer'}
           onClick={() => handleStatCardClick('followup', 'no_followup', 'no_followup')}
         />
@@ -774,12 +774,12 @@ export default function ProposalsPage() {
       </StatGrid>
 
       {/* 3. Filter & Search Controls */}
-      <Card padding="sm" className="bg-white border-[#D6E3F5] shadow-xs space-y-2.5">
+      <Card padding="sm" className="bg-white border-[#DCD8CE] shadow-xs space-y-2.5">
         <div className="flex flex-col lg:flex-row gap-3 items-stretch lg:items-center justify-between">
           <div className="flex flex-1 flex-wrap items-center gap-2.5">
             {/* Search Box */}
             <div className="relative min-w-[220px] flex-1 max-w-xs">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#5871A5]" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#4A5568]" />
               <input
                 type="text"
                 placeholder="Search proposal #, customer, product, rep..."
@@ -788,12 +788,12 @@ export default function ProposalsPage() {
                   setSearch(e.target.value);
                   setPage(1);
                 }}
-                className="w-full pl-9 pr-3 py-1.5 text-xs bg-[#F7FBFF] border border-[#D6E3F5] rounded-lg focus:border-[#223FA7] focus:outline-none placeholder-[#5871A5]/70"
+                className="w-full pl-9 pr-3 py-1.5 text-xs bg-[#FBFAF7] border border-[#DCD8CE] rounded-lg focus:border-[#0F5E63] focus:outline-none placeholder-[#4A5568]/70"
               />
               {search && (
                 <button
                   onClick={() => setSearch('')}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#5871A5] hover:text-[#1A1A1A]"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#4A5568] hover:text-[#14213D]"
                 >
                   <X className="h-3.5 w-3.5" />
                 </button>
@@ -808,7 +808,7 @@ export default function ProposalsPage() {
                 setActiveHudCard(null);
                 setPage(1);
               }}
-              className="text-xs py-1.5 px-3 bg-[#F7FBFF] border border-[#D6E3F5] rounded-lg text-[#1A1A1A] focus:border-[#223FA7] focus:outline-none"
+              className="text-xs py-1.5 px-3 bg-[#FBFAF7] border border-[#DCD8CE] rounded-lg text-[#14213D] focus:border-[#0F5E63] focus:outline-none"
             >
               <option value="all">All Statuses</option>
               <option value="PROPOSAL_REQUESTED">Proposal Requested</option>
@@ -829,7 +829,7 @@ export default function ProposalsPage() {
                 setSelectedSector(e.target.value);
                 setPage(1);
               }}
-              className="text-xs py-1.5 px-3 bg-[#F7FBFF] border border-[#D6E3F5] rounded-lg text-[#1A1A1A] focus:border-[#223FA7] focus:outline-none"
+              className="text-xs py-1.5 px-3 bg-[#FBFAF7] border border-[#DCD8CE] rounded-lg text-[#14213D] focus:border-[#0F5E63] focus:outline-none"
             >
               <option value="all">All Sectors</option>
               {SECTORS.map((s) => (
@@ -846,7 +846,7 @@ export default function ProposalsPage() {
                 setSelectedResponsibleId(e.target.value);
                 setPage(1);
               }}
-              className="text-xs py-1.5 px-3 bg-[#F7FBFF] border border-[#D6E3F5] rounded-lg text-[#1A1A1A] focus:border-[#223FA7] focus:outline-none max-w-[160px] truncate"
+              className="text-xs py-1.5 px-3 bg-[#FBFAF7] border border-[#DCD8CE] rounded-lg text-[#14213D] focus:border-[#0F5E63] focus:outline-none max-w-[160px] truncate"
               title="Filter by Responsible Person"
             >
               <option value="">All Responsible</option>
@@ -864,7 +864,7 @@ export default function ProposalsPage() {
                 setSelectedFollowupOwnerId(e.target.value);
                 setPage(1);
               }}
-              className="text-xs py-1.5 px-3 bg-[#F7FBFF] border border-[#D6E3F5] rounded-lg text-[#1A1A1A] focus:border-[#223FA7] focus:outline-none max-w-[160px] truncate"
+              className="text-xs py-1.5 px-3 bg-[#FBFAF7] border border-[#DCD8CE] rounded-lg text-[#14213D] focus:border-[#0F5E63] focus:outline-none max-w-[160px] truncate"
               title="Filter by Follow-up Owner"
             >
               <option value="">All Follow-up Owners</option>
@@ -880,26 +880,26 @@ export default function ProposalsPage() {
               variant={fromDate || toDate ? 'secondary' : 'outline'}
               size="xs"
               onClick={() => setIsDateFilterOpen((prev) => !prev)}
-              className="text-xs text-[#5871A5] hover:text-[#1A1A1A]"
+              className="text-xs text-[#4A5568] hover:text-[#14213D]"
             >
               <CalendarDays className="h-3.5 w-3.5 mr-1" />
               <span>Dates</span>
               {(fromDate || toDate) && (
-                <span className="ml-1 px-1.5 py-0.2 bg-[#223FA7] text-white rounded-full text-[10px]">
+                <span className="ml-1 px-1.5 py-0.2 bg-[#0F5E63] text-white rounded-full text-[10px]">
                   Active
                 </span>
               )}
             </Button>
 
             {/* Sorting controls */}
-            <div className="flex items-center gap-1 bg-[#F7FBFF] border border-[#D6E3F5] rounded-lg p-0.5">
+            <div className="flex items-center gap-1 bg-[#FBFAF7] border border-[#DCD8CE] rounded-lg p-0.5">
               <select
                 value={sortBy}
                 onChange={(e) => {
                   setSortBy(e.target.value);
                   setPage(1);
                 }}
-                className="text-xs py-1 px-2 bg-transparent text-[#1A1A1A] focus:outline-none"
+                className="text-xs py-1 px-2 bg-transparent text-[#14213D] focus:outline-none"
                 title="Sort Proposals By"
               >
                 <option value="updated_at">Recently Updated</option>
@@ -911,7 +911,7 @@ export default function ProposalsPage() {
               </select>
               <button
                 onClick={() => setSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'))}
-                className="p-1 text-[#5871A5] hover:text-[#223FA7] rounded transition-colors"
+                className="p-1 text-[#4A5568] hover:text-[#0F5E63] rounded transition-colors"
                 title={`Sort Direction: ${sortOrder === 'asc' ? 'Ascending' : 'Descending'}`}
               >
                 <ArrowUpDown className="h-3.5 w-3.5" />
@@ -921,7 +921,7 @@ export default function ProposalsPage() {
 
           {/* Follow-up Condition Quick Buttons */}
           <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-[11px] font-semibold text-[#5871A5] mr-1">Alerts:</span>
+            <span className="text-[11px] font-semibold text-[#4A5568] mr-1">Alerts:</span>
             {[
               { key: 'all', label: 'All' },
               { key: 'due_today', label: 'Due Today' },
@@ -939,8 +939,8 @@ export default function ProposalsPage() {
                 }}
                 className={`text-[11px] font-semibold px-2.5 py-1 rounded-md transition-colors ${
                   selectedFollowupCondition === f.key
-                    ? 'bg-[#223FA7] text-white shadow-xs'
-                    : 'bg-[#F7FBFF] border border-[#D6E3F5] text-[#5871A5] hover:text-[#1A1A1A] hover:bg-[#EAF2FF]'
+                    ? 'bg-[#0F5E63] text-white shadow-xs'
+                    : 'bg-[#FBFAF7] border border-[#DCD8CE] text-[#4A5568] hover:text-[#14213D] hover:bg-[#E3EFEE]'
                 }`}
               >
                 {f.label}
@@ -959,7 +959,7 @@ export default function ProposalsPage() {
                 variant="ghost"
                 size="xs"
                 onClick={handleClearFilters}
-                className="text-xs text-[#5871A5] hover:text-red-700 ml-1"
+                className="text-xs text-[#4A5568] hover:text-red-700 ml-1"
               >
                 Clear
               </Button>
@@ -970,14 +970,14 @@ export default function ProposalsPage() {
         {/* Collapsible Date Range Filter Bar */}
         {isDateFilterOpen && (
           <div className="pt-2 border-t border-[#F0F5FC] flex flex-wrap items-center gap-3 text-xs">
-            <span className="font-semibold text-[#5871A5]">Filter by Date:</span>
+            <span className="font-semibold text-[#4A5568]">Filter by Date:</span>
             <select
               value={dateField}
               onChange={(e) => {
                 setDateField(e.target.value);
                 setPage(1);
               }}
-              className="py-1 px-2.5 bg-[#F7FBFF] border border-[#D6E3F5] rounded-lg text-[#1A1A1A] focus:border-[#223FA7] focus:outline-none"
+              className="py-1 px-2.5 bg-[#FBFAF7] border border-[#DCD8CE] rounded-lg text-[#14213D] focus:border-[#0F5E63] focus:outline-none"
             >
               <option value="request_date">Request Date</option>
               <option value="required_date">Required Completion Date</option>
@@ -985,7 +985,7 @@ export default function ProposalsPage() {
               <option value="next_followup">Next Follow-up Date</option>
             </select>
             <div className="flex items-center gap-1.5">
-              <span className="text-[#5871A5]">From:</span>
+              <span className="text-[#4A5568]">From:</span>
               <input
                 type="date"
                 value={fromDate}
@@ -993,11 +993,11 @@ export default function ProposalsPage() {
                   setFromDate(e.target.value);
                   setPage(1);
                 }}
-                className="py-1 px-2.5 bg-[#F7FBFF] border border-[#D6E3F5] rounded-lg text-[#1A1A1A] focus:border-[#223FA7] focus:outline-none text-xs"
+                className="py-1 px-2.5 bg-[#FBFAF7] border border-[#DCD8CE] rounded-lg text-[#14213D] focus:border-[#0F5E63] focus:outline-none text-xs"
               />
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="text-[#5871A5]">To:</span>
+              <span className="text-[#4A5568]">To:</span>
               <input
                 type="date"
                 value={toDate}
@@ -1005,7 +1005,7 @@ export default function ProposalsPage() {
                   setToDate(e.target.value);
                   setPage(1);
                 }}
-                className="py-1 px-2.5 bg-[#F7FBFF] border border-[#D6E3F5] rounded-lg text-[#1A1A1A] focus:border-[#223FA7] focus:outline-none text-xs"
+                className="py-1 px-2.5 bg-[#FBFAF7] border border-[#DCD8CE] rounded-lg text-[#14213D] focus:border-[#0F5E63] focus:outline-none text-xs"
               />
             </div>
             {(fromDate || toDate) && (
@@ -1017,7 +1017,7 @@ export default function ProposalsPage() {
                   setToDate('');
                   setPage(1);
                 }}
-                className="text-xs text-[#5871A5] hover:text-red-700"
+                className="text-xs text-[#4A5568] hover:text-red-700"
               >
                 Reset Dates
               </Button>
@@ -1027,80 +1027,80 @@ export default function ProposalsPage() {
       </Card>
 
       {/* 4. Proposal Register Table */}
-      <Card padding="none" className="bg-white border-[#D6E3F5] overflow-x-auto shadow-xs">
+      <Card padding="none" className="bg-white border-[#DCD8CE] overflow-x-auto shadow-xs">
         <Table>
           <TableHeader>
-            <TableRow className="bg-[#F7FBFF] border-b border-[#D6E3F5]">
+            <TableRow className="bg-[#FBFAF7] border-b border-[#DCD8CE]">
               <TableHead
-                className="font-bold text-[#1A1A1A] text-xs py-3 cursor-pointer hover:text-[#223FA7] whitespace-nowrap"
+                className="font-bold text-[#14213D] text-xs py-3 cursor-pointer hover:text-[#0F5E63] whitespace-nowrap"
                 onClick={() => handleSort('proposal_number')}
               >
                 <span>Proposal No.</span>
                 {sortBy === 'proposal_number' && (
-                  sortOrder === 'asc' ? <ChevronUp className="h-3 w-3 inline ml-1 text-[#223FA7]" /> : <ChevronDown className="h-3 w-3 inline ml-1 text-[#223FA7]" />
+                  sortOrder === 'asc' ? <ChevronUp className="h-3 w-3 inline ml-1 text-[#0F5E63]" /> : <ChevronDown className="h-3 w-3 inline ml-1 text-[#0F5E63]" />
                 )}
               </TableHead>
-              <TableHead className="font-bold text-[#1A1A1A] text-xs py-3 whitespace-nowrap">Customer</TableHead>
-              <TableHead className="font-bold text-[#1A1A1A] text-xs py-3 whitespace-nowrap">Sector</TableHead>
-              <TableHead className="font-bold text-[#1A1A1A] text-xs py-3 whitespace-nowrap">Product</TableHead>
-              <TableHead className="font-bold text-[#1A1A1A] text-xs py-3 whitespace-nowrap">Requested By</TableHead>
-              <TableHead className="font-bold text-[#1A1A1A] text-xs py-3 whitespace-nowrap">Responsible</TableHead>
+              <TableHead className="font-bold text-[#14213D] text-xs py-3 whitespace-nowrap">Customer</TableHead>
+              <TableHead className="font-bold text-[#14213D] text-xs py-3 whitespace-nowrap">Sector</TableHead>
+              <TableHead className="font-bold text-[#14213D] text-xs py-3 whitespace-nowrap">Product</TableHead>
+              <TableHead className="font-bold text-[#14213D] text-xs py-3 whitespace-nowrap">Requested By</TableHead>
+              <TableHead className="font-bold text-[#14213D] text-xs py-3 whitespace-nowrap">Responsible</TableHead>
               <TableHead
-                className="font-bold text-[#1A1A1A] text-xs py-3 cursor-pointer hover:text-[#223FA7] whitespace-nowrap"
+                className="font-bold text-[#14213D] text-xs py-3 cursor-pointer hover:text-[#0F5E63] whitespace-nowrap"
                 onClick={() => handleSort('request_date')}
               >
                 <span>Req. Date</span>
                 {sortBy === 'request_date' && (
-                  sortOrder === 'asc' ? <ChevronUp className="h-3 w-3 inline ml-1 text-[#223FA7]" /> : <ChevronDown className="h-3 w-3 inline ml-1 text-[#223FA7]" />
+                  sortOrder === 'asc' ? <ChevronUp className="h-3 w-3 inline ml-1 text-[#0F5E63]" /> : <ChevronDown className="h-3 w-3 inline ml-1 text-[#0F5E63]" />
                 )}
               </TableHead>
               <TableHead
-                className="font-bold text-[#1A1A1A] text-xs py-3 cursor-pointer hover:text-[#223FA7] whitespace-nowrap"
+                className="font-bold text-[#14213D] text-xs py-3 cursor-pointer hover:text-[#0F5E63] whitespace-nowrap"
                 onClick={() => handleSort('required_date')}
               >
                 <span>Due Date</span>
                 {sortBy === 'required_date' && (
-                  sortOrder === 'asc' ? <ChevronUp className="h-3 w-3 inline ml-1 text-[#223FA7]" /> : <ChevronDown className="h-3 w-3 inline ml-1 text-[#223FA7]" />
+                  sortOrder === 'asc' ? <ChevronUp className="h-3 w-3 inline ml-1 text-[#0F5E63]" /> : <ChevronDown className="h-3 w-3 inline ml-1 text-[#0F5E63]" />
                 )}
               </TableHead>
               <TableHead
-                className="font-bold text-[#1A1A1A] text-xs py-3 cursor-pointer hover:text-[#223FA7] whitespace-nowrap"
+                className="font-bold text-[#14213D] text-xs py-3 cursor-pointer hover:text-[#0F5E63] whitespace-nowrap"
                 onClick={() => handleSort('sent_date')}
               >
                 <span>Sent Date</span>
                 {sortBy === 'sent_date' && (
-                  sortOrder === 'asc' ? <ChevronUp className="h-3 w-3 inline ml-1 text-[#223FA7]" /> : <ChevronDown className="h-3 w-3 inline ml-1 text-[#223FA7]" />
+                  sortOrder === 'asc' ? <ChevronUp className="h-3 w-3 inline ml-1 text-[#0F5E63]" /> : <ChevronDown className="h-3 w-3 inline ml-1 text-[#0F5E63]" />
                 )}
               </TableHead>
-              <TableHead className="font-bold text-[#1A1A1A] text-xs py-3 whitespace-nowrap">Ver.</TableHead>
+              <TableHead className="font-bold text-[#14213D] text-xs py-3 whitespace-nowrap">Ver.</TableHead>
               <TableHead
-                className="font-bold text-[#1A1A1A] text-xs py-3 cursor-pointer hover:text-[#223FA7] whitespace-nowrap"
+                className="font-bold text-[#14213D] text-xs py-3 cursor-pointer hover:text-[#0F5E63] whitespace-nowrap"
                 onClick={() => handleSort('status')}
               >
                 <span>Status</span>
                 {sortBy === 'status' && (
-                  sortOrder === 'asc' ? <ChevronUp className="h-3 w-3 inline ml-1 text-[#223FA7]" /> : <ChevronDown className="h-3 w-3 inline ml-1 text-[#223FA7]" />
+                  sortOrder === 'asc' ? <ChevronUp className="h-3 w-3 inline ml-1 text-[#0F5E63]" /> : <ChevronDown className="h-3 w-3 inline ml-1 text-[#0F5E63]" />
                 )}
               </TableHead>
-              <TableHead className="font-bold text-[#1A1A1A] text-xs py-3 whitespace-nowrap">Follow-up Owner</TableHead>
+              <TableHead className="font-bold text-[#14213D] text-xs py-3 whitespace-nowrap">Follow-up Owner</TableHead>
               <TableHead
-                className="font-bold text-[#1A1A1A] text-xs py-3 cursor-pointer hover:text-[#223FA7] whitespace-nowrap"
+                className="font-bold text-[#14213D] text-xs py-3 cursor-pointer hover:text-[#0F5E63] whitespace-nowrap"
                 onClick={() => handleSort('next_followup')}
               >
                 <span>Next Follow-up</span>
                 {sortBy === 'next_followup' && (
-                  sortOrder === 'asc' ? <ChevronUp className="h-3 w-3 inline ml-1 text-[#223FA7]" /> : <ChevronDown className="h-3 w-3 inline ml-1 text-[#223FA7]" />
+                  sortOrder === 'asc' ? <ChevronUp className="h-3 w-3 inline ml-1 text-[#0F5E63]" /> : <ChevronDown className="h-3 w-3 inline ml-1 text-[#0F5E63]" />
                 )}
               </TableHead>
-              <TableHead className="font-bold text-[#1A1A1A] text-xs py-3 whitespace-nowrap">Outcome</TableHead>
-              <TableHead className="font-bold text-[#1A1A1A] text-xs py-3 text-right whitespace-nowrap">Actions</TableHead>
+              <TableHead className="font-bold text-[#14213D] text-xs py-3 whitespace-nowrap">Outcome</TableHead>
+              <TableHead className="font-bold text-[#14213D] text-xs py-3 text-right whitespace-nowrap">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={15} className="py-12 text-center text-xs text-[#5871A5]">
-                  <RefreshCw className="h-5 w-5 animate-spin mx-auto mb-2 text-[#223FA7]" />
+                <TableCell colSpan={15} className="py-12 text-center text-xs text-[#4A5568]">
+                  <RefreshCw className="h-5 w-5 animate-spin mx-auto mb-2 text-[#0F5E63]" />
                   Loading proposal register...
                 </TableCell>
               </TableRow>
@@ -1143,20 +1143,20 @@ export default function ProposalsPage() {
                     onClick={() => openProposalDetails(p)}
                   >
                     {/* Proposal Number */}
-                    <TableCell className="font-mono text-xs font-bold text-[#223FA7] whitespace-nowrap">
+                    <TableCell className="font-mono text-xs font-bold text-[#0F5E63] whitespace-nowrap">
                       <span>{p.proposal_number}</span>
                       {p.reference && (
-                        <div className="text-[10px] text-[#5871A5] font-normal truncate max-w-[120px]" title={p.reference}>
+                        <div className="text-[10px] text-[#4A5568] font-normal truncate max-w-[120px]" title={p.reference}>
                           ref: {p.reference}
                         </div>
                       )}
                     </TableCell>
 
                     {/* Customer */}
-                    <TableCell className="text-xs font-semibold text-[#1A1A1A]">
+                    <TableCell className="text-xs font-semibold text-[#14213D]">
                       <div className="line-clamp-1 max-w-[140px]" title={p.organisation_name}>{p.organisation_name}</div>
                       {p.organisation_city && (
-                        <div className="text-[10px] text-[#5871A5] font-normal flex items-center gap-1">
+                        <div className="text-[10px] text-[#4A5568] font-normal flex items-center gap-1">
                           <Building className="h-2.5 w-2.5" />
                           <span>{p.organisation_city}</span>
                         </div>
@@ -1164,45 +1164,45 @@ export default function ProposalsPage() {
                     </TableCell>
 
                     {/* Sector */}
-                    <TableCell className="text-xs text-[#5871A5] whitespace-nowrap">
-                      <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-medium bg-[#F0F5FC] text-[#5871A5]">
+                    <TableCell className="text-xs text-[#4A5568] whitespace-nowrap">
+                      <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-medium bg-[#F0F5FC] text-[#4A5568]">
                         {p.sector || 'General'}
                       </span>
                     </TableCell>
 
                     {/* Product */}
-                    <TableCell className="text-xs text-[#1A1A1A]">
+                    <TableCell className="text-xs text-[#14213D]">
                       <div className="line-clamp-1 max-w-[130px] font-medium" title={p.product_name}>{p.product_name}</div>
                     </TableCell>
 
                     {/* Requested By */}
-                    <TableCell className="text-xs text-[#5871A5] whitespace-nowrap">
+                    <TableCell className="text-xs text-[#4A5568] whitespace-nowrap">
                       <div className="truncate max-w-[100px]" title={p.requested_by_name}>{p.requested_by_name || '-'}</div>
                     </TableCell>
 
                     {/* Responsible Rep */}
-                    <TableCell className="text-xs text-[#1A1A1A] whitespace-nowrap">
+                    <TableCell className="text-xs text-[#14213D] whitespace-nowrap">
                       <div className="font-medium truncate max-w-[110px]" title={p.responsible_name}>{p.responsible_name || 'Unassigned'}</div>
                     </TableCell>
 
                     {/* Request Date */}
-                    <TableCell className="text-xs text-[#5871A5] whitespace-nowrap">
+                    <TableCell className="text-xs text-[#4A5568] whitespace-nowrap">
                       {p.request_date ? new Date(p.request_date).toLocaleDateString('en-GB') : '-'}
                     </TableCell>
 
                     {/* Required Date */}
-                    <TableCell className="text-xs text-[#5871A5] whitespace-nowrap">
+                    <TableCell className="text-xs text-[#4A5568] whitespace-nowrap">
                       {p.required_date ? new Date(p.required_date).toLocaleDateString('en-GB') : '-'}
                     </TableCell>
 
                     {/* Sent Date */}
-                    <TableCell className="text-xs text-[#5871A5] whitespace-nowrap">
+                    <TableCell className="text-xs text-[#4A5568] whitespace-nowrap">
                       {p.sent_date ? new Date(p.sent_date).toLocaleDateString('en-GB') : '-'}
                     </TableCell>
 
                     {/* Version */}
-                    <TableCell className="text-xs text-[#5871A5] whitespace-nowrap">
-                      <span className="text-[10px] font-mono bg-[#EAF2FF] text-[#223FA7] px-1.5 py-0.5 rounded">
+                    <TableCell className="text-xs text-[#4A5568] whitespace-nowrap">
+                      <span className="text-[10px] font-mono bg-[#E3EFEE] text-[#0F5E63] px-1.5 py-0.5 rounded">
                         {p.version || 'v1.0'}
                       </span>
                     </TableCell>
@@ -1213,7 +1213,7 @@ export default function ProposalsPage() {
                     </TableCell>
 
                     {/* Follow-up Owner */}
-                    <TableCell className="text-xs text-[#5871A5] whitespace-nowrap">
+                    <TableCell className="text-xs text-[#4A5568] whitespace-nowrap">
                       <div className="truncate max-w-[110px]" title={p.followup_owner_name}>{p.followup_owner_name || '-'}</div>
                     </TableCell>
 
@@ -1230,7 +1230,7 @@ export default function ProposalsPage() {
                           <span>Due Today</span>
                         </div>
                       ) : nextFollowupStr ? (
-                        <div className="text-[11px] text-[#5871A5] font-medium">
+                        <div className="text-[11px] text-[#4A5568] font-medium">
                           {new Date(nextFollowupStr).toLocaleDateString('en-GB')}
                         </div>
                       ) : ['SENT_TO_CUSTOMER', 'sent', 'FOLLOW_UP_REQUIRED', 'followup_required'].includes(p.status) ? (
@@ -1268,7 +1268,7 @@ export default function ProposalsPage() {
                         <Button
                           variant="ghost"
                           size="xs"
-                          className="text-[#223FA7] hover:bg-[#EAF2FF] font-semibold"
+                          className="text-[#0F5E63] hover:bg-[#E3EFEE] font-semibold"
                           onClick={() => openProposalDetails(p)}
                         >
                           <span>View</span>
@@ -1276,7 +1276,7 @@ export default function ProposalsPage() {
                         </Button>
                         <button
                           onClick={() => openEditProposal(p)}
-                          className="p-1 text-[#5871A5] hover:text-[#223FA7] hover:bg-[#EAF2FF] rounded transition-colors"
+                          className="p-1 text-[#4A5568] hover:text-[#0F5E63] hover:bg-[#E3EFEE] rounded transition-colors"
                           title="Edit Proposal"
                         >
                           <Edit2 className="h-3.5 w-3.5" />
@@ -1291,11 +1291,11 @@ export default function ProposalsPage() {
         </Table>
 
         {/* Pagination Bar */}
-        <div className="px-4 py-3 bg-[#F7FBFF] border-t border-[#D6E3F5] flex items-center justify-between text-xs text-[#5871A5]">
+        <div className="px-4 py-3 bg-[#FBFAF7] border-t border-[#DCD8CE] flex items-center justify-between text-xs text-[#4A5568]">
           <div>
-            Showing proposals <span className="font-semibold text-[#1A1A1A]">{proposals.length > 0 ? (page - 1) * limit + 1 : 0}</span> to{' '}
-            <span className="font-semibold text-[#1A1A1A]">{Math.min(page * limit, total)}</span> of{' '}
-            <span className="font-semibold text-[#1A1A1A]">{total}</span> total
+            Showing proposals <span className="font-semibold text-[#14213D]">{proposals.length > 0 ? (page - 1) * limit + 1 : 0}</span> to{' '}
+            <span className="font-semibold text-[#14213D]">{Math.min(page * limit, total)}</span> of{' '}
+            <span className="font-semibold text-[#14213D]">{total}</span> total
           </div>
 
           <div className="flex items-center gap-1.5">
@@ -1343,14 +1343,14 @@ export default function ProposalsPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Customer (Organisation) */}
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-[#1A1A1A]">
+              <label className="text-xs font-semibold text-[#14213D]">
                 Customer / Organisation <span className="text-red-500">*</span>
               </label>
               <select
                 required
                 value={newProposal.organisation_id}
                 onChange={(e) => setNewProposal({ ...newProposal, organisation_id: e.target.value })}
-                className="w-full text-xs py-2 px-3 bg-[#F7FBFF] border border-[#D6E3F5] rounded-lg text-[#1A1A1A] focus:border-[#223FA7] focus:outline-none"
+                className="w-full text-xs py-2 px-3 bg-[#FBFAF7] border border-[#DCD8CE] rounded-lg text-[#14213D] focus:border-[#0F5E63] focus:outline-none"
               >
                 <option value="">Select customer organisation...</option>
                 {organisations.map((org) => (
@@ -1363,14 +1363,14 @@ export default function ProposalsPage() {
 
             {/* Product */}
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-[#1A1A1A]">
+              <label className="text-xs font-semibold text-[#14213D]">
                 Product Required <span className="text-red-500">*</span>
               </label>
               <select
                 required
                 value={newProposal.product_id}
                 onChange={(e) => setNewProposal({ ...newProposal, product_id: e.target.value })}
-                className="w-full text-xs py-2 px-3 bg-[#F7FBFF] border border-[#D6E3F5] rounded-lg text-[#1A1A1A] focus:border-[#223FA7] focus:outline-none"
+                className="w-full text-xs py-2 px-3 bg-[#FBFAF7] border border-[#DCD8CE] rounded-lg text-[#14213D] focus:border-[#0F5E63] focus:outline-none"
               >
                 <option value="">Select product...</option>
                 {products.map((prod) => (
@@ -1383,14 +1383,14 @@ export default function ProposalsPage() {
 
             {/* Sector */}
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-[#1A1A1A]">
+              <label className="text-xs font-semibold text-[#14213D]">
                 Sector / Department <span className="text-red-500">*</span>
               </label>
               <select
                 required
                 value={newProposal.sector}
                 onChange={(e) => setNewProposal({ ...newProposal, sector: e.target.value })}
-                className="w-full text-xs py-2 px-3 bg-[#F7FBFF] border border-[#D6E3F5] rounded-lg text-[#1A1A1A] focus:border-[#223FA7] focus:outline-none"
+                className="w-full text-xs py-2 px-3 bg-[#FBFAF7] border border-[#DCD8CE] rounded-lg text-[#14213D] focus:border-[#0F5E63] focus:outline-none"
               >
                 {SECTORS.map((s) => (
                   <option key={s} value={s}>
@@ -1402,7 +1402,7 @@ export default function ProposalsPage() {
 
             {/* Responsible Person */}
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-[#1A1A1A]">
+              <label className="text-xs font-semibold text-[#14213D]">
                 Responsible Person (Owner) <span className="text-red-500">*</span>
               </label>
               <select
@@ -1415,7 +1415,7 @@ export default function ProposalsPage() {
                     followup_owner_id: newProposal.followup_owner_id || e.target.value,
                   })
                 }
-                className="w-full text-xs py-2 px-3 bg-[#F7FBFF] border border-[#D6E3F5] rounded-lg text-[#1A1A1A] focus:border-[#223FA7] focus:outline-none"
+                className="w-full text-xs py-2 px-3 bg-[#FBFAF7] border border-[#DCD8CE] rounded-lg text-[#14213D] focus:border-[#0F5E63] focus:outline-none"
               >
                 <option value="">Select responsible proposal owner...</option>
                 {users.map((u) => (
@@ -1462,11 +1462,11 @@ export default function ProposalsPage() {
 
             {/* Follow-up Owner */}
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-[#1A1A1A]">Follow-up Owner</label>
+              <label className="text-xs font-semibold text-[#14213D]">Follow-up Owner</label>
               <select
                 value={newProposal.followup_owner_id}
                 onChange={(e) => setNewProposal({ ...newProposal, followup_owner_id: e.target.value })}
-                className="w-full text-xs py-2 px-3 bg-[#F7FBFF] border border-[#D6E3F5] rounded-lg text-[#1A1A1A] focus:border-[#223FA7] focus:outline-none"
+                className="w-full text-xs py-2 px-3 bg-[#FBFAF7] border border-[#DCD8CE] rounded-lg text-[#14213D] focus:border-[#0F5E63] focus:outline-none"
               >
                 <option value="">Same as Responsible Person</option>
                 {users.map((u) => (
@@ -1517,14 +1517,14 @@ export default function ProposalsPage() {
         >
           <div className="space-y-6">
             {/* Top Bar with Number, Badges, and Quick Actions */}
-            <div className="p-4 bg-[#F7FBFF] border border-[#D6E3F5] rounded-xl flex flex-wrap items-center justify-between gap-3">
+            <div className="p-4 bg-[#FBFAF7] border border-[#DCD8CE] rounded-xl flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-2">
-                <span className="font-mono text-base font-black text-[#223FA7]">
+                <span className="font-mono text-base font-black text-[#0F5E63]">
                   {selectedProposal.proposal_number}
                 </span>
                 <button
                   onClick={() => copyProposalNumber(selectedProposal.proposal_number)}
-                  className="text-[#5871A5] hover:text-[#223FA7] transition-colors p-1"
+                  className="text-[#4A5568] hover:text-[#0F5E63] transition-colors p-1"
                   title="Copy Proposal Number"
                 >
                   {copiedId === selectedProposal.proposal_number ? (
@@ -1533,16 +1533,16 @@ export default function ProposalsPage() {
                     <Copy className="h-4 w-4" />
                   )}
                 </button>
-                <div className="h-4 w-px bg-[#D6E3F5] mx-1" />
+                <div className="h-4 w-px bg-[#DCD8CE] mx-1" />
                 {renderStatusBadge(selectedProposal.status)}
-                <span className="text-xs font-semibold px-2 py-0.5 bg-white border border-[#D6E3F5] rounded-md text-[#5871A5]">
+                <span className="text-xs font-semibold px-2 py-0.5 bg-white border border-[#DCD8CE] rounded-md text-[#4A5568]">
                   Ver: {selectedProposal.version || 'v1.0'}
                 </span>
                 <Button
                   variant="outline"
                   size="xs"
                   onClick={() => openEditProposal(selectedProposal)}
-                  className="text-xs text-[#5871A5] hover:text-[#223FA7]"
+                  className="text-xs text-[#4A5568] hover:text-[#0F5E63]"
                   title="Edit Proposal Metadata"
                 >
                   <Edit2 className="h-3 w-3 mr-1" />
@@ -1651,8 +1651,8 @@ export default function ProposalsPage() {
             </div>
 
             {/* Visual Lifecycle Stepper */}
-            <div className="p-4 bg-white border border-[#D6E3F5] rounded-xl shadow-2xs">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-[#5871A5] mb-3">
+            <div className="p-4 bg-white border border-[#DCD8CE] rounded-xl shadow-2xs">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-[#4A5568] mb-3">
                 Lifecycle Progression
               </h4>
               <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2">
@@ -1666,10 +1666,10 @@ export default function ProposalsPage() {
                       key={st.key}
                       className={`p-2.5 rounded-lg border text-center relative flex flex-col justify-between transition-all ${
                         isCurrent
-                          ? 'bg-[#EAF2FF] border-[#223FA7] text-[#223FA7] ring-2 ring-[#223FA7]/20 shadow-xs'
+                          ? 'bg-[#E3EFEE] border-[#0F5E63] text-[#0F5E63] ring-2 ring-[#0F5E63]/20 shadow-xs'
                           : isDone
                           ? 'bg-emerald-50/60 border-emerald-200 text-emerald-800'
-                          : 'bg-[#F8FAFC] border-[#D6E3F5] text-slate-400'
+                          : 'bg-[#F8FAFC] border-[#DCD8CE] text-slate-400'
                       }`}
                     >
                       <div>
@@ -1680,7 +1680,7 @@ export default function ProposalsPage() {
                             <span
                               className={`h-4 w-4 rounded-full text-[10px] font-bold flex items-center justify-center ${
                                 isCurrent
-                                  ? 'bg-[#223FA7] text-white'
+                                  ? 'bg-[#0F5E63] text-white'
                                   : 'bg-slate-200 text-slate-500'
                               }`}
                             >
@@ -1692,7 +1692,7 @@ export default function ProposalsPage() {
                           {st.label}
                         </div>
                       </div>
-                      <div className="text-[9px] text-[#5871A5] mt-1 line-clamp-1">
+                      <div className="text-[9px] text-[#4A5568] mt-1 line-clamp-1">
                         {st.desc}
                       </div>
                     </div>
@@ -1717,110 +1717,110 @@ export default function ProposalsPage() {
             {detailsTab === 'overview' && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Customer & Product Card */}
-                <Card padding="md" className="border-[#D6E3F5] space-y-3">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-[#5871A5] flex items-center gap-1.5 border-b border-[#F0F5FC] pb-2">
-                    <Building className="h-3.5 w-3.5 text-[#223FA7]" />
+                <Card padding="md" className="border-[#DCD8CE] space-y-3">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-[#4A5568] flex items-center gap-1.5 border-b border-[#F0F5FC] pb-2">
+                    <Building className="h-3.5 w-3.5 text-[#0F5E63]" />
                     <span>Customer & Product Specs</span>
                   </h4>
                   <div className="space-y-2 text-xs">
                     <div>
-                      <span className="text-[#5871A5] block text-[10px] uppercase font-semibold">Customer Organisation</span>
-                      <span className="font-bold text-[#1A1A1A] text-sm">{selectedProposal.organisation_name}</span>
+                      <span className="text-[#4A5568] block text-[10px] uppercase font-semibold">Customer Organisation</span>
+                      <span className="font-bold text-[#14213D] text-sm">{selectedProposal.organisation_name}</span>
                       {selectedProposal.organisation_city && (
-                        <span className="text-[#5871A5] ml-2">({selectedProposal.organisation_city}, {selectedProposal.organisation_state})</span>
+                        <span className="text-[#4A5568] ml-2">({selectedProposal.organisation_city}, {selectedProposal.organisation_state})</span>
                       )}
                     </div>
                     <div>
-                      <span className="text-[#5871A5] block text-[10px] uppercase font-semibold">Product Inquired</span>
-                      <span className="font-semibold text-[#1A1A1A]">{selectedProposal.product_name}</span>
+                      <span className="text-[#4A5568] block text-[10px] uppercase font-semibold">Product Inquired</span>
+                      <span className="font-semibold text-[#14213D]">{selectedProposal.product_name}</span>
                       {selectedProposal.product_category && (
-                        <span className="text-[#5871A5] ml-2">[{selectedProposal.product_category}]</span>
+                        <span className="text-[#4A5568] ml-2">[{selectedProposal.product_category}]</span>
                       )}
                     </div>
                     <div>
-                      <span className="text-[#5871A5] block text-[10px] uppercase font-semibold">Sector / Department</span>
-                      <span className="font-medium text-[#1A1A1A]">{selectedProposal.sector}</span>
+                      <span className="text-[#4A5568] block text-[10px] uppercase font-semibold">Sector / Department</span>
+                      <span className="font-medium text-[#14213D]">{selectedProposal.sector}</span>
                     </div>
                     {selectedProposal.reference && (
                       <div>
-                        <span className="text-[#5871A5] block text-[10px] uppercase font-semibold">Email / Tender Reference</span>
-                        <span className="font-mono text-[#223FA7]">{selectedProposal.reference}</span>
+                        <span className="text-[#4A5568] block text-[10px] uppercase font-semibold">Email / Tender Reference</span>
+                        <span className="font-mono text-[#0F5E63]">{selectedProposal.reference}</span>
                       </div>
                     )}
                   </div>
                 </Card>
 
                 {/* Timeline Card */}
-                <Card padding="md" className="border-[#D6E3F5] space-y-3">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-[#5871A5] flex items-center gap-1.5 border-b border-[#F0F5FC] pb-2">
-                    <Calendar className="h-3.5 w-3.5 text-[#223FA7]" />
+                <Card padding="md" className="border-[#DCD8CE] space-y-3">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-[#4A5568] flex items-center gap-1.5 border-b border-[#F0F5FC] pb-2">
+                    <Calendar className="h-3.5 w-3.5 text-[#0F5E63]" />
                     <span>Milestones & Timeline</span>
                   </h4>
                   <div className="grid grid-cols-2 gap-3 text-xs">
                     <div>
-                      <span className="text-[#5871A5] block text-[10px] uppercase font-semibold">Request Date</span>
-                      <span className="font-medium text-[#1A1A1A]">
+                      <span className="text-[#4A5568] block text-[10px] uppercase font-semibold">Request Date</span>
+                      <span className="font-medium text-[#14213D]">
                         {selectedProposal.request_date ? new Date(selectedProposal.request_date).toLocaleDateString('en-GB') : '-'}
                       </span>
                     </div>
                     <div>
-                      <span className="text-[#5871A5] block text-[10px] uppercase font-semibold">Required Completion</span>
-                      <span className="font-medium text-[#1A1A1A]">
+                      <span className="text-[#4A5568] block text-[10px] uppercase font-semibold">Required Completion</span>
+                      <span className="font-medium text-[#14213D]">
                         {selectedProposal.required_date ? new Date(selectedProposal.required_date).toLocaleDateString('en-GB') : '-'}
                       </span>
                     </div>
                     <div>
-                      <span className="text-[#5871A5] block text-[10px] uppercase font-semibold">Approval Date</span>
-                      <span className="font-medium text-[#1A1A1A]">
+                      <span className="text-[#4A5568] block text-[10px] uppercase font-semibold">Approval Date</span>
+                      <span className="font-medium text-[#14213D]">
                         {selectedProposal.approved_at ? new Date(selectedProposal.approved_at).toLocaleDateString('en-GB') : '-'}
                       </span>
                       {selectedProposal.approved_by_name && (
-                        <span className="block text-[10px] text-[#5871A5]">by {selectedProposal.approved_by_name}</span>
+                        <span className="block text-[10px] text-[#4A5568]">by {selectedProposal.approved_by_name}</span>
                       )}
                     </div>
                     <div>
-                      <span className="text-[#5871A5] block text-[10px] uppercase font-semibold">Sent to Customer</span>
-                      <span className="font-medium text-[#1A1A1A]">
+                      <span className="text-[#4A5568] block text-[10px] uppercase font-semibold">Sent to Customer</span>
+                      <span className="font-medium text-[#14213D]">
                         {selectedProposal.sent_date ? new Date(selectedProposal.sent_date).toLocaleDateString('en-GB') : '-'}
                       </span>
                     </div>
                     <div>
-                      <span className="text-[#5871A5] block text-[10px] uppercase font-semibold">Responsible Rep</span>
-                      <span className="font-medium text-[#1A1A1A]">{selectedProposal.responsible_name || '-'}</span>
+                      <span className="text-[#4A5568] block text-[10px] uppercase font-semibold">Responsible Rep</span>
+                      <span className="font-medium text-[#14213D]">{selectedProposal.responsible_name || '-'}</span>
                     </div>
                     <div>
-                      <span className="text-[#5871A5] block text-[10px] uppercase font-semibold">Follow-up Owner</span>
-                      <span className="font-medium text-[#1A1A1A]">{selectedProposal.followup_owner_name || '-'}</span>
+                      <span className="text-[#4A5568] block text-[10px] uppercase font-semibold">Follow-up Owner</span>
+                      <span className="font-medium text-[#14213D]">{selectedProposal.followup_owner_name || '-'}</span>
                     </div>
                   </div>
                 </Card>
 
                 {/* Outcome card if completed */}
                 {['CONVERTED', 'LOST', 'CLOSED'].includes(selectedProposal.status) && (
-                  <Card padding="md" className="border-[#D6E3F5] md:col-span-2 bg-[#F7FBFF]">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-[#5871A5] mb-2">
+                  <Card padding="md" className="border-[#DCD8CE] md:col-span-2 bg-[#FBFAF7]">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-[#4A5568] mb-2">
                       Proposal Outcome Record
                     </h4>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                       <div>
-                        <span className="text-[#5871A5] block text-[10px] uppercase font-semibold">Final Status</span>
+                        <span className="text-[#4A5568] block text-[10px] uppercase font-semibold">Final Status</span>
                         <span className="font-black text-sm">{selectedProposal.status}</span>
                       </div>
                       {selectedProposal.lost_reason && (
                         <div>
-                          <span className="text-[#5871A5] block text-[10px] uppercase font-semibold">Lost Reason</span>
+                          <span className="text-[#4A5568] block text-[10px] uppercase font-semibold">Lost Reason</span>
                           <span className="font-bold text-red-700">{selectedProposal.lost_reason}</span>
                           {selectedProposal.lost_remarks && (
-                            <p className="text-[11px] text-[#5871A5] mt-1">{selectedProposal.lost_remarks}</p>
+                            <p className="text-[11px] text-[#4A5568] mt-1">{selectedProposal.lost_remarks}</p>
                           )}
                         </div>
                       )}
                       {selectedProposal.converted_to && (
                         <div>
-                          <span className="text-[#5871A5] block text-[10px] uppercase font-semibold">Converted To</span>
+                          <span className="text-[#4A5568] block text-[10px] uppercase font-semibold">Converted To</span>
                           <span className="font-bold text-emerald-700">{selectedProposal.converted_to}</span>
                           {selectedProposal.converted_reference && (
-                            <p className="text-[11px] text-[#5871A5] mt-1">{selectedProposal.converted_reference}</p>
+                            <p className="text-[11px] text-[#4A5568] mt-1">{selectedProposal.converted_reference}</p>
                           )}
                         </div>
                       )}
@@ -1830,9 +1830,9 @@ export default function ProposalsPage() {
 
                 {/* Remarks Card */}
                 {selectedProposal.remarks && (
-                  <Card padding="md" className="border-[#D6E3F5] md:col-span-2">
-                    <span className="text-[#5871A5] block text-[10px] uppercase font-semibold mb-1">Remarks & Details</span>
-                    <p className="text-xs text-[#1A1A1A] whitespace-pre-wrap leading-relaxed">
+                  <Card padding="md" className="border-[#DCD8CE] md:col-span-2">
+                    <span className="text-[#4A5568] block text-[10px] uppercase font-semibold mb-1">Remarks & Details</span>
+                    <p className="text-xs text-[#14213D] whitespace-pre-wrap leading-relaxed">
                       {selectedProposal.remarks}
                     </p>
                   </Card>
@@ -1844,13 +1844,13 @@ export default function ProposalsPage() {
             {detailsTab === 'followups' && (
               <div className="space-y-4">
                 {/* Active Follow-up Banner */}
-                <div className="p-3 bg-[#F8FAFC] border border-[#D6E3F5] rounded-xl flex items-center justify-between">
+                <div className="p-3 bg-[#F8FAFC] border border-[#DCD8CE] rounded-xl flex items-center justify-between">
                   <div className="text-xs">
-                    <span className="text-[#5871A5] block text-[10px] uppercase font-semibold">Current Follow-up Status</span>
-                    <div className="font-semibold text-[#1A1A1A] mt-0.5">
+                    <span className="text-[#4A5568] block text-[10px] uppercase font-semibold">Current Follow-up Status</span>
+                    <div className="font-semibold text-[#14213D] mt-0.5">
                       Next Contact: {selectedProposal.next_followup ? new Date(selectedProposal.next_followup).toLocaleDateString('en-GB') : 'No date scheduled'}
                       {selectedProposal.followup_owner_name && (
-                        <span className="text-[#5871A5] font-normal ml-2">(Owner: {selectedProposal.followup_owner_name})</span>
+                        <span className="text-[#4A5568] font-normal ml-2">(Owner: {selectedProposal.followup_owner_name})</span>
                       )}
                     </div>
                   </div>
@@ -1875,7 +1875,7 @@ export default function ProposalsPage() {
 
                 {/* Follow-up Timeline Entries */}
                 {followups.length === 0 ? (
-                  <div className="p-8 text-center text-xs text-[#5871A5] bg-white border border-[#D6E3F5] rounded-xl">
+                  <div className="p-8 text-center text-xs text-[#4A5568] bg-white border border-[#DCD8CE] rounded-xl">
                     No follow-ups logged yet for this proposal.
                   </div>
                 ) : (
@@ -1883,25 +1883,25 @@ export default function ProposalsPage() {
                     {followups.map((f) => (
                       <div
                         key={f.id}
-                        className="p-3 bg-white border border-[#D6E3F5] rounded-xl text-xs space-y-1 hover:border-[#9FC0F5] transition-colors"
+                        className="p-3 bg-white border border-[#DCD8CE] rounded-xl text-xs space-y-1 hover:border-[#0F5E63] transition-colors"
                       >
-                        <div className="flex items-center justify-between font-semibold text-[#1A1A1A]">
-                          <span className="flex items-center gap-1.5 text-[#223FA7]">
+                        <div className="flex items-center justify-between font-semibold text-[#14213D]">
+                          <span className="flex items-center gap-1.5 text-[#0F5E63]">
                             <Calendar className="h-3.5 w-3.5" />
                             {new Date(f.followup_date).toLocaleDateString('en-GB')}
                           </span>
-                          <span className="text-[11px] font-normal text-[#5871A5]">
+                          <span className="text-[11px] font-normal text-[#4A5568]">
                             Logged by {f.owner_name}
                           </span>
                         </div>
-                        <p className="text-[#1A1A1A] mt-1">{f.remarks}</p>
+                        <p className="text-[#14213D] mt-1">{f.remarks}</p>
                         {f.outcome && (
                           <div className="text-[11px] text-emerald-700 font-medium">
                             Result / Outcome: {f.outcome}
                           </div>
                         )}
                         {f.next_followup_date && (
-                          <div className="text-[10px] text-[#5871A5]">
+                          <div className="text-[10px] text-[#4A5568]">
                             Next Action Scheduled: {new Date(f.next_followup_date).toLocaleDateString('en-GB')}
                           </div>
                         )}
@@ -1916,30 +1916,30 @@ export default function ProposalsPage() {
             {detailsTab === 'history' && (
               <div className="space-y-3">
                 {activities.length === 0 ? (
-                  <div className="p-8 text-center text-xs text-[#5871A5] bg-white border border-[#D6E3F5] rounded-xl">
+                  <div className="p-8 text-center text-xs text-[#4A5568] bg-white border border-[#DCD8CE] rounded-xl">
                     No historical events recorded yet.
                   </div>
                 ) : (
                   activities.map((act) => (
                     <div
                       key={act.id}
-                      className="p-3 bg-white border border-[#D6E3F5] rounded-xl text-xs flex items-start gap-3"
+                      className="p-3 bg-white border border-[#DCD8CE] rounded-xl text-xs flex items-start gap-3"
                     >
-                      <div className="p-1.5 rounded-lg bg-[#F7FBFF] border border-[#D6E3F5] text-[#223FA7] shrink-0 mt-0.5">
+                      <div className="p-1.5 rounded-lg bg-[#FBFAF7] border border-[#DCD8CE] text-[#0F5E63] shrink-0 mt-0.5">
                         <History className="h-3.5 w-3.5" />
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center justify-between">
-                          <span className="font-bold text-[#1A1A1A]">{act.action}</span>
-                          <span className="text-[10px] text-[#5871A5]">
+                          <span className="font-bold text-[#14213D]">{act.action}</span>
+                          <span className="text-[10px] text-[#4A5568]">
                             {new Date(act.created_at).toLocaleString('en-GB')}
                           </span>
                         </div>
-                        <div className="text-[#5871A5] mt-0.5">
+                        <div className="text-[#4A5568] mt-0.5">
                           {act.new_value || act.old_value}
                         </div>
                         {act.performed_by_name && (
-                          <div className="text-[10px] text-[#5871A5] mt-0.5 font-medium">
+                          <div className="text-[10px] text-[#4A5568] mt-0.5 font-medium">
                             by {act.performed_by_name}
                           </div>
                         )}
@@ -1975,14 +1975,14 @@ export default function ProposalsPage() {
           {targetStatus === 'LOST' && (
             <>
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-[#1A1A1A]">
+                <label className="text-xs font-semibold text-[#14213D]">
                   Lost Reason <span className="text-red-500">*</span>
                 </label>
                 <select
                   required
                   value={statusForm.lost_reason}
                   onChange={(e) => setStatusForm({ ...statusForm, lost_reason: e.target.value as any })}
-                  className="w-full text-xs py-2 px-3 bg-[#F7FBFF] border border-[#D6E3F5] rounded-lg text-[#1A1A1A] focus:border-[#223FA7] focus:outline-none"
+                  className="w-full text-xs py-2 px-3 bg-[#FBFAF7] border border-[#DCD8CE] rounded-lg text-[#14213D] focus:border-[#0F5E63] focus:outline-none"
                 >
                   {PROPOSAL_LOST_REASONS.map((r) => (
                     <option key={r} value={r}>
@@ -2054,14 +2054,14 @@ export default function ProposalsPage() {
               onChange={(e) => setFollowupForm({ ...followupForm, followup_date: e.target.value })}
             />
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-[#1A1A1A]">
+              <label className="text-xs font-semibold text-[#14213D]">
                 Follow-up Owner <span className="text-red-500">*</span>
               </label>
               <select
                 required
                 value={followupForm.owner_id}
                 onChange={(e) => setFollowupForm({ ...followupForm, owner_id: e.target.value })}
-                className="w-full text-xs py-2 px-3 bg-[#F7FBFF] border border-[#D6E3F5] rounded-lg text-[#1A1A1A] focus:border-[#223FA7] focus:outline-none"
+                className="w-full text-xs py-2 px-3 bg-[#FBFAF7] border border-[#DCD8CE] rounded-lg text-[#14213D] focus:border-[#0F5E63] focus:outline-none"
               >
                 <option value="">Select owner...</option>
                 {users.map((u) => (
@@ -2142,11 +2142,11 @@ export default function ProposalsPage() {
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-[#1A1A1A]">Responsible Person</label>
+                <label className="text-xs font-semibold text-[#14213D]">Responsible Person</label>
                 <select
                   value={editForm.responsible_id}
                   onChange={(e) => setEditForm({ ...editForm, responsible_id: e.target.value })}
-                  className="w-full text-xs py-2 px-3 bg-[#F7FBFF] border border-[#D6E3F5] rounded-lg text-[#1A1A1A] focus:border-[#223FA7] focus:outline-none"
+                  className="w-full text-xs py-2 px-3 bg-[#FBFAF7] border border-[#DCD8CE] rounded-lg text-[#14213D] focus:border-[#0F5E63] focus:outline-none"
                 >
                   {users.map((u) => (
                     <option key={u.id} value={u.id}>
@@ -2157,11 +2157,11 @@ export default function ProposalsPage() {
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-[#1A1A1A]">Follow-up Owner</label>
+                <label className="text-xs font-semibold text-[#14213D]">Follow-up Owner</label>
                 <select
                   value={editForm.followup_owner_id}
                   onChange={(e) => setEditForm({ ...editForm, followup_owner_id: e.target.value })}
-                  className="w-full text-xs py-2 px-3 bg-[#F7FBFF] border border-[#D6E3F5] rounded-lg text-[#1A1A1A] focus:border-[#223FA7] focus:outline-none"
+                  className="w-full text-xs py-2 px-3 bg-[#FBFAF7] border border-[#DCD8CE] rounded-lg text-[#14213D] focus:border-[#0F5E63] focus:outline-none"
                 >
                   {users.map((u) => (
                     <option key={u.id} value={u.id}>
@@ -2202,7 +2202,7 @@ export default function ProposalsPage() {
           maxWidth="sm"
         >
           <div className="space-y-4">
-            <p className="text-xs text-[#5871A5] leading-relaxed">
+            <p className="text-xs text-[#4A5568] leading-relaxed">
               This will soft-delete the proposal record from active views. Historical audit events and logged customer follow-ups will be safely preserved in the database.
             </p>
             <div className="flex justify-end gap-2 pt-3 border-t border-[#F0F5FC]">

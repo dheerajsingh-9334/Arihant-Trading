@@ -234,7 +234,7 @@ export const Divider: React.FC<DividerProps> = ({
   if (orientation === 'vertical') {
     return (
       <div
-        className={twMerge('w-[1px] bg-[#D6E3F5] self-stretch mx-2 shrink-0', className)}
+        className={twMerge('w-[1px] bg-[#DCD8CE] self-stretch mx-2 shrink-0', className)}
         {...props}
       />
     );
@@ -243,18 +243,18 @@ export const Divider: React.FC<DividerProps> = ({
   if (label) {
     return (
       <div className={twMerge('relative flex py-2 items-center w-full', className)} {...props}>
-        <div className="grow border-t border-[#D6E3F5]" />
-        <span className="shrink mx-3 text-[11px] font-semibold text-[#5871A5] uppercase tracking-wider">
+        <div className="grow border-t border-[#DCD8CE]" />
+        <span className="shrink mx-3 text-[11px] font-semibold text-[#4A5568] uppercase tracking-wider">
           {label}
         </span>
-        <div className="grow border-t border-[#D6E3F5]" />
+        <div className="grow border-t border-[#DCD8CE]" />
       </div>
     );
   }
 
   return (
     <hr
-      className={twMerge('w-full border-0 border-t border-[#D6E3F5] my-2', className)}
+      className={twMerge('w-full border-0 border-t border-[#DCD8CE] my-2', className)}
       {...props}
     />
   );

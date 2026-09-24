@@ -819,7 +819,7 @@ export default function DemosPage() {
     <PageContainer>
       {/* Top Banner & Header */}
       <PageHeader
-        icon={<Sparkles className="h-7 w-7 text-[#223FA7]" />}
+        icon={<Sparkles className="h-7 w-7 text-[#0F5E63]" />}
         title="Field Demonstrations & Trials Management"
         description="End-to-end management of client trial requests, multi-depot fleet availability, equipment reservations, date confirmation, failure analysis, and visit integration."
         actions={
@@ -829,7 +829,7 @@ export default function DemosPage() {
               size="sm"
               onClick={fetchDemosData}
               isLoading={isLoading}
-              className="flex items-center gap-1.5 border-[#D6E3F5] text-[#223FA7] hover:bg-[#EAF2FF]"
+              className="flex items-center gap-1.5 border-[#DCD8CE] text-[#0F5E63] hover:bg-[#E3EFEE]"
             >
               <RefreshCw className="h-4 w-4" />
               Sync
@@ -918,7 +918,7 @@ export default function DemosPage() {
           <FilterBar>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-3">
               <div className="lg:col-span-2 relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-[#5871A5]" />
+                <Search className="absolute left-3 top-3 h-4 w-4 text-[#4A5568]" />
                 <Input
                   placeholder="Search Demo ID, Client, Product, Assignee..."
                   value={filterSearch}
@@ -1031,15 +1031,15 @@ export default function DemosPage() {
               {filteredDemos.map((demo) => (
                 <Card
                   key={demo.id}
-                  className="p-5 bg-white hover:border-[#9FC0F5] border border-[#D6E3F5] rounded-xl transition-all shadow-2xs"
+                  className="p-5 bg-white hover:border-[#0F5E63] border border-[#DCD8CE] rounded-xl transition-all shadow-2xs"
                 >
-                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-[#D6E3F5] pb-4">
+                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-[#DCD8CE] pb-4">
                     <div className="flex flex-wrap items-center gap-3">
-                      <span className="font-mono text-xs font-bold text-[#223FA7] px-2.5 py-1 rounded bg-[#EAF2FF] border border-[#D6E3F5]">
+                      <span className="font-mono text-xs font-bold text-[#0F5E63] px-2.5 py-1 rounded bg-[#E3EFEE] border border-[#DCD8CE]">
                         {demo.demo_no}
                       </span>
-                      <h3 className="text-lg font-bold text-[#1A1A1A] flex items-center gap-2">
-                        <Building className="h-4 w-4 text-[#5871A5]" />
+                      <h3 className="text-lg font-bold text-[#14213D] flex items-center gap-2">
+                        <Building className="h-4 w-4 text-[#4A5568]" />
                         {demo.organisation_name}
                       </h3>
                       {renderStatusBadge(demo.status)}
@@ -1062,7 +1062,7 @@ export default function DemosPage() {
                       )}
                     </div>
 
-                    <div className="flex items-center gap-2 text-xs text-[#5871A5]">
+                    <div className="flex items-center gap-2 text-xs text-[#4A5568]">
                       <span>Version: {demo.version}</span>
                       <span>•</span>
                       <span>Logged: {new Date(demo.created_at).toLocaleDateString()}</span>
@@ -1072,29 +1072,29 @@ export default function DemosPage() {
                   {/* Body Specs */}
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 my-4 text-sm">
                     <div>
-                      <span className="text-xs text-[#5871A5] uppercase tracking-wider block font-semibold">
+                      <span className="text-xs text-[#4A5568] uppercase tracking-wider block font-semibold">
                         Equipment / Product
                       </span>
-                      <p className="font-semibold text-[#1A1A1A] mt-0.5">
+                      <p className="font-semibold text-[#14213D] mt-0.5">
                         {demo.product_name || demo.equipment_required || 'Standard Security Suite'}
                       </p>
                       {demo.special_requirements && (
-                        <p className="text-xs text-[#5871A5] mt-0.5 italic">
+                        <p className="text-xs text-[#4A5568] mt-0.5 italic">
                           Req: {demo.special_requirements}
                         </p>
                       )}
                     </div>
 
                     <div>
-                      <span className="text-xs text-[#5871A5] uppercase tracking-wider block font-semibold">
+                      <span className="text-xs text-[#4A5568] uppercase tracking-wider block font-semibold">
                         Location & Dates
                       </span>
-                      <p className="font-semibold text-[#1A1A1A] mt-0.5 flex items-center gap-1">
-                        <MapPin className="h-3.5 w-3.5 text-[#5871A5]" />
+                      <p className="font-semibold text-[#14213D] mt-0.5 flex items-center gap-1">
+                        <MapPin className="h-3.5 w-3.5 text-[#4A5568]" />
                         {demo.location || demo.city || 'Depot HQ'}
                       </p>
-                      <p className="text-xs text-[#5871A5] mt-0.5 flex items-center gap-1">
-                        <Calendar className="h-3.5 w-3.5 text-[#5871A5]" />
+                      <p className="text-xs text-[#4A5568] mt-0.5 flex items-center gap-1">
+                        <Calendar className="h-3.5 w-3.5 text-[#4A5568]" />
                         {demo.confirmed_date ? (
                           <span className="text-emerald-700 font-bold">
                             Confirmed: {demo.confirmed_date}
@@ -1106,31 +1106,31 @@ export default function DemosPage() {
                     </div>
 
                     <div>
-                      <span className="text-xs text-[#5871A5] uppercase tracking-wider block font-semibold">
+                      <span className="text-xs text-[#4A5568] uppercase tracking-wider block font-semibold">
                         Team & Logistics
                       </span>
-                      <p className="font-semibold text-[#1A1A1A] mt-0.5 flex items-center gap-1">
-                        <Users className="h-3.5 w-3.5 text-[#5871A5]" />
+                      <p className="font-semibold text-[#14213D] mt-0.5 flex items-center gap-1">
+                        <Users className="h-3.5 w-3.5 text-[#4A5568]" />
                         Assignee:{' '}
                         {demo.assignee_name ? (
-                          <span className="text-[#223FA7] font-bold">{demo.assignee_name}</span>
+                          <span className="text-[#0F5E63] font-bold">{demo.assignee_name}</span>
                         ) : (
                           <span className="text-amber-700 italic font-medium">Unassigned</span>
                         )}
                       </p>
-                      <p className="text-xs text-[#5871A5] mt-0.5">
+                      <p className="text-xs text-[#4A5568] mt-0.5">
                         By: {demo.requested_by_name || 'Field Sales'}
                       </p>
                     </div>
 
                     <div>
-                      <span className="text-xs text-[#5871A5] uppercase tracking-wider block font-semibold">
+                      <span className="text-xs text-[#4A5568] uppercase tracking-wider block font-semibold">
                         Objective & Audience
                       </span>
-                      <p className="font-semibold text-[#1A1A1A] mt-0.5 line-clamp-1">
+                      <p className="font-semibold text-[#14213D] mt-0.5 line-clamp-1">
                         {demo.purpose || 'Technical procurement qualification'}
                       </p>
-                      <p className="text-xs text-[#5871A5] mt-0.5">
+                      <p className="text-xs text-[#4A5568] mt-0.5">
                         Audience: {demo.expected_audience || 'DGQA / Police Officers'}
                       </p>
                     </div>
@@ -1160,8 +1160,8 @@ export default function DemosPage() {
                   {demo.reservations && demo.reservations.length > 0 && (
                     <div className="mb-3 space-y-2 border-t border-[#E2ECF8] pt-3">
                       <div className="flex items-center justify-between text-xs">
-                        <span className="font-bold text-[#1A1A1A] flex items-center gap-1.5">
-                          <Package className="h-3.5 w-3.5 text-[#223FA7]" />
+                        <span className="font-bold text-[#14213D] flex items-center gap-1.5">
+                          <Package className="h-3.5 w-3.5 text-[#0F5E63]" />
                           Equipment Reservations & Custodian Status ({demo.reservations.length})
                         </span>
                       </div>
@@ -1169,11 +1169,11 @@ export default function DemosPage() {
                         {demo.reservations.map((res: any) => (
                           <div
                             key={res.id}
-                            className="p-2.5 rounded-lg bg-[#F8FAFC] border border-[#D6E3F5] text-xs flex flex-col justify-between gap-2"
+                            className="p-2.5 rounded-lg bg-[#F8FAFC] border border-[#DCD8CE] text-xs flex flex-col justify-between gap-2"
                           >
                             <div className="space-y-1">
                               <div className="flex items-center justify-between gap-2">
-                                <span className="font-semibold text-[#1A1A1A]">
+                                <span className="font-semibold text-[#14213D]">
                                   {res.model} — {res.serial_no || 'Unserialized'}
                                 </span>
                                 {res.status === 'approved' && <Badge variant="success">APPROVED</Badge>}
@@ -1182,7 +1182,7 @@ export default function DemosPage() {
                                 {res.status === 'allocated_alternative' && <Badge variant="info">REALLOCATED</Badge>}
                                 {res.status === 'cancelled' && <Badge variant="outline">CANCELLED</Badge>}
                               </div>
-                              <p className="text-[11px] text-[#5871A5]">
+                              <p className="text-[11px] text-[#4A5568]">
                                 Depot: <strong>{res.current_location}</strong> • Window: {res.reserved_from} to {res.reserved_to}
                               </p>
                               {res.approved_by_name && (
@@ -1219,7 +1219,7 @@ export default function DemosPage() {
                                     variant="outline"
                                     size="xs"
                                     onClick={() => handleOpenAllocate(res, demo)}
-                                    className="bg-blue-50 text-[#223FA7] border-blue-200 hover:bg-blue-100"
+                                    className="bg-blue-50 text-[#0F5E63] border-blue-200 hover:bg-blue-100"
                                   >
                                     Allocate Alt Unit
                                   </Button>
@@ -1268,7 +1268,7 @@ export default function DemosPage() {
                               ? 'Trial Result: Fail / Deficiency'
                               : 'Trial Result: Partial'}
                           </span>
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white/90 border border-[#D6E3F5] text-gray-700">
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white/90 border border-[#DCD8CE] text-gray-700">
                             Opportunity Stage: {demo.outcome.opportunity_stage || 'Not set'}
                           </span>
                           <span
@@ -1314,51 +1314,51 @@ export default function DemosPage() {
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 text-[11px] pt-1 text-gray-700">
                         {demo.outcome.customer_response && (
-                          <div className="bg-white/80 p-2 rounded-lg border border-[#D6E3F5]">
-                            <span className="text-[10px] font-bold text-[#5871A5] uppercase tracking-wider block">
+                          <div className="bg-white/80 p-2 rounded-lg border border-[#DCD8CE]">
+                            <span className="text-[10px] font-bold text-[#4A5568] uppercase tracking-wider block">
                               Customer Response
                             </span>
-                            <span className="font-medium text-[#1A1A1A]">{demo.outcome.customer_response}</span>
+                            <span className="font-medium text-[#14213D]">{demo.outcome.customer_response}</span>
                           </div>
                         )}
                         {demo.outcome.technical_performance && (
-                          <div className="bg-white/80 p-2 rounded-lg border border-[#D6E3F5]">
-                            <span className="text-[10px] font-bold text-[#5871A5] uppercase tracking-wider block">
+                          <div className="bg-white/80 p-2 rounded-lg border border-[#DCD8CE]">
+                            <span className="text-[10px] font-bold text-[#4A5568] uppercase tracking-wider block">
                               Technical Performance
                             </span>
-                            <span className="font-medium text-[#1A1A1A]">{demo.outcome.technical_performance}</span>
+                            <span className="font-medium text-[#14213D]">{demo.outcome.technical_performance}</span>
                           </div>
                         )}
                         {demo.outcome.product_suitability && (
-                          <div className="bg-white/80 p-2 rounded-lg border border-[#D6E3F5]">
-                            <span className="text-[10px] font-bold text-[#5871A5] uppercase tracking-wider block">
+                          <div className="bg-white/80 p-2 rounded-lg border border-[#DCD8CE]">
+                            <span className="text-[10px] font-bold text-[#4A5568] uppercase tracking-wider block">
                               Product Suitability
                             </span>
-                            <span className="font-medium text-[#1A1A1A]">{demo.outcome.product_suitability}</span>
+                            <span className="font-medium text-[#14213D]">{demo.outcome.product_suitability}</span>
                           </div>
                         )}
                         {demo.outcome.competitor_involved && (
-                          <div className="bg-white/80 p-2 rounded-lg border border-[#D6E3F5]">
-                            <span className="text-[10px] font-bold text-[#5871A5] uppercase tracking-wider block">
+                          <div className="bg-white/80 p-2 rounded-lg border border-[#DCD8CE]">
+                            <span className="text-[10px] font-bold text-[#4A5568] uppercase tracking-wider block">
                               Competitor Involved
                             </span>
-                            <span className="font-medium text-[#1A1A1A]">{demo.outcome.competitor_involved}</span>
+                            <span className="font-medium text-[#14213D]">{demo.outcome.competitor_involved}</span>
                           </div>
                         )}
                         {demo.outcome.next_step && (
-                          <div className="bg-white/80 p-2 rounded-lg border border-[#D6E3F5]">
-                            <span className="text-[10px] font-bold text-[#5871A5] uppercase tracking-wider block">
+                          <div className="bg-white/80 p-2 rounded-lg border border-[#DCD8CE]">
+                            <span className="text-[10px] font-bold text-[#4A5568] uppercase tracking-wider block">
                               Next Commercial Step
                             </span>
-                            <span className="font-medium text-[#1A1A1A]">{demo.outcome.next_step}</span>
+                            <span className="font-medium text-[#14213D]">{demo.outcome.next_step}</span>
                           </div>
                         )}
                         {demo.outcome.remarks && (
-                          <div className="bg-white/80 p-2 rounded-lg border border-[#D6E3F5]">
-                            <span className="text-[10px] font-bold text-[#5871A5] uppercase tracking-wider block">
+                          <div className="bg-white/80 p-2 rounded-lg border border-[#DCD8CE]">
+                            <span className="text-[10px] font-bold text-[#4A5568] uppercase tracking-wider block">
                               Remarks / Field Notes
                             </span>
-                            <span className="font-medium text-[#1A1A1A]">{demo.outcome.remarks}</span>
+                            <span className="font-medium text-[#14213D]">{demo.outcome.remarks}</span>
                           </div>
                         )}
                       </div>
@@ -1366,13 +1366,13 @@ export default function DemosPage() {
                   )}
 
                   {/* Action Toolbar */}
-                  <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[#D6E3F5] pt-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[#DCD8CE] pt-3">
                     <div className="flex items-center gap-2">
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => handleOpenAudit(demo)}
-                        className="text-xs text-[#5871A5] hover:text-[#223FA7] hover:bg-[#EAF2FF]"
+                        className="text-xs text-[#4A5568] hover:text-[#0F5E63] hover:bg-[#E3EFEE]"
                       >
                         <History className="h-3.5 w-3.5 mr-1" />
                         Audit Trail
@@ -1389,7 +1389,7 @@ export default function DemosPage() {
                               variant="outline"
                               size="sm"
                               onClick={() => handleOpenAssignTeam(demo)}
-                              className="text-xs border-[#D6E3F5] text-indigo-700 hover:bg-indigo-50"
+                              className="text-xs border-[#DCD8CE] text-indigo-700 hover:bg-indigo-50"
                             >
                               <Users className="h-3.5 w-3.5 mr-1 text-indigo-600" />
                               Assign Team
@@ -1399,7 +1399,7 @@ export default function DemosPage() {
                               variant="outline"
                               size="sm"
                               onClick={() => handleOpenReserve(demo)}
-                              className="text-xs border-[#D6E3F5] text-amber-700 hover:bg-amber-50"
+                              className="text-xs border-[#DCD8CE] text-amber-700 hover:bg-amber-50"
                             >
                               <Package className="h-3.5 w-3.5 mr-1 text-amber-600" />
                               Reserve Unit
@@ -1419,7 +1419,7 @@ export default function DemosPage() {
                                 });
                                 setIsConfirmDateOpen(true);
                               }}
-                              className="text-xs border-[#D6E3F5] text-teal-700 hover:bg-teal-50"
+                              className="text-xs border-[#DCD8CE] text-teal-700 hover:bg-teal-50"
                             >
                               <CheckCircle2 className="h-3.5 w-3.5 mr-1 text-teal-600" />
                               Confirm Date
@@ -1439,7 +1439,7 @@ export default function DemosPage() {
                                 });
                                 setIsRescheduleOpen(true);
                               }}
-                              className="text-xs border-[#D6E3F5] text-purple-700 hover:bg-purple-50"
+                              className="text-xs border-[#DCD8CE] text-purple-700 hover:bg-purple-50"
                             >
                               <Clock className="h-3.5 w-3.5 mr-1 text-purple-600" />
                               Reschedule
@@ -1490,13 +1490,13 @@ export default function DemosPage() {
       {/* =================================================================== */}
       {activeTab === 'coordinator' && (
         <div className="space-y-6">
-          <div className="p-4 rounded-xl bg-white border border-[#D6E3F5] shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="p-4 rounded-xl bg-white border border-[#DCD8CE] shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <h2 className="text-base font-bold text-[#1A1A1A] flex items-center gap-2">
+              <h2 className="text-base font-bold text-[#14213D] flex items-center gap-2">
                 <Wrench className="h-5 w-5 text-amber-600" />
                 Demo Dispatch & Planning Workbench
               </h2>
-              <p className="text-xs text-[#5871A5] mt-0.5">
+              <p className="text-xs text-[#4A5568] mt-0.5">
                 Review pending requests, confirm operational dates, detect depot location mismatches,
                 and prevent equipment/team double bookings.
               </p>
@@ -1515,28 +1515,28 @@ export default function DemosPage() {
                 ['requested', 'under_planning', 'team_assigned', 'equipment_reserved'].includes(d.status),
               )
               .map((demo) => (
-                <Card key={demo.id} className="p-5 bg-white border border-[#D6E3F5] rounded-xl shadow-2xs hover:border-[#9FC0F5] transition-all">
+                <Card key={demo.id} className="p-5 bg-white border border-[#DCD8CE] rounded-xl shadow-2xs hover:border-[#0F5E63] transition-all">
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs font-bold text-[#223FA7] px-2 py-0.5 rounded bg-[#EAF2FF] border border-[#D6E3F5]">
+                        <span className="font-mono text-xs font-bold text-[#0F5E63] px-2 py-0.5 rounded bg-[#E3EFEE] border border-[#DCD8CE]">
                           {demo.demo_no}
                         </span>
-                        <h4 className="font-bold text-[#1A1A1A]">{demo.organisation_name}</h4>
+                        <h4 className="font-bold text-[#14213D]">{demo.organisation_name}</h4>
                         {renderStatusBadge(demo.status)}
                       </div>
-                      <div className="text-xs text-[#5871A5] mt-2 space-y-1">
+                      <div className="text-xs text-[#4A5568] mt-2 space-y-1">
                         <p>
-                          <strong className="text-[#1A1A1A]">Site Location:</strong> {demo.location || 'Client Proving Ground'}
+                          <strong className="text-[#14213D]">Site Location:</strong> {demo.location || 'Client Proving Ground'}
                         </p>
                         <p>
-                          <strong className="text-[#1A1A1A]">Product:</strong> {demo.product_name || 'Security Scanning Unit'}
+                          <strong className="text-[#14213D]">Product:</strong> {demo.product_name || 'Security Scanning Unit'}
                         </p>
                         <p>
-                          <strong className="text-[#1A1A1A]">Requested Date:</strong> {demo.requested_date}
+                          <strong className="text-[#14213D]">Requested Date:</strong> {demo.requested_date}
                         </p>
                         <p>
-                          <strong className="text-[#1A1A1A]">Purpose:</strong> {demo.purpose || 'Qualify tender criteria'}
+                          <strong className="text-[#14213D]">Purpose:</strong> {demo.purpose || 'Qualify tender criteria'}
                         </p>
                       </div>
                     </div>
@@ -1546,7 +1546,7 @@ export default function DemosPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => handleOpenAssignTeam(demo)}
-                        className="text-xs border-[#D6E3F5] text-indigo-700 hover:bg-indigo-50"
+                        className="text-xs border-[#DCD8CE] text-indigo-700 hover:bg-indigo-50"
                       >
                         <Users className="h-3.5 w-3.5 mr-1 text-indigo-600" />
                         {demo.assigned_to ? 'Change Team' : 'Assign Team'}
@@ -1556,7 +1556,7 @@ export default function DemosPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => handleOpenReserve(demo)}
-                        className="text-xs border-[#D6E3F5] text-amber-700 hover:bg-amber-50"
+                        className="text-xs border-[#DCD8CE] text-amber-700 hover:bg-amber-50"
                       >
                         <Package className="h-3.5 w-3.5 mr-1 text-amber-600" />
                         Reserve Depot Unit
@@ -1587,19 +1587,19 @@ export default function DemosPage() {
                   {/* Coordinator View of Reservations (§16) */}
                   {demo.reservations && demo.reservations.length > 0 && (
                     <div className="mt-3 pt-3 border-t border-[#E2ECF8] space-y-2">
-                      <span className="text-xs font-bold text-[#1A1A1A] flex items-center gap-1.5">
-                        <Package className="h-3.5 w-3.5 text-[#223FA7]" />
+                      <span className="text-xs font-bold text-[#14213D] flex items-center gap-1.5">
+                        <Package className="h-3.5 w-3.5 text-[#0F5E63]" />
                         Allocated Fleet Units & Custodian Status:
                       </span>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                         {demo.reservations.map((res: any) => (
                           <div
                             key={res.id}
-                            className="p-2.5 rounded-lg bg-[#F8FAFC] border border-[#D6E3F5] text-xs flex flex-col justify-between gap-1.5"
+                            className="p-2.5 rounded-lg bg-[#F8FAFC] border border-[#DCD8CE] text-xs flex flex-col justify-between gap-1.5"
                           >
                             <div>
                               <div className="flex items-center justify-between gap-2">
-                                <span className="font-semibold text-[#1A1A1A]">
+                                <span className="font-semibold text-[#14213D]">
                                   {res.model} ({res.serial_no || 'No Serial'})
                                 </span>
                                 {res.status === 'approved' && <Badge variant="success">APPROVED</Badge>}
@@ -1608,7 +1608,7 @@ export default function DemosPage() {
                                 {res.status === 'allocated_alternative' && <Badge variant="info">REALLOCATED</Badge>}
                                 {res.status === 'cancelled' && <Badge variant="outline">CANCELLED</Badge>}
                               </div>
-                              <p className="text-[11px] text-[#5871A5] mt-0.5">
+                              <p className="text-[11px] text-[#4A5568] mt-0.5">
                                 Depot: {res.current_location} • {res.reserved_from} to {res.reserved_to}
                               </p>
                               {res.approved_by_name && (
@@ -1639,7 +1639,7 @@ export default function DemosPage() {
                                   variant="outline"
                                   size="xs"
                                   onClick={() => handleOpenAllocate(res, demo)}
-                                  className="bg-blue-50 text-[#223FA7] border-blue-200 hover:bg-blue-100"
+                                  className="bg-blue-50 text-[#0F5E63] border-blue-200 hover:bg-blue-100"
                                 >
                                   Allocate Alt Unit
                                 </Button>
@@ -1671,14 +1671,14 @@ export default function DemosPage() {
       {activeTab === 'fleet' && (
         <div className="space-y-6">
           {/* Live Availability Checker Box (§8) */}
-          <Card className="p-5 bg-white border border-[#D6E3F5] rounded-xl shadow-2xs">
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-[#D6E3F5] pb-4">
+          <Card className="p-5 bg-white border border-[#DCD8CE] rounded-xl shadow-2xs">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-[#DCD8CE] pb-4">
               <div>
-                <h3 className="text-base font-bold text-[#1A1A1A] flex items-center gap-2">
-                  <Package className="h-5 w-5 text-[#223FA7]" />
+                <h3 className="text-base font-bold text-[#14213D] flex items-center gap-2">
+                  <Package className="h-5 w-5 text-[#0F5E63]" />
                   Live Fleet Availability & Conflict Checker
                 </h3>
-                <p className="text-xs text-[#5871A5] mt-1">
+                <p className="text-xs text-[#4A5568] mt-1">
                   Query inventory across Delhi, Patna, and Kolkata depots for specific dates to prevent
                   committing unavailable equipment.
                 </p>
@@ -1743,10 +1743,10 @@ export default function DemosPage() {
 
             {/* Availability Summary Stats */}
             {availabilityResults && (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4 pt-4 border-t border-[#D6E3F5]">
-                <div className="p-3 rounded-lg bg-[#F7FBFF] border border-[#D6E3F5]">
-                  <span className="text-xs text-[#5871A5] block">Total Units</span>
-                  <span className="text-xl font-bold text-[#1A1A1A]">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4 pt-4 border-t border-[#DCD8CE]">
+                <div className="p-3 rounded-lg bg-[#FBFAF7] border border-[#DCD8CE]">
+                  <span className="text-xs text-[#4A5568] block">Total Units</span>
+                  <span className="text-xl font-bold text-[#14213D]">
                     {availabilityResults.summary.total}
                   </span>
                 </div>
@@ -1776,16 +1776,16 @@ export default function DemosPage() {
           </Card>
 
           {/* Depot Fleet Inventory Table */}
-          <Card className="p-0 overflow-hidden bg-white border border-[#D6E3F5] rounded-xl shadow-2xs">
-            <div className="p-4 border-b border-[#D6E3F5] flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-[#1A1A1A]">
+          <Card className="p-0 overflow-hidden bg-white border border-[#DCD8CE] rounded-xl shadow-2xs">
+            <div className="p-4 border-b border-[#DCD8CE] flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-[#14213D]">
                 Depot Units Roster ({equipmentList.length} Units Total)
               </h3>
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm text-[#1A1A1A]">
-                <thead className="bg-[#F7FBFF] text-xs uppercase tracking-wider text-[#5871A5] border-b border-[#D6E3F5]">
+              <table className="w-full text-left text-sm text-[#14213D]">
+                <thead className="bg-[#FBFAF7] text-xs uppercase tracking-wider text-[#4A5568] border-b border-[#DCD8CE]">
                   <tr>
                     <th className="py-3 px-4">Model & Serial</th>
                     <th className="py-3 px-4">Product</th>
@@ -1801,20 +1801,20 @@ export default function DemosPage() {
                   {equipmentList.map((unit) => (
                     <tr key={unit.id} className="hover:bg-[#F0F5FF] transition-colors">
                       <td className="py-3 px-4">
-                        <p className="font-semibold text-[#1A1A1A]">{unit.model}</p>
-                        <span className="font-mono text-xs text-[#5871A5]">
+                        <p className="font-semibold text-[#14213D]">{unit.model}</p>
+                        <span className="font-mono text-xs text-[#4A5568]">
                           {unit.serial_no || 'N/A'}
                         </span>
                       </td>
-                      <td className="py-3 px-4 text-[#5871A5]">{unit.product_name}</td>
+                      <td className="py-3 px-4 text-[#4A5568]">{unit.product_name}</td>
                       <td className="py-3 px-4">
-                        <span className="inline-flex items-center gap-1 font-medium text-[#1A1A1A]">
-                          <MapPin className="h-3.5 w-3.5 text-[#223FA7]" />
+                        <span className="inline-flex items-center gap-1 font-medium text-[#14213D]">
+                          <MapPin className="h-3.5 w-3.5 text-[#0F5E63]" />
                           {unit.current_location}
                         </span>
                       </td>
                       <td className="py-3 px-4 text-xs">
-                        <span className="font-medium text-[#1A1A1A]">
+                        <span className="font-medium text-[#14213D]">
                           {unit.responsible_person_name || 'Depot Service Team'}
                         </span>
                       </td>
@@ -1832,10 +1832,10 @@ export default function DemosPage() {
                           <Badge variant="danger">MAINTENANCE</Badge>
                         )}
                       </td>
-                      <td className="py-3 px-4 text-xs text-[#5871A5]">
+                      <td className="py-3 px-4 text-xs text-[#4A5568]">
                         {unit.condition || 'Operational'}
                       </td>
-                      <td className="py-3 px-4 text-xs font-mono text-[#5871A5]">
+                      <td className="py-3 px-4 text-xs font-mono text-[#4A5568]">
                         {unit.reserved_until ? `Until ${unit.reserved_until}` : 'Immediate'}
                       </td>
                       <td className="py-3 px-4 text-right">
@@ -1902,7 +1902,7 @@ export default function DemosPage() {
                   valueColor="primary"
                   progress={analyticsData.overview.success_rate_percent}
                   progressColor="primary"
-                  icon={<Sparkles className="h-4 w-4 text-[#223FA7]" />}
+                  icon={<Sparkles className="h-4 w-4 text-[#0F5E63]" />}
                 />
 
                 <StatCard
@@ -1915,7 +1915,7 @@ export default function DemosPage() {
               </StatGrid>
 
               {/* Structured Failure Analysis Breakdown & Recurring Pattern Matrix (§18 & §19) */}
-              <Card className="p-6 bg-white border border-[#D6E3F5] rounded-xl shadow-2xs space-y-6">
+              <Card className="p-6 bg-white border border-[#DCD8CE] rounded-xl shadow-2xs space-y-6">
                 <SectionHeader
                   icon={<AlertTriangle className="h-5 w-5 text-rose-500" />}
                   title="Management Recurring Failure Pattern Analysis (§17 & §18)"
@@ -1924,26 +1924,26 @@ export default function DemosPage() {
                 />
 
                 {analyticsData.failure_analysis.length === 0 ? (
-                  <p className="text-sm text-[#5871A5] italic text-center py-6">
+                  <p className="text-sm text-[#4A5568] italic text-center py-6">
                     Zero unsuccessful demo trials recorded.
                   </p>
                 ) : (
                   <>
                     {/* Visual Progress Distribution */}
-                    <div className="space-y-3 pb-4 border-b border-[#D6E3F5]">
-                      <div className="text-xs font-bold text-[#1A1A1A] uppercase tracking-wider">
+                    <div className="space-y-3 pb-4 border-b border-[#DCD8CE]">
+                      <div className="text-xs font-bold text-[#14213D] uppercase tracking-wider">
                         Failure Category Distribution
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {analyticsData.failure_analysis.map((item: any) => {
                           const meta = FAILURE_REASON_METADATA[item.reason];
                           return (
-                            <div key={item.reason} className="p-3 rounded-lg bg-[#F7FBFF] border border-[#D6E3F5] space-y-1.5">
+                            <div key={item.reason} className="p-3 rounded-lg bg-[#FBFAF7] border border-[#DCD8CE] space-y-1.5">
                               <div className="flex items-center justify-between text-xs">
-                                <span className="font-bold text-[#1A1A1A]">
+                                <span className="font-bold text-[#14213D]">
                                   {meta?.label || item.reason.replace(/_/g, ' ')}
                                 </span>
-                                <span className="text-[#5871A5] font-mono font-semibold">
+                                <span className="text-[#4A5568] font-mono font-semibold">
                                   {item.count} trials ({item.percentage}%)
                                 </span>
                               </div>
@@ -1961,16 +1961,16 @@ export default function DemosPage() {
 
                     {/* Executive Root Cause & Mitigation Table */}
                     <div className="space-y-3">
-                      <div className="text-xs font-bold text-[#1A1A1A] uppercase tracking-wider flex items-center justify-between">
+                      <div className="text-xs font-bold text-[#14213D] uppercase tracking-wider flex items-center justify-between">
                         <span>Recurring Pattern Taxonomy & Corrective Countermeasures</span>
-                        <span className="text-[11px] font-normal text-[#5871A5]">
+                        <span className="text-[11px] font-normal text-[#4A5568]">
                           Covers all 9 operational failure categories
                         </span>
                       </div>
 
-                      <div className="overflow-x-auto rounded-xl border border-[#D6E3F5]">
+                      <div className="overflow-x-auto rounded-xl border border-[#DCD8CE]">
                         <table className="w-full text-left text-xs">
-                          <thead className="bg-[#F7FBFF] border-b border-[#D6E3F5] text-[#5871A5] uppercase font-bold text-[10px]">
+                          <thead className="bg-[#FBFAF7] border-b border-[#DCD8CE] text-[#4A5568] uppercase font-bold text-[10px]">
                             <tr>
                               <th className="py-2.5 px-3">Failure Reason</th>
                               <th className="py-2.5 px-2">Severity</th>
@@ -1980,17 +1980,17 @@ export default function DemosPage() {
                               <th className="py-2.5 px-2 text-right">Actions</th>
                             </tr>
                           </thead>
-                          <tbody className="divide-y divide-[#D6E3F5]">
+                          <tbody className="divide-y divide-[#DCD8CE]">
                             {Object.entries(FAILURE_REASON_METADATA).map(([key, meta]) => {
                               const found = analyticsData.failure_analysis.find((f: any) => f.reason === key);
                               const count = found?.count || 0;
                               const pct = found?.percentage || 0;
 
                               return (
-                                <tr key={key} className={count > 0 ? 'bg-rose-50/20' : 'hover:bg-[#F7FBFF]'}>
+                                <tr key={key} className={count > 0 ? 'bg-rose-50/20' : 'hover:bg-[#FBFAF7]'}>
                                   <td className="py-3 px-3">
-                                    <div className="font-bold text-[#1A1A1A]">{meta.label}</div>
-                                    <div className="text-[11px] text-[#5871A5]">{meta.description}</div>
+                                    <div className="font-bold text-[#14213D]">{meta.label}</div>
+                                    <div className="text-[11px] text-[#4A5568]">{meta.description}</div>
                                   </td>
                                   <td className="py-3 px-2">
                                     <span
@@ -2013,7 +2013,7 @@ export default function DemosPage() {
                                   <td className="py-3 px-3 text-[11px] text-gray-700">
                                     {meta.typicalRootCause}
                                   </td>
-                                  <td className="py-3 px-3 text-[11px] text-[#223FA7] font-medium">
+                                  <td className="py-3 px-3 text-[11px] text-[#0F5E63] font-medium">
                                     {meta.recommendedCountermeasure}
                                   </td>
                                   <td className="py-3 px-2 text-right">
@@ -2044,16 +2044,16 @@ export default function DemosPage() {
 
               {/* Product Failure Correlation (if available) */}
               {analyticsData.product_failures && analyticsData.product_failures.length > 0 && (
-                <Card className="p-6 bg-white border border-[#D6E3F5] rounded-xl shadow-2xs space-y-4">
+                <Card className="p-6 bg-white border border-[#DCD8CE] rounded-xl shadow-2xs space-y-4">
                   <SectionHeader
-                    icon={<Box className="h-5 w-5 text-[#223FA7]" />}
+                    icon={<Box className="h-5 w-5 text-[#0F5E63]" />}
                     title="Product-Level Trial Failure Distribution"
                     description="Analysis of which hardware units and catalog models encounter recurring field objections or technical failures."
                   />
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     {analyticsData.product_failures.map((pf: any, idx: number) => (
-                      <div key={idx} className="p-3.5 rounded-xl bg-[#F7FBFF] border border-[#D6E3F5] space-y-1">
-                        <div className="font-bold text-[#1A1A1A] text-xs">{pf.product_name}</div>
+                      <div key={idx} className="p-3.5 rounded-xl bg-[#FBFAF7] border border-[#DCD8CE] space-y-1">
+                        <div className="font-bold text-[#14213D] text-xs">{pf.product_name}</div>
                         <div className="flex items-center justify-between text-[11px]">
                           <span className="text-rose-700 font-medium">
                             {FAILURE_REASON_METADATA[pf.failure_reason]?.label || pf.failure_reason.replace(/_/g, ' ')}
@@ -2070,9 +2070,9 @@ export default function DemosPage() {
 
               {/* Decision-Maker Attendance Impact Analysis (§17) */}
               {analyticsData.decision_maker_impact && (
-                <Card className="p-6 bg-white border border-[#D6E3F5] rounded-xl shadow-2xs">
+                <Card className="p-6 bg-white border border-[#DCD8CE] rounded-xl shadow-2xs">
                   <SectionHeader
-                    icon={<Users className="h-5 w-5 text-[#223FA7]" />}
+                    icon={<Users className="h-5 w-5 text-[#0F5E63]" />}
                     title="Senior Decision-Maker Attendance Impact"
                     description="Correlation between trial success rate and executive/commanding officer physical attendance at the demonstration."
                     badge={
@@ -2118,25 +2118,25 @@ export default function DemosPage() {
                       </div>
                     </div>
 
-                    <div className="p-4 rounded-xl bg-slate-50 border border-[#D6E3F5]">
+                    <div className="p-4 rounded-xl bg-slate-50 border border-[#DCD8CE]">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-bold text-[#5871A5] uppercase tracking-wider">
+                        <span className="text-xs font-bold text-[#4A5568] uppercase tracking-wider">
                           Decision-Maker Absent
                         </span>
-                        <span className="text-xs font-bold text-[#5871A5]">
+                        <span className="text-xs font-bold text-[#4A5568]">
                           {analyticsData.decision_maker_impact.absent.rate_percent}% Success Rate
                         </span>
                       </div>
-                      <p className="text-2xl font-bold text-[#1A1A1A]">
+                      <p className="text-2xl font-bold text-[#14213D]">
                         {analyticsData.decision_maker_impact.absent.successful} /{' '}
                         {analyticsData.decision_maker_impact.absent.total}
-                        <span className="text-xs font-normal text-[#5871A5] ml-1.5">
+                        <span className="text-xs font-normal text-[#4A5568] ml-1.5">
                           trials succeeded
                         </span>
                       </p>
                       <div className="w-full bg-[#E2ECF8] h-2 rounded-full overflow-hidden mt-3">
                         <div
-                          className="bg-[#5871A5] h-full rounded-full transition-all"
+                          className="bg-[#4A5568] h-full rounded-full transition-all"
                           style={{
                             width: `${Math.max(
                               analyticsData.decision_maker_impact.absent.rate_percent,
@@ -2153,15 +2153,15 @@ export default function DemosPage() {
               {/* Depot Utilization Grid */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {analyticsData.depot_fleet.map((depot: any) => (
-                  <Card key={depot.current_location} className="p-4 bg-white border border-[#D6E3F5] rounded-xl shadow-2xs">
-                    <h4 className="font-semibold text-[#1A1A1A] flex items-center gap-1.5">
-                      <MapPin className="h-4 w-4 text-[#223FA7]" />
+                  <Card key={depot.current_location} className="p-4 bg-white border border-[#DCD8CE] rounded-xl shadow-2xs">
+                    <h4 className="font-semibold text-[#14213D] flex items-center gap-1.5">
+                      <MapPin className="h-4 w-4 text-[#0F5E63]" />
                       {depot.current_location} Depot
                     </h4>
                     <div className="grid grid-cols-3 gap-2 mt-3 text-center text-xs">
-                      <div className="p-2 rounded bg-[#F7FBFF] border border-[#D6E3F5]">
-                        <span className="text-[#5871A5] block">Total</span>
-                        <span className="font-bold text-[#1A1A1A] text-sm">{depot.total_units}</span>
+                      <div className="p-2 rounded bg-[#FBFAF7] border border-[#DCD8CE]">
+                        <span className="text-[#4A5568] block">Total</span>
+                        <span className="font-bold text-[#14213D] text-sm">{depot.total_units}</span>
                       </div>
                       <div className="p-2 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
                         <span className="block">Free</span>
@@ -2185,9 +2185,9 @@ export default function DemosPage() {
       {/* =================================================================== */}
       {activeTab === 'history' && (
         <div className="space-y-6">
-          <Card className="p-5 bg-white border border-[#D6E3F5] rounded-xl shadow-2xs">
+          <Card className="p-5 bg-white border border-[#DCD8CE] rounded-xl shadow-2xs">
             <SectionHeader
-              icon={<History className="h-5 w-5 text-[#223FA7]" />}
+              icon={<History className="h-5 w-5 text-[#0F5E63]" />}
               title="Customer Demonstration & Field Trial Timeline"
               description="Select an organisation to view the complete history of trials, certificates, outcomes, and follow-up actions."
             />
@@ -2215,37 +2215,37 @@ export default function DemosPage() {
                 />
               ) : (
                 customerHistoryDemos.map((demo) => (
-                  <Card key={demo.id} className="p-5 bg-white border border-[#D6E3F5] rounded-xl shadow-2xs hover:border-[#9FC0F5] transition-all">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-[#D6E3F5] pb-3">
+                  <Card key={demo.id} className="p-5 bg-white border border-[#DCD8CE] rounded-xl shadow-2xs hover:border-[#0F5E63] transition-all">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-[#DCD8CE] pb-3">
                       <div>
-                        <span className="font-mono text-xs font-bold text-[#223FA7]">
+                        <span className="font-mono text-xs font-bold text-[#0F5E63]">
                           {demo.demo_no}
                         </span>
-                        <h4 className="text-base font-semibold text-[#1A1A1A]">
+                        <h4 className="text-base font-semibold text-[#14213D]">
                           {demo.product_name || 'Security Equipment Trial'}
                         </h4>
                       </div>
                       <div>{renderStatusBadge(demo.status)}</div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 my-3 text-xs text-[#1A1A1A]">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 my-3 text-xs text-[#14213D]">
                       <div>
-                        <span className="text-[#5871A5] block">Date & Site:</span>
+                        <span className="text-[#4A5568] block">Date & Site:</span>
                         <span>
                           {demo.confirmed_date || demo.requested_date} @ {demo.location}
                         </span>
                       </div>
                       <div>
-                        <span className="text-[#5871A5] block">Demo Specialist:</span>
+                        <span className="text-[#4A5568] block">Demo Specialist:</span>
                         <span>{demo.assignee_name || 'N/A'}</span>
                       </div>
                       <div>
-                        <span className="text-[#5871A5] block">Sales Contact:</span>
+                        <span className="text-[#4A5568] block">Sales Contact:</span>
                         <span>{demo.requested_by_name || 'Direct'}</span>
                       </div>
                     </div>
 
-                    <div className="p-3 rounded-lg bg-[#F7FBFF] border border-[#D6E3F5] text-xs text-[#1A1A1A] space-y-1">
+                    <div className="p-3 rounded-lg bg-[#FBFAF7] border border-[#DCD8CE] text-xs text-[#14213D] space-y-1">
                       <p>
                         <strong>Purpose:</strong> {demo.purpose || 'Trial evaluation'}
                       </p>
@@ -2366,7 +2366,7 @@ export default function DemosPage() {
           />
 
           {/* Travel Requirement Toggle (§12) */}
-          <div className="p-3 rounded-xl bg-[#F7FBFF] border border-[#D6E3F5] space-y-3">
+          <div className="p-3 rounded-xl bg-[#FBFAF7] border border-[#DCD8CE] space-y-3">
             <Checkbox
               checked={newDemo.travel_required}
               onChange={(e) => setNewDemo({ ...newDemo, travel_required: e.target.checked })}
@@ -2374,7 +2374,7 @@ export default function DemosPage() {
             />
 
             {newDemo.travel_required && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-2 pt-2 border-t border-[#D6E3F5]">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-2 pt-2 border-t border-[#DCD8CE]">
                 <Input
                   label="From Depot"
                   value={newDemo.travel_from}
@@ -2396,7 +2396,7 @@ export default function DemosPage() {
             )}
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-[#D6E3F5]">
+          <div className="flex justify-end gap-3 pt-4 border-t border-[#DCD8CE]">
             <Button variant="outline" type="button" onClick={() => setIsCreateOpen(false)}>
               Cancel
             </Button>
@@ -2414,7 +2414,7 @@ export default function DemosPage() {
         title={`Assign Demo Team Member — ${selectedDemo?.demo_no}`}
       >
         <form onSubmit={handleAssignTeamSubmit} className="space-y-4 text-sm">
-          <div className="p-3 rounded-lg bg-[#F7FBFF] border border-[#D6E3F5] text-xs text-[#1A1A1A]">
+          <div className="p-3 rounded-lg bg-[#FBFAF7] border border-[#DCD8CE] text-xs text-[#14213D]">
             <p>
               <strong>Client:</strong> {selectedDemo?.organisation_name}
             </p>
@@ -2428,18 +2428,18 @@ export default function DemosPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-[#1A1A1A] mb-1.5">
+            <label className="block text-xs font-medium text-[#14213D] mb-1.5">
               Select Demo Specialist (Availability Checked) *
             </label>
-            <div className="space-y-2 max-h-48 overflow-y-auto border border-[#D6E3F5] rounded-lg p-2 bg-[#F7FBFF]">
+            <div className="space-y-2 max-h-48 overflow-y-auto border border-[#DCD8CE] rounded-lg p-2 bg-[#FBFAF7]">
               {teamMembers.map((member) => (
                 <label
                   key={member.id}
                   className={`flex items-center justify-between p-2.5 rounded-lg border cursor-pointer transition-all ${
                     teamForm.assigned_to === member.id
-                      ? 'bg-[#EAF2FF] border-[#223FA7] text-[#1A1A1A]'
+                      ? 'bg-[#E3EFEE] border-[#0F5E63] text-[#14213D]'
                       : member.is_available
-                      ? 'bg-white border-[#D6E3F5] text-[#1A1A1A] hover:bg-[#F0F5FF]'
+                      ? 'bg-white border-[#DCD8CE] text-[#14213D] hover:bg-[#F0F5FF]'
                       : 'bg-rose-50 border-rose-200 text-rose-800 opacity-90'
                   }`}
                 >
@@ -2452,8 +2452,8 @@ export default function DemosPage() {
                       onChange={() => setTeamForm({ ...teamForm, assigned_to: member.id })}
                     />
                     <div>
-                      <p className="font-semibold text-xs text-[#1A1A1A]">{member.full_name}</p>
-                      <span className="text-[10px] text-[#5871A5]">
+                      <p className="font-semibold text-xs text-[#14213D]">{member.full_name}</p>
+                      <span className="text-[10px] text-[#4A5568]">
                         {member.role.replace(/_/g, ' ')} • {member.phone || 'No phone'}
                       </span>
                     </div>
@@ -2498,7 +2498,7 @@ export default function DemosPage() {
           </div>
 
           {/* Travel Requirement Options */}
-          <div className="p-3 rounded-lg bg-[#F7FBFF] border border-[#D6E3F5] space-y-2">
+          <div className="p-3 rounded-lg bg-[#FBFAF7] border border-[#DCD8CE] space-y-2">
             <Checkbox
               checked={teamForm.travel_required}
               onChange={(e) => setTeamForm({ ...teamForm, travel_required: e.target.checked })}
@@ -2506,7 +2506,7 @@ export default function DemosPage() {
             />
 
             {teamForm.travel_required && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-2 pt-2 border-t border-[#D6E3F5]">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-2 pt-2 border-t border-[#DCD8CE]">
                 <Input
                   label="From"
                   value={teamForm.travel_from}
@@ -2527,7 +2527,7 @@ export default function DemosPage() {
             )}
           </div>
 
-          <div className="flex justify-end gap-3 pt-3 border-t border-[#D6E3F5]">
+          <div className="flex justify-end gap-3 pt-3 border-t border-[#DCD8CE]">
             <Button variant="outline" type="button" onClick={() => setIsAssignTeamOpen(false)}>
               Cancel
             </Button>
@@ -2550,7 +2550,7 @@ export default function DemosPage() {
         title={`Reserve Equipment Unit — ${selectedDemo?.demo_no}`}
       >
         <form onSubmit={handleReserveSubmit} className="space-y-4 text-sm">
-          <div className="p-3 rounded-lg bg-[#F7FBFF] border border-[#D6E3F5] text-xs text-[#1A1A1A]">
+          <div className="p-3 rounded-lg bg-[#FBFAF7] border border-[#DCD8CE] text-xs text-[#14213D]">
             <p>
               <strong>Demo Location:</strong> {selectedDemo?.location || 'Site'}
             </p>
@@ -2577,10 +2577,10 @@ export default function DemosPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-[#1A1A1A] mb-1.5">
+            <label className="block text-xs font-medium text-[#14213D] mb-1.5">
               Select Fleet Equipment Unit (Serial Number & Depot) *
             </label>
-            <div className="space-y-2 max-h-56 overflow-y-auto border border-[#D6E3F5] rounded-lg p-2 bg-[#F7FBFF]">
+            <div className="space-y-2 max-h-56 overflow-y-auto border border-[#DCD8CE] rounded-lg p-2 bg-[#FBFAF7]">
               {equipmentList.map((unit) => {
                 const isLocationMismatch =
                   unit.current_location &&
@@ -2592,8 +2592,8 @@ export default function DemosPage() {
                     key={unit.id}
                     className={`block p-2.5 rounded-lg border cursor-pointer transition-all ${
                       reserveForm.equipment_id === unit.id
-                        ? 'bg-[#EAF2FF] border-[#223FA7] text-[#1A1A1A]'
-                        : 'bg-white border-[#D6E3F5] text-[#1A1A1A] hover:bg-[#F0F5FF]'
+                        ? 'bg-[#E3EFEE] border-[#0F5E63] text-[#14213D]'
+                        : 'bg-white border-[#DCD8CE] text-[#14213D] hover:bg-[#F0F5FF]'
                     }`}
                   >
                     <div className="flex items-center justify-between">
@@ -2606,10 +2606,10 @@ export default function DemosPage() {
                           onChange={() => setReserveForm({ ...reserveForm, equipment_id: unit.id })}
                         />
                         <div>
-                          <p className="font-semibold text-xs text-[#1A1A1A]">
+                          <p className="font-semibold text-xs text-[#14213D]">
                             {unit.model} — {unit.serial_no || 'Unserialized'}
                           </p>
-                          <span className="text-[10px] text-[#5871A5]">
+                          <span className="text-[10px] text-[#4A5568]">
                             Product: {unit.product_name} • Depot: {unit.current_location}
                           </span>
                         </div>
@@ -2644,7 +2644,7 @@ export default function DemosPage() {
             onChange={(e) => setReserveForm({ ...reserveForm, remarks: e.target.value })}
           />
 
-          <div className="flex justify-end gap-3 pt-3 border-t border-[#D6E3F5]">
+          <div className="flex justify-end gap-3 pt-3 border-t border-[#DCD8CE]">
             <Button variant="outline" type="button" onClick={() => setIsReserveEquipOpen(false)}>
               Cancel
             </Button>
@@ -2667,7 +2667,7 @@ export default function DemosPage() {
         title={`Confirm Demo Date — ${selectedDemo?.demo_no}`}
       >
         <form onSubmit={handleConfirmDateSubmit} className="space-y-4 text-sm">
-          <p className="text-xs text-[#5871A5]">
+          <p className="text-xs text-[#4A5568]">
             Requested date is <strong>{selectedDemo?.requested_date}</strong>. Confirm the final
             scheduled date approved by client command.
           </p>
@@ -2687,7 +2687,7 @@ export default function DemosPage() {
             onChange={(e) => setConfirmForm({ ...confirmForm, remarks: e.target.value })}
           />
 
-          <div className="flex justify-end gap-3 pt-3 border-t border-[#D6E3F5]">
+          <div className="flex justify-end gap-3 pt-3 border-t border-[#DCD8CE]">
             <Button variant="outline" type="button" onClick={() => setIsConfirmDateOpen(false)}>
               Cancel
             </Button>
@@ -2726,7 +2726,7 @@ export default function DemosPage() {
             required
           />
 
-          <div className="flex justify-end gap-3 pt-3 border-t border-[#D6E3F5]">
+          <div className="flex justify-end gap-3 pt-3 border-t border-[#DCD8CE]">
             <Button variant="outline" type="button" onClick={() => setIsRescheduleOpen(false)}>
               Cancel
             </Button>
@@ -2776,7 +2776,7 @@ export default function DemosPage() {
             onChange={(e) => setCancelForm({ ...cancelForm, remarks: e.target.value })}
           />
 
-          <div className="flex justify-end gap-3 pt-3 border-t border-[#D6E3F5]">
+          <div className="flex justify-end gap-3 pt-3 border-t border-[#DCD8CE]">
             <Button variant="outline" type="button" onClick={() => setIsCancelOpen(false)}>
               Close
             </Button>
@@ -2797,8 +2797,8 @@ export default function DemosPage() {
       >
         <form onSubmit={handleOutcomeSubmit} className="space-y-4 text-sm">
           {/* Section 1: Demonstration Execution & Result */}
-          <div className="p-3.5 rounded-xl bg-[#F7FBFF] border border-[#D6E3F5] space-y-3">
-            <span className="text-xs font-bold text-[#1A1A1A] uppercase tracking-wider block">
+          <div className="p-3.5 rounded-xl bg-[#FBFAF7] border border-[#DCD8CE] space-y-3">
+            <span className="text-xs font-bold text-[#14213D] uppercase tracking-wider block">
               1. Demonstration Execution & Outcome
             </span>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-center">
@@ -2874,8 +2874,8 @@ export default function DemosPage() {
           )}
 
           {/* Section 3: Field Assessment & Technical Evaluation */}
-          <div className="p-3.5 rounded-xl bg-white border border-[#D6E3F5] space-y-3">
-            <span className="text-xs font-bold text-[#1A1A1A] uppercase tracking-wider block">
+          <div className="p-3.5 rounded-xl bg-white border border-[#DCD8CE] space-y-3">
+            <span className="text-xs font-bold text-[#14213D] uppercase tracking-wider block">
               3. Field Assessment & Technical Evaluation
             </span>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -2913,8 +2913,8 @@ export default function DemosPage() {
           </div>
 
           {/* Section 4: Commercial Progression & Follow-Up */}
-          <div className="p-3.5 rounded-xl bg-white border border-[#D6E3F5] space-y-3">
-            <span className="text-xs font-bold text-[#1A1A1A] uppercase tracking-wider block">
+          <div className="p-3.5 rounded-xl bg-white border border-[#DCD8CE] space-y-3">
+            <span className="text-xs font-bold text-[#14213D] uppercase tracking-wider block">
               4. Commercial Progression & Follow-Up
             </span>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -2947,7 +2947,7 @@ export default function DemosPage() {
             />
           </div>
 
-          <div className="flex justify-end gap-3 pt-3 border-t border-[#D6E3F5]">
+          <div className="flex justify-end gap-3 pt-3 border-t border-[#DCD8CE]">
             <Button variant="outline" type="button" onClick={() => setIsOutcomeOpen(false)}>
               Cancel
             </Button>
@@ -2967,14 +2967,14 @@ export default function DemosPage() {
         <div className="space-y-4 max-h-96 overflow-y-auto pr-1 text-xs">
           {selectedDemoAudit?.reschedule_events?.length > 0 && (
             <div className="space-y-2">
-              <h5 className="font-semibold text-[#1A1A1A] text-xs">Rescheduling History:</h5>
+              <h5 className="font-semibold text-[#14213D] text-xs">Rescheduling History:</h5>
               {selectedDemoAudit.reschedule_events.map((res: any) => (
-                <div key={res.id} className="p-2.5 rounded bg-[#F7FBFF] border border-[#D6E3F5]">
-                  <p className="font-medium text-[#1A1A1A]">
+                <div key={res.id} className="p-2.5 rounded bg-[#FBFAF7] border border-[#DCD8CE]">
+                  <p className="font-medium text-[#14213D]">
                     Moved from {res.old_date || 'Initial Date'} &rarr; {res.new_date}
                   </p>
-                  <p className="text-[#5871A5] mt-0.5 italic">Reason: "{res.reason}"</p>
-                  <p className="text-[10px] text-[#5871A5] mt-1">
+                  <p className="text-[#4A5568] mt-0.5 italic">Reason: "{res.reason}"</p>
+                  <p className="text-[10px] text-[#4A5568] mt-1">
                     By: {res.actor_name || 'Coordinator'} ({res.actor_role}) on{' '}
                     {new Date(res.created_at).toLocaleString()}
                   </p>
@@ -2984,23 +2984,23 @@ export default function DemosPage() {
           )}
 
           <div className="space-y-2">
-            <h5 className="font-semibold text-[#1A1A1A] text-xs">System Events:</h5>
+            <h5 className="font-semibold text-[#14213D] text-xs">System Events:</h5>
             {selectedDemoAudit?.audit_logs?.map((log: any) => (
-              <div key={log.id} className="p-2 rounded bg-[#F7FBFF] border border-[#D6E3F5]">
+              <div key={log.id} className="p-2 rounded bg-[#FBFAF7] border border-[#DCD8CE]">
                 <div className="flex items-center justify-between">
-                  <span className="font-mono font-semibold text-[#223FA7]">{log.action}</span>
-                  <span className="text-[10px] text-[#5871A5]">
+                  <span className="font-mono font-semibold text-[#0F5E63]">{log.action}</span>
+                  <span className="text-[10px] text-[#4A5568]">
                     {new Date(log.created_at).toLocaleString()}
                   </span>
                 </div>
-                <p className="text-[#5871A5] mt-1">
+                <p className="text-[#4A5568] mt-1">
                   Actor: {log.actor_name} ({log.actor_role})
                 </p>
               </div>
             ))}
           </div>
 
-          <div className="flex justify-end pt-2 border-t border-[#D6E3F5]">
+          <div className="flex justify-end pt-2 border-t border-[#DCD8CE]">
             <Button variant="outline" size="sm" onClick={() => setIsAuditOpen(false)}>
               Close
             </Button>
@@ -3109,7 +3109,7 @@ export default function DemosPage() {
             onChange={(e) => setEquipmentForm({ ...equipmentForm, remarks: e.target.value })}
           />
 
-          <div className="flex justify-end gap-3 pt-3 border-t border-[#D6E3F5]">
+          <div className="flex justify-end gap-3 pt-3 border-t border-[#DCD8CE]">
             <Button variant="outline" type="button" onClick={() => setIsEquipmentModalOpen(false)}>
               Cancel
             </Button>
@@ -3169,7 +3169,7 @@ export default function DemosPage() {
             onChange={(e) => setRejectForm({ ...rejectForm, remarks: e.target.value })}
           />
 
-          <div className="flex justify-end gap-3 pt-3 border-t border-[#D6E3F5]">
+          <div className="flex justify-end gap-3 pt-3 border-t border-[#DCD8CE]">
             <Button variant="outline" type="button" onClick={() => setIsRejectOpen(false)}>
               Cancel
             </Button>
@@ -3193,10 +3193,10 @@ export default function DemosPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-[#1A1A1A] mb-1.5">
+            <label className="block text-xs font-medium text-[#14213D] mb-1.5">
               Select Alternative Fleet Unit *
             </label>
-            <div className="space-y-2 max-h-52 overflow-y-auto border border-[#D6E3F5] rounded-lg p-2 bg-[#F7FBFF]">
+            <div className="space-y-2 max-h-52 overflow-y-auto border border-[#DCD8CE] rounded-lg p-2 bg-[#FBFAF7]">
               {equipmentList
                 .filter((unit) => unit.id !== selectedReservation?.equipment_id)
                 .map((unit) => (
@@ -3204,8 +3204,8 @@ export default function DemosPage() {
                     key={unit.id}
                     className={`block p-2.5 rounded-lg border cursor-pointer transition-all ${
                       allocateForm.equipment_id === unit.id
-                        ? 'bg-[#EAF2FF] border-[#223FA7] text-[#1A1A1A]'
-                        : 'bg-white border-[#D6E3F5] text-[#1A1A1A] hover:bg-[#F0F5FF]'
+                        ? 'bg-[#E3EFEE] border-[#0F5E63] text-[#14213D]'
+                        : 'bg-white border-[#DCD8CE] text-[#14213D] hover:bg-[#F0F5FF]'
                     }`}
                   >
                     <div className="flex items-center justify-between">
@@ -3220,10 +3220,10 @@ export default function DemosPage() {
                           }
                         />
                         <div>
-                          <p className="font-semibold text-xs text-[#1A1A1A]">
+                          <p className="font-semibold text-xs text-[#14213D]">
                             {unit.model} — {unit.serial_no || 'Unserialized'}
                           </p>
-                          <span className="text-[10px] text-[#5871A5]">
+                          <span className="text-[10px] text-[#4A5568]">
                             Depot: {unit.current_location} • Condition: {unit.condition}
                           </span>
                         </div>
@@ -3269,7 +3269,7 @@ export default function DemosPage() {
             onChange={(e) => setAllocateForm({ ...allocateForm, remarks: e.target.value })}
           />
 
-          <div className="flex justify-end gap-3 pt-3 border-t border-[#D6E3F5]">
+          <div className="flex justify-end gap-3 pt-3 border-t border-[#DCD8CE]">
             <Button variant="outline" type="button" onClick={() => setIsAllocateOpen(false)}>
               Cancel
             </Button>

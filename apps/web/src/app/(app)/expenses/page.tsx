@@ -182,7 +182,7 @@ export default function ExpensesPage() {
         badge="Travel & Reimbursements"
         title="Two-Stage Expense Reimbursements"
         subtitle="Stage 1: Regional Manager verification • Stage 2: Corporate Accounts disbursement."
-        icon={<Receipt className="h-5 w-5 text-[#223FA7]" />}
+        icon={<Receipt className="h-5 w-5 text-[#0F5E63]" />}
         actions={
           <Button
             onClick={() => setIsSubmitOpen(true)}
@@ -210,7 +210,7 @@ export default function ExpensesPage() {
       {/* Claims Grid */}
       <div className="space-y-3">
         {isLoading ? (
-          <div className="p-8 text-center text-xs text-[#5871A5] bg-white border border-[#D6E3F5] rounded-xl">Loading claims...</div>
+          <div className="p-8 text-center text-xs text-[#4A5568] bg-white border border-[#DCD8CE] rounded-xl">Loading claims...</div>
         ) : expenses.length === 0 ? (
           <EmptyState
             icon={Receipt}
@@ -229,7 +229,7 @@ export default function ExpensesPage() {
               >
                 <div className="space-y-1.5 flex-1">
                   <div className="flex items-center space-x-2.5">
-                    <span className="font-mono text-base font-extrabold text-[#1A1A1A]">
+                    <span className="font-mono text-base font-extrabold text-[#14213D]">
                       {formatINR(exp.amount)}
                     </span>
                     <Badge variant="outline" size="sm" className="uppercase font-bold">
@@ -251,15 +251,15 @@ export default function ExpensesPage() {
                     </Badge>
                   </div>
 
-                  <p className="text-xs text-[#1A1A1A] font-medium">{exp.purpose}</p>
+                  <p className="text-xs text-[#14213D] font-medium">{exp.purpose}</p>
 
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-[#5871A5]">
-                    <span>Officer: <strong className="text-[#1A1A1A]">{exp.employee_name || exp.user_name || 'Staff'}</strong></span>
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-[#4A5568]">
+                    <span>Officer: <strong className="text-[#14213D]">{exp.employee_name || exp.user_name || 'Staff'}</strong></span>
                     <span>Date: {new Date(exp.expense_date).toLocaleDateString('en-IN')}</span>
                     {(exp.organisation_name || exp.visit_purpose) && (
-                      <span className="flex items-center gap-1 text-[#5871A5]">
-                        <MapPin className="h-3 w-3 text-[#223FA7]" />
-                        Tour: <strong className="text-[#1A1A1A]">{exp.organisation_name || exp.visit_purpose}</strong>
+                      <span className="flex items-center gap-1 text-[#4A5568]">
+                        <MapPin className="h-3 w-3 text-[#0F5E63]" />
+                        Tour: <strong className="text-[#14213D]">{exp.organisation_name || exp.visit_purpose}</strong>
                       </span>
                     )}
                     {exp.receipt_url && (
@@ -267,7 +267,7 @@ export default function ExpensesPage() {
                         href={exp.receipt_url}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-[#223FA7] hover:underline flex items-center gap-1 font-semibold"
+                        className="text-[#0F5E63] hover:underline flex items-center gap-1 font-semibold"
                       >
                         <ExternalLink className="h-3 w-3" />
                         <span>View Attached Bill Slip</span>
@@ -329,7 +329,7 @@ export default function ExpensesPage() {
                     )}
 
                   {isSubmitter && exp.status === 'submitted' && !hasRole(['management', 'regional_manager']) && (
-                    <span className="text-[10px] text-[#5871A5] italic">
+                    <span className="text-[10px] text-[#4A5568] italic">
                       Awaiting Manager Verification
                     </span>
                   )}
@@ -448,17 +448,17 @@ export default function ExpensesPage() {
             </div>
           )}
 
-          <div className="p-3 rounded-xl bg-[#F7FBFF] border border-[#D6E3F5] text-xs space-y-1">
+          <div className="p-3 rounded-xl bg-[#FBFAF7] border border-[#DCD8CE] text-xs space-y-1">
             <div className="flex justify-between">
-              <span className="text-[#5871A5]">Claimed By:</span>
-              <span className="font-bold text-[#1A1A1A]">{selectedExpense?.employee_name || selectedExpense?.user_name}</span>
+              <span className="text-[#4A5568]">Claimed By:</span>
+              <span className="font-bold text-[#14213D]">{selectedExpense?.employee_name || selectedExpense?.user_name}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-[#5871A5]">Total Amount:</span>
-              <span className="font-bold text-[#223FA7]">{formatINR(selectedExpense?.amount || 0)}</span>
+              <span className="text-[#4A5568]">Total Amount:</span>
+              <span className="font-bold text-[#0F5E63]">{formatINR(selectedExpense?.amount || 0)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-[#5871A5]">Purpose:</span>
+              <span className="text-[#4A5568]">Purpose:</span>
               <span className="text-gray-700">{selectedExpense?.purpose}</span>
             </div>
           </div>

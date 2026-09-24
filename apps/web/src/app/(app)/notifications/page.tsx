@@ -69,7 +69,7 @@ export default function NotificationsPage() {
         badge="System Updates"
         title="Alerts, Directives & Notifications"
         subtitle="Real-time system events, GeM bid closing alerts, and executive broadcasts."
-        icon={<Bell className="h-5 w-5 text-[#223FA7]" />}
+        icon={<Bell className="h-5 w-5 text-[#0F5E63]" />}
         actions={
           <Button variant="secondary" size="sm" onClick={handleMarkAllRead}>
             <CheckCircle2 className="h-4 w-4 mr-1.5 text-emerald-600" />
@@ -80,7 +80,7 @@ export default function NotificationsPage() {
 
       <div className="space-y-3">
         {isLoading ? (
-          <div className="p-8 text-center text-xs text-[#5871A5] bg-white border border-[#D6E3F5] rounded-xl">
+          <div className="p-8 text-center text-xs text-[#4A5568] bg-white border border-[#DCD8CE] rounded-xl">
             Loading notifications...
           </div>
         ) : notifications.length === 0 ? (
@@ -101,7 +101,7 @@ export default function NotificationsPage() {
                 <div
                   className={`p-2 rounded-lg shrink-0 mt-0.5 ${
                     n.is_read
-                      ? 'bg-[#F7FBFF] text-[#5871A5] border border-[#D6E3F5]'
+                      ? 'bg-[#FBFAF7] text-[#4A5568] border border-[#DCD8CE]'
                       : 'bg-red-100 text-red-600 border border-red-200'
                   }`}
                 >
@@ -110,13 +110,13 @@ export default function NotificationsPage() {
 
                 <div className="space-y-1">
                   <div className="flex items-center space-x-2">
-                    <span className="font-bold text-sm text-[#1A1A1A]">{n.title}</span>
+                    <span className="font-bold text-sm text-[#14213D]">{n.title}</span>
                     {!n.is_read && (
                       <span className="h-2 w-2 rounded-full bg-red-600 inline-block" />
                     )}
                   </div>
-                  <p className="text-xs text-[#5871A5] leading-relaxed">{n.message}</p>
-                  <div className="text-[10px] font-mono text-[#5871A5]">
+                  <p className="text-xs text-[#4A5568] leading-relaxed">{n.message}</p>
+                  <div className="text-[10px] font-mono text-[#4A5568]">
                     {new Date(n.created_at).toLocaleString('en-IN')}
                   </div>
                 </div>
@@ -127,7 +127,7 @@ export default function NotificationsPage() {
                   size="sm"
                   variant="ghost"
                   onClick={() => handleMarkAsRead(n.id)}
-                  className="shrink-0 text-xs text-[#223FA7]"
+                  className="shrink-0 text-xs text-[#0F5E63]"
                 >
                   Dismiss
                 </Button>

@@ -124,6 +124,7 @@ export default function TendersPage() {
   });
 
   // Executive Reports State (§21, §26, §27)
+  const [organisationReport, setOrganisationReport] = useState<any[]>([]);
   const [zoneReport, setZoneReport] = useState<any[]>([]);
   const [regionReport, setRegionReport] = useState<any[]>([]);
   const [salespersonReport, setSalespersonReport] = useState<any[]>([]);
@@ -131,6 +132,10 @@ export default function TendersPage() {
   const [winLossReport, setWinLossReport] = useState<any>({ won: 0, lost: 0, win_rate: 0, loss_reasons: {}, competitors: {} });
   const [globalPortalIssues, setGlobalPortalIssues] = useState<any[]>([]);
   const [isLoadingReports, setIsLoadingReports] = useState(false);
+
+  // Geographic Masters (§21 Zone & Region Structure)
+  const [zonesMaster, setZonesMaster] = useState<any[]>([]);
+  const [regionsMaster, setRegionsMaster] = useState<any[]>([]);
 
   // Filter Bar state
   const [search, setSearch] = useState('');
@@ -157,7 +162,7 @@ export default function TendersPage() {
   const [isNewIssueOpen, setIsNewIssueOpen] = useState(false);
   const [isTransitionOpen, setIsTransitionOpen] = useState(false);
 
-  // 15+ North Tender Sheet Create Form State
+  // 15+ North Tender Sheet Create Form State (§19-§21)
   const [newTender, setNewTender] = useState({
     tender_no: '',
     portal: 'GeM',
@@ -166,9 +171,12 @@ export default function TendersPage() {
     product_id: '',
     city: '',
     state: '',
+    zone_id: '',
+    region_id: '',
     zone: 'North',
     region: 'Delhi NCR',
     category: 'general_mha',
+    current_stage: 'identified',
     requirement_text: '',
     quantity: 1,
     emd_fee: 0,
@@ -188,11 +196,17 @@ export default function TendersPage() {
   // Structured Win / Loss Outcome Form State (§26)
   const [outcomeResult, setOutcomeResult] = useState<'won' | 'lost'>('won');
   const [outcomeValueLakh, setOutcomeValueLakh] = useState('');
+  const [outcomeProductId, setOutcomeProductId] = useState('');
+  const [outcomeRegionId, setOutcomeRegionId] = useState('');
+  const [outcomeResponsiblePersonId, setOutcomeResponsiblePersonId] = useState('');
+  const [outcomeCategory, setOutcomeCategory] = useState('general_mha');
   const [outcomeLossReason, setOutcomeLossReason] = useState('price');
   const [outcomeCompetitor, setOutcomeCompetitor] = useState('');
   const [outcomeTechnicalIssue, setOutcomeTechnicalIssue] = useState('');
   const [outcomePricingIssue, setOutcomePricingIssue] = useState('');
   const [outcomeEligibilityIssue, setOutcomeEligibilityIssue] = useState('');
+  const [outcomeDocumentationIssue, setOutcomeDocumentationIssue] = useState('');
+  const [outcomeOtherReason, setOutcomeOtherReason] = useState('');
   const [outcomeRemarks, setOutcomeRemarks] = useState('');
   const [outcomeResultDate, setOutcomeResultDate] = useState(new Date().toISOString().split('T')[0]);
 
@@ -202,27 +216,34 @@ export default function TendersPage() {
   const [transitionSubmissionDate, setTransitionSubmissionDate] = useState(new Date().toISOString().split('T')[0]);
 
   // Portal Issue Form State (§25)
+  const [issueTenderId, setIssueTenderId] = useState('');
+  const [issueReportedDate, setIssueReportedDate] = useState(new Date().toISOString().split('T')[0]);
   const [newIssueText, setNewIssueText] = useState('');
   const [issueResponsiblePerson, setIssueResponsiblePerson] = useState('');
   const [issueEscalatedTo, setIssueEscalatedTo] = useState('');
+  const [issueResolutionStatus, setIssueResolutionStatus] = useState('OPEN');
 
   const [actionError, setActionError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // 1. Fetch Lookups
+  // 1. Fetch Lookups (§21 Zone & Region Structure)
   const fetchMasters = async () => {
     try {
-      const [catsRes, orgsRes, prodsRes, usersRes] = await Promise.all([
+      const [catsRes, orgsRes, prodsRes, usersRes, zonesRes, regionsRes] = await Promise.all([
         api.get('/tenders/categories').catch(() => []),
         api.get('/organisations', { limit: 100 }).catch(() => ({ data: [] })),
         api.get('/products').catch(() => []),
         api.get('/users', { limit: 100 }).catch(() => ({ data: [] })),
+        api.get('/masters/zones').catch(() => []),
+        api.get('/masters/regions').catch(() => []),
       ]);
 
       setCategories(Array.isArray(catsRes) ? catsRes : []);
       setOrganisations(orgsRes.data || []);
       setProducts(Array.isArray(prodsRes) ? prodsRes : prodsRes.data || []);
       setUsers(usersRes.data || []);
+      setZonesMaster(Array.isArray(zonesRes) ? zonesRes : []);
+      setRegionsMaster(Array.isArray(regionsRes) ? regionsRes : []);
     } catch (err) {
       console.error('Failed to load masters:', err);
     }
@@ -240,14 +261,15 @@ export default function TendersPage() {
     }
   };
 
-  // 3. Fetch Executive Reports (§21, §26, §27)
+  // 3. Fetch Executive Reports (§21 Organisation, Zone, Region, Salesperson)
   const fetchReports = async () => {
     setIsLoadingReports(true);
     try {
-      const [zonesRes, regionsRes, salesRes, pipelineRes, winLossRes, portalIssuesRes] = await Promise.all([
+      const [zonesRes, regionsRes, salesRes, orgsReportRes, pipelineRes, winLossRes, portalIssuesRes] = await Promise.all([
         api.get('/tenders/reports/by-zone').catch(() => []),
         api.get('/tenders/reports/by-region').catch(() => []),
         api.get('/tenders/reports/by-salesperson').catch(() => []),
+        api.get('/tenders/reports/by-organisation').catch(() => []),
         api.get('/tenders/reports/pipeline').catch(() => ({ total: 0, stages: [], categories: [] })),
         api.get('/tenders/reports/win-loss').catch(() => ({ won: 0, lost: 0, win_rate: 0, loss_reasons: {}, competitors: {} })),
         api.get('/tenders/portal-issues').catch(() => []),
@@ -256,6 +278,7 @@ export default function TendersPage() {
       setZoneReport(Array.isArray(zonesRes) ? zonesRes : []);
       setRegionReport(Array.isArray(regionsRes) ? regionsRes : []);
       setSalespersonReport(Array.isArray(salesRes) ? salesRes : []);
+      setOrganisationReport(Array.isArray(orgsReportRes) ? orgsReportRes : []);
       setPipelineReport(pipelineRes || { total: 0, stages: [], categories: [] });
       setWinLossReport(winLossRes || { won: 0, lost: 0, win_rate: 0, loss_reasons: {}, competitors: {} });
       setGlobalPortalIssues(Array.isArray(portalIssuesRes) ? portalIssuesRes : []);
@@ -422,10 +445,76 @@ export default function TendersPage() {
     setPage(1);
   };
 
-  // 4. Handle Create Tender (All 15+ Fields)
+  // Cascading Region helper based on selected Zone (§21)
+  const availableRegions = useMemo(() => {
+    if (!newTender.zone_id && !newTender.zone) return regionsMaster;
+    const selectedZone = zonesMaster.find(
+      (z) => z.id === newTender.zone_id || z.name?.toLowerCase() === newTender.zone?.toLowerCase(),
+    );
+    if (!selectedZone) return regionsMaster;
+    return regionsMaster.filter((r) => r.zone_id === selectedZone.id);
+  }, [newTender.zone_id, newTender.zone, zonesMaster, regionsMaster]);
+
+  // Handle Organisation change with auto-population of geo mapping
+  const handleOrgChange = (orgId: string) => {
+    const selectedOrg = organisations.find((o) => o.id === orgId);
+    if (!selectedOrg) {
+      setNewTender((prev) => ({ ...prev, organisation_id: orgId }));
+      return;
+    }
+
+    const matchedZone = zonesMaster.find((z) => z.id === selectedOrg.zone_id);
+    const matchedRegion = regionsMaster.find((r) => r.id === selectedOrg.region_id);
+
+    setNewTender((prev) => ({
+      ...prev,
+      organisation_id: orgId,
+      department: prev.department || selectedOrg.name,
+      city: prev.city || selectedOrg.city || '',
+      state: prev.state || selectedOrg.state || '',
+      zone_id: selectedOrg.zone_id || prev.zone_id,
+      zone: matchedZone ? matchedZone.name : prev.zone,
+      region_id: selectedOrg.region_id || prev.region_id,
+      region: matchedRegion ? matchedRegion.name : prev.region,
+    }));
+  };
+
+  // Handle Zone change with cascading Region update
+  const handleZoneChange = (zoneVal: string) => {
+    const matchedZone = zonesMaster.find((z) => z.id === zoneVal || z.name === zoneVal);
+    const zId = matchedZone ? matchedZone.id : zoneVal;
+    const zName = matchedZone ? matchedZone.name : zoneVal;
+    const validRegions = regionsMaster.filter((r) => r.zone_id === zId);
+    const firstRegion = validRegions[0];
+
+    setNewTender((prev) => ({
+      ...prev,
+      zone_id: zId,
+      zone: zName,
+      region_id: firstRegion ? firstRegion.id : '',
+      region: firstRegion ? firstRegion.name : '',
+    }));
+  };
+
+  // Handle Region change
+  const handleRegionChange = (regVal: string) => {
+    const matchedRegion = regionsMaster.find((r) => r.id === regVal || r.name === regVal);
+    setNewTender((prev) => ({
+      ...prev,
+      region_id: matchedRegion ? matchedRegion.id : regVal,
+      region: matchedRegion ? matchedRegion.name : regVal,
+    }));
+  };
+
+  // 4. Handle Create Tender (All 15+ Indicative Sheet Fields)
   const handleCreateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setActionError(null);
+
+    if (!newTender.tender_no.trim()) {
+      setActionError('Tender number is mandatory.');
+      return;
+    }
 
     if (!newTender.organisation_id) {
       setActionError('Please select a mapped organisation for tender registration.');
@@ -443,6 +532,7 @@ export default function TendersPage() {
     setIsSubmitting(true);
     try {
       await api.post('/tenders', {
+        tender_no: newTender.tender_no.trim(),
         tender_number: newTender.tender_no.trim(),
         portal: newTender.portal,
         organisation_id: newTender.organisation_id || undefined,
@@ -450,9 +540,14 @@ export default function TendersPage() {
         product_id: newTender.product_id || undefined,
         city: newTender.city.trim(),
         state: newTender.state.trim(),
+        zone_id: newTender.zone_id || undefined,
         zone: newTender.zone,
+        region_id: newTender.region_id || undefined,
         region: newTender.region,
         category: newTender.category,
+        tender_category: newTender.category,
+        status: newTender.current_stage || 'identified',
+        current_stage: newTender.current_stage || 'identified',
         requirement_text: newTender.requirement_text.trim(),
         quantity: Number(newTender.quantity) || 1,
         emd_fee: Number(newTender.emd_fee) || 0,
@@ -473,9 +568,12 @@ export default function TendersPage() {
         product_id: '',
         city: '',
         state: '',
+        zone_id: '',
+        region_id: '',
         zone: 'North',
         region: 'Delhi NCR',
         category: 'general_mha',
+        current_stage: 'identified',
         requirement_text: '',
         quantity: 1,
         emd_fee: 0,
@@ -492,6 +590,18 @@ export default function TendersPage() {
       setActionError(err.message || 'Failed to register tender.');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  // Quick Action: Submit for Internal Review (§24)
+  const handleQuickRequestApproval = async (tender: any) => {
+    try {
+      await api.post(`/tenders/${tender.id}/request-approval`, {
+        remarks: 'Submitted for internal review by sales/tender team',
+      });
+      await Promise.all([fetchTenders(), fetchDashboardStats()]);
+    } catch (err: any) {
+      alert(err.message || 'Failed to submit tender for internal review.');
     }
   };
 
@@ -552,6 +662,50 @@ export default function TendersPage() {
     }
   };
 
+  // Helper to open Win/Loss Outcome Modal with prefilled tender data (§26)
+  const openOutcomeModal = (tender: any) => {
+    setSelectedTender(tender);
+    setOutcomeResult('won');
+    setOutcomeValueLakh(
+      tender.estimated_value_lakh || tender.estimated_value
+        ? String(tender.estimated_value_lakh || tender.estimated_value / 100000)
+        : ''
+    );
+    setOutcomeProductId(tender.product_id || '');
+    setOutcomeRegionId(tender.region_id || '');
+    setOutcomeResponsiblePersonId(tender.assigned_to || tender.assigned_person_id || tender.tender_owner_id || '');
+    setOutcomeCategory(tender.category || 'general_mha');
+    setOutcomeLossReason('price');
+    setOutcomeCompetitor('');
+    setOutcomeTechnicalIssue('');
+    setOutcomePricingIssue('');
+    setOutcomeEligibilityIssue('');
+    setOutcomeDocumentationIssue('');
+    setOutcomeOtherReason('');
+    setOutcomeRemarks('');
+    setOutcomeResultDate(new Date().toISOString().split('T')[0]);
+    setActionError(null);
+    setIsOutcomeOpen(true);
+  };
+
+  // Helper to open GeM / Portal Issue Modal (§25)
+  const openNewIssueModal = (tender?: any) => {
+    setActionError(null);
+    if (tender) {
+      setSelectedTender(tender);
+      setIssueTenderId(tender.id);
+      setIssueResponsiblePerson(tender.assigned_to || tender.assigned_person_id || '');
+    } else {
+      setIssueTenderId(tenders[0]?.id || '');
+      setIssueResponsiblePerson('');
+    }
+    setNewIssueText('');
+    setIssueEscalatedTo('');
+    setIssueReportedDate(new Date().toISOString().split('T')[0]);
+    setIssueResolutionStatus('OPEN');
+    setIsNewIssueOpen(true);
+  };
+
   // 7. Handle Structured Win / Loss Outcome Submit (§26)
   const handleOutcomeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -569,16 +723,29 @@ export default function TendersPage() {
         outcomeLossReason ? `Category: ${outcomeLossReason.toUpperCase()}` : null,
         outcomeTechnicalIssue ? `Technical: ${outcomeTechnicalIssue}` : null,
         outcomePricingIssue ? `Pricing: ${outcomePricingIssue}` : null,
-        outcomeEligibilityIssue ? `Eligibility/Docs: ${outcomeEligibilityIssue}` : null,
+        outcomeEligibilityIssue ? `Eligibility: ${outcomeEligibilityIssue}` : null,
+        outcomeDocumentationIssue ? `Docs: ${outcomeDocumentationIssue}` : null,
+        outcomeOtherReason ? `Other: ${outcomeOtherReason}` : null,
         outcomeRemarks ? `Remarks: ${outcomeRemarks}` : null,
       ].filter(Boolean).join(' | ');
 
       await api.post(`/tenders/${selectedTender.id}/outcome`, {
         result: outcomeResult,
         value_lakh: outcomeResult === 'won' && outcomeValueLakh ? Number(outcomeValueLakh) : undefined,
+        product_id: outcomeProductId || undefined,
+        region_id: outcomeRegionId || undefined,
+        responsible_person_id: outcomeResponsiblePersonId || undefined,
+        category: outcomeCategory || undefined,
+        tender_category: outcomeCategory || undefined,
         reason: outcomeResult === 'lost' ? (fullReasonNote || outcomeLossReason) : (outcomeRemarks || 'Won commercial evaluation'),
         loss_reason: outcomeResult === 'lost' ? outcomeLossReason : undefined,
         competitor: outcomeCompetitor.trim() || undefined,
+        technical_issue: outcomeTechnicalIssue.trim() || undefined,
+        pricing_issue: outcomePricingIssue.trim() || undefined,
+        eligibility_issue: outcomeEligibilityIssue.trim() || undefined,
+        documentation_issue: outcomeDocumentationIssue.trim() || undefined,
+        other_reason: outcomeOtherReason.trim() || undefined,
+        remarks: outcomeRemarks.trim() || undefined,
         result_date: outcomeResultDate,
       });
 
@@ -588,6 +755,8 @@ export default function TendersPage() {
       setOutcomeTechnicalIssue('');
       setOutcomePricingIssue('');
       setOutcomeEligibilityIssue('');
+      setOutcomeDocumentationIssue('');
+      setOutcomeOtherReason('');
       setOutcomeValueLakh('');
       await openTenderDetails(selectedTender);
       await Promise.all([fetchTenders(), fetchDashboardStats(), fetchReports()]);
@@ -601,23 +770,35 @@ export default function TendersPage() {
   // 8. Handle Create Portal Issue (§25)
   const handleCreateIssue = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedTender || !newIssueText.trim()) return;
+    const targetTenderId = selectedTender?.id || issueTenderId;
+    if (!targetTenderId) {
+      setActionError('Please select the affected tender.');
+      return;
+    }
+    if (!newIssueText.trim()) {
+      setActionError('Issue description is required.');
+      return;
+    }
     setActionError(null);
     setIsSubmitting(true);
 
     try {
-      await api.post(`/tenders/${selectedTender.id}/portal-issues`, {
+      await api.post(`/tenders/${targetTenderId}/portal-issues`, {
         issue: newIssueText.trim(),
+        reported_date: issueReportedDate || new Date().toISOString().split('T')[0],
         responsible_person_id: issueResponsiblePerson || undefined,
         escalated_to: issueEscalatedTo.trim() || undefined,
+        resolution_status: issueResolutionStatus || 'OPEN',
       });
 
       setIsNewIssueOpen(false);
       setNewIssueText('');
       setIssueResponsiblePerson('');
       setIssueEscalatedTo('');
-      await openTenderDetails(selectedTender);
-      await Promise.all([fetchDashboardStats(), fetchReports()]);
+      if (selectedTender) {
+        await openTenderDetails(selectedTender);
+      }
+      await Promise.all([fetchTenders(), fetchDashboardStats(), fetchReports()]);
     } catch (err: any) {
       setActionError(err.message || 'Failed to log portal issue.');
     } finally {
@@ -743,7 +924,7 @@ export default function TendersPage() {
       <PageHeader
         title="Tender Pipeline & Bids Command"
         description="Comprehensive defence bidding pipeline, GeM/CPPP portal issue tracking, dual-control signoffs, and executive win/loss analytics."
-        icon={<FileText className="h-6 w-6 text-[#223FA7]" />}
+        icon={<FileText className="h-6 w-6 text-[#0F5E63]" />}
         actions={
           <div className="flex items-center gap-2">
             <Button
@@ -754,7 +935,7 @@ export default function TendersPage() {
                 fetchDashboardStats();
                 fetchReports();
               }}
-              leftIcon={<RefreshCw className="h-3.5 w-3.5 text-[#5871A5]" />}
+              leftIcon={<RefreshCw className="h-3.5 w-3.5 text-[#4A5568]" />}
             >
               <span>Refresh</span>
             </Button>
@@ -827,9 +1008,9 @@ export default function TendersPage() {
                 description="Real-time multi-dimensional aggregation across all procurement stages"
               />
               {dashboardStats.win_rate !== undefined && (
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-[#D6E3F5] shadow-2xs">
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-[#DCD8CE] shadow-2xs">
                   <TrendingUp className="h-4 w-4 text-emerald-600" />
-                  <span className="text-xs font-bold text-[#5871A5]">Overall Win Rate:</span>
+                  <span className="text-xs font-bold text-[#4A5568]">Overall Win Rate:</span>
                   <span className="text-sm font-black text-emerald-700">
                     {Number(dashboardStats.win_rate || dashboardStats.win_rate_percentage || 0).toFixed(1)}%
                   </span>
@@ -843,8 +1024,8 @@ export default function TendersPage() {
                 label="Total Tenders"
                 value={dashboardStats.total || dashboardStats.total_tenders || 0}
                 subtext="All tracked opportunities"
-                icon={<FileText className="h-4 w-4 text-[#223FA7]" />}
-                className="cursor-pointer hover:border-[#223FA7]"
+                icon={<FileText className="h-4 w-4 text-[#0F5E63]" />}
+                className="cursor-pointer hover:border-[#0F5E63]"
                 onClick={() => handleHudClick('total', '')}
               />
 
@@ -852,9 +1033,9 @@ export default function TendersPage() {
                 label="PQ Tenders (§20)"
                 value={dashboardStats.pq_count || dashboardStats.pq_tenders || 0}
                 subtext="Pre-qualification bids"
-                icon={<Layers className="h-4 w-4 text-[#223FA7]" />}
+                icon={<Layers className="h-4 w-4 text-[#0F5E63]" />}
                 valueColor="primary"
-                className={`cursor-pointer ${categoryFilter === 'pq' ? 'ring-2 ring-[#223FA7]' : ''}`}
+                className={`cursor-pointer ${categoryFilter === 'pq' ? 'ring-2 ring-[#0F5E63]' : ''}`}
                 onClick={() => handleHudClick('pq', 'pq')}
               />
 
@@ -862,8 +1043,8 @@ export default function TendersPage() {
                 label="General / MHA (§20)"
                 value={dashboardStats.general_mha_count || dashboardStats.general_mha_tenders || 0}
                 subtext="Defence & Ministry bids"
-                icon={<Building className="h-4 w-4 text-[#223FA7]" />}
-                className={`cursor-pointer ${categoryFilter === 'general_mha' ? 'ring-2 ring-[#223FA7]' : ''}`}
+                icon={<Building className="h-4 w-4 text-[#0F5E63]" />}
+                className={`cursor-pointer ${categoryFilter === 'general_mha' ? 'ring-2 ring-[#0F5E63]' : ''}`}
                 onClick={() => handleHudClick('general_mha', 'general_mha')}
               />
 
@@ -871,8 +1052,8 @@ export default function TendersPage() {
                 label="Under Preparation"
                 value={dashboardStats.under_preparation || 0}
                 subtext="In active bid drafting"
-                icon={<Clock className="h-4 w-4 text-[#5871A5]" />}
-                className={`cursor-pointer ${statusFilter === 'under_preparation' ? 'ring-2 ring-[#223FA7]' : ''}`}
+                icon={<Clock className="h-4 w-4 text-[#4A5568]" />}
+                className={`cursor-pointer ${statusFilter === 'under_preparation' ? 'ring-2 ring-[#0F5E63]' : ''}`}
                 onClick={() => handleHudClick('under_preparation', 'under_preparation')}
               />
 
@@ -901,8 +1082,8 @@ export default function TendersPage() {
                 label="Submitted Bids"
                 value={dashboardStats.submitted || dashboardStats.tenders_submitted || 0}
                 subtext="Awaiting eval/results"
-                icon={<Send className="h-4 w-4 text-[#223FA7]" />}
-                className={`cursor-pointer ${statusFilter === 'submitted' ? 'ring-2 ring-[#223FA7]' : ''}`}
+                icon={<Send className="h-4 w-4 text-[#0F5E63]" />}
+                className={`cursor-pointer ${statusFilter === 'submitted' ? 'ring-2 ring-[#0F5E63]' : ''}`}
                 onClick={() => handleHudClick('submitted', 'submitted')}
               />
 
@@ -954,6 +1135,122 @@ export default function TendersPage() {
                 className="cursor-pointer"
                 onClick={() => setActiveTab('portal_issues')}
               />
+            </div>
+          </div>
+
+          {/* ========================================================================= */}
+          {/* Arihant Tender Lifecycle Pipeline Stepper (§19-§26) */}
+          {/* ========================================================================= */}
+          <div className="bg-white rounded-xl border border-[#DCD8CE] p-3.5 shadow-2xs space-y-2.5">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <span className="p-1 rounded-md bg-[#E3EFEE] text-[#0F5E63]">
+                  <Sparkles className="h-4 w-4" />
+                </span>
+                <div>
+                  <h3 className="text-xs font-bold text-[#14213D]">Arihant Operational Tender Lifecycle</h3>
+                  <p className="text-[11px] text-[#4A5568]">
+                    Governed 6-stage workflow: Identified → Internal Review → Authorisation → Preparation → Submitted → Result Tracking
+                  </p>
+                </div>
+              </div>
+              {statusFilter && (
+                <Button
+                  size="xs"
+                  variant="ghost"
+                  onClick={() => {
+                    setStatusFilter('');
+                    setPage(1);
+                  }}
+                  leftIcon={<X className="h-3 w-3" />}
+                >
+                  Clear Stage Filter ({statusFilter.replace(/_/g, ' ')})
+                </Button>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 pt-0.5">
+              {[
+                {
+                  key: 'identified',
+                  stageNum: '1',
+                  name: 'Tender Identified',
+                  desc: 'New requirement logged',
+                  active: statusFilter === 'identified',
+                  count: dashboardStats.pending ? Math.max(0, dashboardStats.pending - (dashboardStats.pending_approvals || 0) - (dashboardStats.under_preparation || 0)) : 0,
+                },
+                {
+                  key: 'awaiting_approval',
+                  stageNum: '2',
+                  name: 'Submitted for Review',
+                  desc: 'Awaiting RM signoff',
+                  active: statusFilter === 'awaiting_approval',
+                  count: dashboardStats.pending_approvals || 0,
+                },
+                {
+                  key: 'rejected_internally',
+                  stageNum: '3',
+                  name: 'Authorised Decision',
+                  desc: 'Approved / rejected by RM',
+                  active: statusFilter === 'rejected_internally',
+                  count: tenders.filter((t) => t.status === 'rejected_internally').length,
+                },
+                {
+                  key: 'under_preparation',
+                  stageNum: '4',
+                  name: 'Tender Preparation',
+                  desc: 'Bidding & PQ packets',
+                  active: statusFilter === 'under_preparation',
+                  count: dashboardStats.under_preparation || 0,
+                },
+                {
+                  key: 'submitted',
+                  stageNum: '5',
+                  name: 'Tender Submitted',
+                  desc: 'Bids filed on GeM/portal',
+                  active: statusFilter === 'submitted',
+                  count: dashboardStats.submitted || 0,
+                },
+                {
+                  key: 'won',
+                  stageNum: '6',
+                  name: 'Result Tracking',
+                  desc: 'Technical & outcome',
+                  active: ['won', 'lost', 'technical_eval', 'commercial_eval'].includes(statusFilter),
+                  count: (dashboardStats.won || 0) + (dashboardStats.lost || 0),
+                },
+              ].map((st) => (
+                <div
+                  key={st.key}
+                  onClick={() => {
+                    if (st.key === 'won') {
+                      setStatusFilter(statusFilter === 'won' ? '' : 'won');
+                    } else {
+                      setStatusFilter(statusFilter === st.key ? '' : st.key);
+                    }
+                    setActiveHudFilter(null);
+                    setPage(1);
+                  }}
+                  className={`p-2.5 rounded-lg border cursor-pointer transition-all ${
+                    st.active
+                      ? 'bg-[#E3EFEE] border-[#0F5E63] shadow-xs ring-1 ring-[#0F5E63]'
+                      : 'bg-[#FBFAF7] border-[#DCD8CE] hover:border-[#0F5E63] hover:bg-white'
+                  }`}
+                >
+                  <div className="flex items-center justify-between text-[10px] text-[#4A5568] font-semibold mb-1">
+                    <span className="font-bold text-[#0F5E63]">Step {st.stageNum}</span>
+                    <span className="font-bold text-[#14213D] bg-white px-1.5 py-0.5 rounded border border-[#DCD8CE]">
+                      {st.count}
+                    </span>
+                  </div>
+                  <div className="text-xs font-bold text-[#14213D] leading-tight truncate">
+                    {st.name}
+                  </div>
+                  <div className="text-[10px] text-[#4A5568] truncate mt-0.5">
+                    {st.desc}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 
@@ -1053,11 +1350,11 @@ export default function TendersPage() {
           </FilterBar>
 
           {/* Tenders Table */}
-          <div className="bg-white rounded-xl border border-[#D6E3F5] overflow-hidden shadow-2xs">
+          <div className="bg-white rounded-xl border border-[#DCD8CE] overflow-hidden shadow-2xs">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
-                  <tr className="bg-[#F7FBFF] border-b border-[#D6E3F5] text-[#5871A5] font-semibold">
+                  <tr className="bg-[#FBFAF7] border-b border-[#DCD8CE] text-[#4A5568] font-semibold">
                     <th className="p-3.5 whitespace-nowrap">Tender / Bid No.</th>
                     <th className="p-3.5 whitespace-nowrap">Buyer & Location</th>
                     <th className="p-3.5 whitespace-nowrap">Category</th>
@@ -1068,11 +1365,11 @@ export default function TendersPage() {
                     <th className="p-3.5 text-right whitespace-nowrap">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#D6E3F5]">
+                <tbody className="divide-y divide-[#DCD8CE]">
                   {isLoading ? (
                     <tr>
-                      <td colSpan={8} className="p-8 text-center text-xs text-[#5871A5]">
-                        <RefreshCw className="h-5 w-5 animate-spin mx-auto mb-2 text-[#223FA7]" />
+                      <td colSpan={8} className="p-8 text-center text-xs text-[#4A5568]">
+                        <RefreshCw className="h-5 w-5 animate-spin mx-auto mb-2 text-[#0F5E63]" />
                         Loading tender opportunities...
                       </td>
                     </tr>
@@ -1080,7 +1377,7 @@ export default function TendersPage() {
                     <tr>
                       <td colSpan={8} className="p-8">
                         <EmptyState
-                          icon={<FileText className="h-8 w-8 text-[#5871A5]" />}
+                          icon={<FileText className="h-8 w-8 text-[#4A5568]" />}
                           title="No tenders found"
                           description="No procurement tenders match your selected filters. Adjust your criteria or register a new tender."
                         />
@@ -1109,11 +1406,11 @@ export default function TendersPage() {
                       return (
                         <tr
                           key={tender.id}
-                          className="hover:bg-[#F8FAFC] transition-colors border-b border-[#D6E3F5]"
+                          className="hover:bg-[#F8FAFC] transition-colors border-b border-[#DCD8CE]"
                         >
                           {/* Tender Number & Portal */}
                           <td className="p-3.5 whitespace-nowrap">
-                            <div className="font-bold text-[#1A1A1A] flex items-center gap-1.5">
+                            <div className="font-bold text-[#14213D] flex items-center gap-1.5">
                               <span>{tender.tender_number || tender.tender_no}</span>
                               {tender.portal && (
                                 <Badge variant="outline" size="sm">
@@ -1121,17 +1418,17 @@ export default function TendersPage() {
                                 </Badge>
                               )}
                             </div>
-                            <div className="text-[10px] text-[#5871A5] font-mono mt-0.5">
+                            <div className="text-[10px] text-[#4A5568] font-mono mt-0.5">
                               ID: {tender.id.slice(0, 8)}
                             </div>
                           </td>
 
                           {/* Buyer & Location */}
                           <td className="p-3.5 max-w-[220px]">
-                            <div className="font-medium text-[#1A1A1A] truncate" title={tender.department || tender.organisation_name}>
+                            <div className="font-medium text-[#14213D] truncate" title={tender.department || tender.organisation_name}>
                               {tender.department || tender.organisation_name || 'Government Buyer'}
                             </div>
-                            <div className="text-[10px] text-[#5871A5] flex items-center gap-1 mt-0.5 truncate">
+                            <div className="text-[10px] text-[#4A5568] flex items-center gap-1 mt-0.5 truncate">
                               <MapPin className="h-2.5 w-2.5 shrink-0" />
                               <span>
                                 {tender.city ? `${tender.city}, ` : ''}
@@ -1163,10 +1460,10 @@ export default function TendersPage() {
 
                           {/* Requirement Excerpt & Ownership */}
                           <td className="p-3.5 max-w-[240px] truncate">
-                            <div className="truncate font-medium text-[#1A1A1A]" title={tender.requirement_text}>
+                            <div className="truncate font-medium text-[#14213D]" title={tender.requirement_text}>
                               {tender.requirement_text || tender.product_name || 'Defence Procurement Item'}
                             </div>
-                            <div className="text-[10px] text-[#5871A5] truncate mt-0.5 flex items-center gap-1">
+                            <div className="text-[10px] text-[#4A5568] truncate mt-0.5 flex items-center gap-1">
                               <User className="h-2.5 w-2.5 shrink-0" />
                               <span>Owner: {tender.owner_name || tender.assigned_person_name || 'Unassigned'}</span>
                             </div>
@@ -1174,10 +1471,10 @@ export default function TendersPage() {
 
                           {/* Qty & Value */}
                           <td className="p-3.5 whitespace-nowrap">
-                            <div className="font-semibold text-[#1A1A1A]">
+                            <div className="font-semibold text-[#14213D]">
                               Qty: {tender.quantity || 1}
                             </div>
-                            <div className="text-[10px] text-[#5871A5] font-mono mt-0.5">
+                            <div className="text-[10px] text-[#4A5568] font-mono mt-0.5">
                               {tender.estimated_value_lakh
                                 ? `₹ ${tender.estimated_value_lakh} Lakh`
                                 : tender.tender_value
@@ -1190,7 +1487,7 @@ export default function TendersPage() {
 
                           {/* Submission Deadline */}
                           <td className="p-3.5 whitespace-nowrap">
-                            <div className="font-mono text-[#1A1A1A] font-semibold">
+                            <div className="font-mono text-[#14213D] font-semibold">
                               {closingDate ? closingDate.toLocaleDateString('en-IN') : 'TBA'}
                             </div>
                             {isOverdue ? (
@@ -1206,7 +1503,7 @@ export default function TendersPage() {
                                 {diffDays} DAYS LEFT
                               </Badge>
                             ) : (
-                              <span className="text-[10px] text-[#5871A5]">Standard</span>
+                              <span className="text-[10px] text-[#4A5568]">Standard</span>
                             )}
                           </td>
 
@@ -1217,16 +1514,81 @@ export default function TendersPage() {
                             </Badge>
                           </td>
 
-                          {/* Actions */}
+                          {/* Actions (§19-§26 Quick Progression) */}
                           <td className="p-3.5 text-right whitespace-nowrap">
-                            <Button
-                              size="sm"
-                              variant="secondary"
-                              onClick={() => openTenderDetails(tender)}
-                            >
-                              <Eye className="h-3.5 w-3.5 mr-1 text-[#223FA7]" />
-                              <span>Inspect</span>
-                            </Button>
+                            <div className="flex items-center justify-end gap-1.5">
+                              {tender.status === 'identified' && (
+                                <Button
+                                  size="xs"
+                                  variant="primary"
+                                  onClick={() => handleQuickRequestApproval(tender)}
+                                  title="Submit for Internal Review"
+                                >
+                                  <Send className="h-3 w-3 mr-1" />
+                                  <span>Review</span>
+                                </Button>
+                              )}
+
+                              {tender.status === 'awaiting_approval' && (
+                                <Button
+                                  size="xs"
+                                  variant="primary"
+                                  className="bg-amber-600 hover:bg-amber-700 text-white"
+                                  onClick={() => {
+                                    setSelectedTender(tender);
+                                    setApprovalDecision('approved');
+                                    setIsApproveOpen(true);
+                                  }}
+                                  title="Authorised Signoff"
+                                >
+                                  <ShieldCheck className="h-3 w-3 mr-1" />
+                                  <span>Signoff</span>
+                                </Button>
+                              )}
+
+                              {tender.status === 'under_preparation' && (
+                                <Button
+                                  size="xs"
+                                  variant="primary"
+                                  onClick={() => {
+                                    setSelectedTender(tender);
+                                    setTargetTransitionStatus(tender.category === 'pq' ? 'pq_submitted' : 'submitted');
+                                    setTransitionRemarks(tender.category === 'pq' ? 'Submitting PQ Application' : 'Submitting Bid');
+                                    setIsTransitionOpen(true);
+                                  }}
+                                  title="Advance to Submission"
+                                >
+                                  <CheckCircle2 className="h-3 w-3 mr-1" />
+                                  <span>{tender.category === 'pq' ? 'Submit PQ' : 'Submit Bid'}</span>
+                                </Button>
+                              )}
+
+                              {['submitted', 'technical_eval', 'commercial_eval'].includes(tender.status) && (
+                                <Button
+                                  size="xs"
+                                  variant="outline"
+                                  className="text-emerald-700 border-emerald-300 hover:bg-emerald-50"
+                                  onClick={() => {
+                                    setSelectedTender(tender);
+                                    setOutcomeResult('won');
+                                    setIsOutcomeOpen(true);
+                                  }}
+                                  title="Record Won/Lost Outcome"
+                                >
+                                  <Award className="h-3 w-3 mr-1" />
+                                  <span>Outcome</span>
+                                </Button>
+                              )}
+
+                              <Button
+                                size="xs"
+                                variant="secondary"
+                                onClick={() => openTenderDetails(tender)}
+                              >
+                                <Eye className="h-3 w-3 mr-1 text-[#0F5E63]" />
+                                <span>Inspect</span>
+                              </Button>
+                            </div>
                           </td>
                         </tr>
                       );
@@ -1237,10 +1599,10 @@ export default function TendersPage() {
             </div>
 
             {/* Pagination Bar */}
-            <div className="p-3 bg-[#F7FBFF] border-t border-[#D6E3F5] flex items-center justify-between text-xs text-[#5871A5]">
+            <div className="p-3 bg-[#FBFAF7] border-t border-[#DCD8CE] flex items-center justify-between text-xs text-[#4A5568]">
               <div>
-                Showing <strong className="text-[#1A1A1A]">{tenders.length}</strong> of{' '}
-                <strong className="text-[#1A1A1A]">{totalCount}</strong> tender opportunities
+                Showing <strong className="text-[#14213D]">{tenders.length}</strong> of{' '}
+                <strong className="text-[#14213D]">{totalCount}</strong> tender opportunities
               </div>
               <div className="flex items-center gap-2">
                 <Button
@@ -1251,7 +1613,7 @@ export default function TendersPage() {
                 >
                   Previous
                 </Button>
-                <span className="font-medium text-[#1A1A1A]">
+                <span className="font-medium text-[#14213D]">
                   Page {page} of {Math.max(1, Math.ceil(totalCount / limit))}
                 </span>
                 <Button
@@ -1278,77 +1640,206 @@ export default function TendersPage() {
             description="Multi-tier pipeline intelligence across Classifications (Vikas's PQ vs General/MHA Matrix), Territories, Salespeople, and Post-Mortem Win/Loss Analysis"
           />
 
-          {/* Section 1: Vikas's Classification Overview (PQ vs General / MHA) */}
+          {/* Section 1: Executive KPI Command HUD (§27 Monitoring Requirements) */}
           <div className="space-y-3">
-            <h3 className="text-xs font-bold text-[#5871A5] uppercase tracking-wider flex items-center gap-1.5">
-              <Layers className="h-4 w-4 text-[#223FA7]" />
-              <span>Tender Classification Matrix (PQ vs General/MHA — Vikas Specification)</span>
+            <h3 className="text-xs font-bold text-[#4A5568] uppercase tracking-wider flex items-center gap-1.5">
+              <Layers className="h-4 w-4 text-[#0F5E63]" />
+              <span>Executive Tender Pipeline HUD (§27 Management Metrics)</span>
             </h3>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-              <Card className="p-4 border-[#D6E3F5] bg-white">
+            {/* Row 1: Pipeline & Classification Counts */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+              <Card className="p-3.5 border-[#DCD8CE] bg-white">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-[#5871A5]">PQ (Pre-Qualification)</span>
+                  <span className="text-xs font-bold text-[#4A5568]">Total Identified</span>
+                  <FileText className="h-4 w-4 text-[#0F5E63]" />
+                </div>
+                <div className="text-2xl font-black text-[#14213D] mt-1.5">
+                  {dashboardStats.total_tenders || 0}
+                </div>
+                <p className="text-[10px] text-[#4A5568] mt-0.5">All registered opportunities</p>
+              </Card>
+
+              <Card className="p-3.5 border-[#DCD8CE] bg-white">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-[#4A5568]">PQ Tenders</span>
                   <Badge variant="cyber" size="sm">Pre-Qual</Badge>
                 </div>
-                <div className="text-2xl font-black text-[#223FA7] mt-2">
+                <div className="text-2xl font-black text-[#0F5E63] mt-1.5">
                   {dashboardStats.pq_tenders || dashboardStats.pq_count || 0}
                 </div>
-                <p className="text-[11px] text-[#5871A5] mt-1">
-                  Active prequalification & institutional capacity bids
-                </p>
+                <p className="text-[10px] text-[#4A5568] mt-0.5">Vikas PQ classification</p>
               </Card>
 
-              <Card className="p-4 border-[#D6E3F5] bg-white">
+              <Card className="p-3.5 border-[#DCD8CE] bg-white">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-[#5871A5]">General / MHA Bids</span>
+                  <span className="text-xs font-bold text-[#4A5568]">General / MHA</span>
                   <Badge variant="info" size="sm">MHA QR</Badge>
                 </div>
-                <div className="text-2xl font-black text-[#1A1A1A] mt-2">
+                <div className="text-2xl font-black text-[#14213D] mt-1.5">
                   {dashboardStats.general_mha_tenders || dashboardStats.general_mha_count || 0}
                 </div>
-                <p className="text-[11px] text-[#5871A5] mt-1">
-                  Ministry of Home Affairs & paramilitary standard procurement
-                </p>
+                <p className="text-[10px] text-[#4A5568] mt-0.5">Paramilitary & central bids</p>
               </Card>
 
-              <Card className="p-4 border-[#D6E3F5] bg-white">
+              <Card className="p-3.5 border-[#DCD8CE] bg-white">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-[#5871A5]">Other Govt / Police Bids</span>
+                  <span className="text-xs font-bold text-[#4A5568]">Other Tenders</span>
                   <Badge variant="default" size="sm">Institutional</Badge>
                 </div>
-                <div className="text-2xl font-black text-[#1A1A1A] mt-2">
+                <div className="text-2xl font-black text-[#14213D] mt-1.5">
                   {dashboardStats.other_tenders || dashboardStats.other_count || 0}
                 </div>
-                <p className="text-[11px] text-[#5871A5] mt-1">
-                  State Police, Railways, Defence PSU custom opportunities
-                </p>
+                <p className="text-[10px] text-[#4A5568] mt-0.5">State Police & PSUs</p>
               </Card>
 
-              <Card className="p-4 border-[#D6E3F5] bg-white">
+              <Card className="p-3.5 border-[#DCD8CE] bg-white">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-[#5871A5]">Conversion Win Rate</span>
+                  <span className="text-xs font-bold text-[#4A5568]">Worked Upon</span>
+                  <Clock className="h-4 w-4 text-blue-600" />
+                </div>
+                <div className="text-2xl font-black text-blue-700 mt-1.5">
+                  {dashboardStats.worked_upon || 0}
+                </div>
+                <p className="text-[10px] text-[#4A5568] mt-0.5">In prep, eval, or bid stage</p>
+              </Card>
+            </div>
+
+            {/* Row 2: Submissions, Outcomes & Win Rate */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+              <Card className="p-3.5 border-[#DCD8CE] bg-white">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-[#4A5568]">Tenders Submitted</span>
+                  <Send className="h-4 w-4 text-[#0F5E63]" />
+                </div>
+                <div className="text-2xl font-black text-[#0F5E63] mt-1.5">
+                  {dashboardStats.tenders_submitted || 0}
+                </div>
+                <p className="text-[10px] text-[#4A5568] mt-0.5">Bids filed on GeM/CPPP</p>
+              </Card>
+
+              <Card className="p-3.5 border-[#DCD8CE] bg-white">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-[#4A5568]">Tenders Won</span>
+                  <Award className="h-4 w-4 text-emerald-600" />
+                </div>
+                <div className="text-2xl font-black text-emerald-700 mt-1.5">
+                  {dashboardStats.tenders_won || 0}
+                </div>
+                <p className="text-[10px] text-[#4A5568] mt-0.5">L1 contracts secured</p>
+              </Card>
+
+              <Card className="p-3.5 border-[#DCD8CE] bg-white">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-[#4A5568]">Tenders Lost</span>
+                  <XCircle className="h-4 w-4 text-red-600" />
+                </div>
+                <div className="text-2xl font-black text-red-600 mt-1.5">
+                  {dashboardStats.tenders_lost || 0}
+                </div>
+                <p className="text-[10px] text-[#4A5568] mt-0.5">Lost to competitor/disqualified</p>
+              </Card>
+
+              <Card className="p-3.5 border-[#DCD8CE] bg-white">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-[#4A5568]">Pending Tenders</span>
+                  <Clock className="h-4 w-4 text-amber-600" />
+                </div>
+                <div className="text-2xl font-black text-amber-700 mt-1.5">
+                  {dashboardStats.pending_tenders || 0}
+                </div>
+                <p className="text-[10px] text-[#4A5568] mt-0.5">In flight across all stages</p>
+              </Card>
+
+              <Card className="p-3.5 border-[#DCD8CE] bg-white">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-[#4A5568]">Conversion Win Rate</span>
                   <TrendingUp className="h-4 w-4 text-emerald-600" />
                 </div>
-                <div className="text-2xl font-black text-emerald-700 mt-2">
+                <div className="text-2xl font-black text-emerald-700 mt-1.5">
                   {winLossReport.win_rate !== undefined ? `${winLossReport.win_rate}%` : `${dashboardStats.win_rate || 0}%`}
                 </div>
-                <p className="text-[11px] text-[#5871A5] mt-1">
-                  Won {winLossReport.won || 0} / Decided {winLossReport.total_decided || ((winLossReport.won || 0) + (winLossReport.lost || 0))} tenders
-                </p>
+                <p className="text-[10px] text-[#4A5568] mt-0.5">Won / Decided bids</p>
               </Card>
             </div>
           </div>
 
-          {/* Section 2: Zone-wise Pipeline Report (§21) */}
-          <div className="bg-white rounded-xl border border-[#D6E3F5] p-4 shadow-2xs space-y-3">
+          {/* Section 2: Organisation-Level Pipeline Report (§21 & §27) */}
+          <div className="bg-white rounded-xl border border-[#DCD8CE] p-4 shadow-2xs space-y-3">
             <div className="flex items-center justify-between">
               <div>
-                <h4 className="text-sm font-bold text-[#1A1A1A] flex items-center gap-1.5">
-                  <Compass className="h-4 w-4 text-[#223FA7]" />
-                  <span>Zone-wise Pipeline & Win Rates (§21)</span>
+                <h4 className="text-sm font-bold text-[#14213D] flex items-center gap-1.5">
+                  <Building className="h-4 w-4 text-[#0F5E63]" />
+                  <span>Organisation-Level Pipeline & Conversion (§21, §27)</span>
                 </h4>
-                <p className="text-xs text-[#5871A5]">Territorial breakdown across North, South, East, West, Central command</p>
+                <p className="text-xs text-[#4A5568]">Performance breakdown grouped by buyer organisation, sector, and classification</p>
+              </div>
+              <Badge variant="info" size="sm">{organisationReport.length} Buyer Organisations</Badge>
+            </div>
+
+            <div className="overflow-x-auto max-h-[360px] overflow-y-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead className="sticky top-0 bg-[#FBFAF7]">
+                  <tr className="border-b border-[#DCD8CE] text-[#4A5568] font-semibold">
+                    <th className="p-2.5">Buyer Organisation</th>
+                    <th className="p-2.5">Sector</th>
+                    <th className="p-2.5">Location</th>
+                    <th className="p-2.5 text-center">Total</th>
+                    <th className="p-2.5 text-center">PQ Bids</th>
+                    <th className="p-2.5 text-center">General / MHA</th>
+                    <th className="p-2.5 text-center">In Prep / Review</th>
+                    <th className="p-2.5 text-center">Submitted</th>
+                    <th className="p-2.5 text-center">Won</th>
+                    <th className="p-2.5 text-center">Lost</th>
+                    <th className="p-2.5 text-right">Org Win Rate</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#DCD8CE]">
+                  {organisationReport.length === 0 ? (
+                    <tr>
+                      <td colSpan={11} className="p-4 text-center text-xs text-[#4A5568]">
+                        No organisation-level tender data available.
+                      </td>
+                    </tr>
+                  ) : (
+                    organisationReport.map((org) => {
+                      const decided = (org.won || 0) + (org.lost || 0);
+                      const rate = decided > 0 ? Math.round(((org.won || 0) / decided) * 100) : 0;
+                      return (
+                        <tr key={org.organisation_id} className="hover:bg-[#F8FAFC]">
+                          <td className="p-2.5 font-bold text-[#14213D]">{org.organisation_name}</td>
+                          <td className="p-2.5 text-[#4A5568]">{org.sector || 'Defence / Security'}</td>
+                          <td className="p-2.5 text-[#4A5568]">
+                            {org.city ? `${org.city}, ` : ''}{org.state || ''}
+                          </td>
+                          <td className="p-2.5 text-center font-bold text-[#0F5E63]">{org.total || org.total_tenders || 0}</td>
+                          <td className="p-2.5 text-center font-semibold text-[#0F5E63]">{org.pq_count || 0}</td>
+                          <td className="p-2.5 text-center font-semibold text-gray-700">{org.general_mha_count || 0}</td>
+                          <td className="p-2.5 text-center text-amber-700 font-semibold">{org.pending || org.pending_tenders || 0}</td>
+                          <td className="p-2.5 text-center text-blue-700 font-semibold">{org.submitted || org.submitted_tenders || 0}</td>
+                          <td className="p-2.5 text-center text-emerald-700 font-bold">{org.won || org.won_tenders || 0}</td>
+                          <td className="p-2.5 text-center text-red-600 font-semibold">{org.lost || org.lost_tenders || 0}</td>
+                          <td className="p-2.5 text-right font-black text-emerald-700">
+                            {decided > 0 ? `${rate}%` : 'N/A'}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Section 3: Zone-wise Pipeline Report (§21 & §27) */}
+          <div className="bg-white rounded-xl border border-[#DCD8CE] p-4 shadow-2xs space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="text-sm font-bold text-[#14213D] flex items-center gap-1.5">
+                  <Compass className="h-4 w-4 text-[#0F5E63]" />
+                  <span>Zone-wise Pipeline & Win Rates (§21, §27)</span>
+                </h4>
+                <p className="text-xs text-[#4A5568]">Territorial command breakdown across North, South, East, West, Central with Vikas PQ matrix</p>
               </div>
               <Badge variant="info" size="sm">{zoneReport.length} Operating Zones</Badge>
             </div>
@@ -1356,20 +1847,22 @@ export default function TendersPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
-                  <tr className="bg-[#F7FBFF] border-b border-[#D6E3F5] text-[#5871A5] font-semibold">
+                  <tr className="bg-[#FBFAF7] border-b border-[#DCD8CE] text-[#4A5568] font-semibold">
                     <th className="p-2.5">Zone Name</th>
                     <th className="p-2.5 text-center">Total Opportunities</th>
+                    <th className="p-2.5 text-center">PQ Bids</th>
+                    <th className="p-2.5 text-center">General / MHA</th>
                     <th className="p-2.5 text-center">In Prep / Approval</th>
-                    <th className="p-2.5 text-center">Submitted / In Eval</th>
+                    <th className="p-2.5 text-center">Submitted</th>
                     <th className="p-2.5 text-center">Won</th>
                     <th className="p-2.5 text-center">Lost</th>
                     <th className="p-2.5 text-right">Zone Win Rate</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#D6E3F5]">
+                <tbody className="divide-y divide-[#DCD8CE]">
                   {zoneReport.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="p-4 text-center text-xs text-[#5871A5]">
+                      <td colSpan={9} className="p-4 text-center text-xs text-[#4A5568]">
                         No zone-level data available.
                       </td>
                     </tr>
@@ -1379,8 +1872,10 @@ export default function TendersPage() {
                       const rate = decided > 0 ? Math.round(((z.won || 0) / decided) * 100) : 0;
                       return (
                         <tr key={z.zone_id} className="hover:bg-[#F8FAFC]">
-                          <td className="p-2.5 font-bold text-[#1A1A1A]">{z.zone_name} Zone</td>
-                          <td className="p-2.5 text-center font-bold text-[#223FA7]">{z.total || z.total_tenders || 0}</td>
+                          <td className="p-2.5 font-bold text-[#14213D]">{z.zone_name} Zone</td>
+                          <td className="p-2.5 text-center font-bold text-[#0F5E63]">{z.total || z.total_tenders || 0}</td>
+                          <td className="p-2.5 text-center font-semibold text-[#0F5E63]">{z.pq_count || 0}</td>
+                          <td className="p-2.5 text-center font-semibold text-gray-700">{z.general_mha_count || 0}</td>
                           <td className="p-2.5 text-center text-amber-700 font-semibold">{z.pending || z.pending_tenders || 0}</td>
                           <td className="p-2.5 text-center text-blue-700 font-semibold">{z.submitted || z.submitted_tenders || 0}</td>
                           <td className="p-2.5 text-center text-emerald-700 font-bold">{z.won || z.won_tenders || 0}</td>
@@ -1397,45 +1892,49 @@ export default function TendersPage() {
             </div>
           </div>
 
-          {/* Section 3: Region-wise Pipeline Breakdown (§21) */}
-          <div className="bg-white rounded-xl border border-[#D6E3F5] p-4 shadow-2xs space-y-3">
+          {/* Section 4: Region-wise Pipeline Breakdown (§21 & §27) */}
+          <div className="bg-white rounded-xl border border-[#DCD8CE] p-4 shadow-2xs space-y-3">
             <div className="flex items-center justify-between">
               <div>
-                <h4 className="text-sm font-bold text-[#1A1A1A] flex items-center gap-1.5">
-                  <MapPin className="h-4 w-4 text-[#223FA7]" />
-                  <span>Region-wise Pipeline Distribution (§21)</span>
+                <h4 className="text-sm font-bold text-[#14213D] flex items-center gap-1.5">
+                  <MapPin className="h-4 w-4 text-[#0F5E63]" />
+                  <span>Region-wise Pipeline Distribution (§21, §27)</span>
                 </h4>
-                <p className="text-xs text-[#5871A5]">State and regional police sector distribution</p>
+                <p className="text-xs text-[#4A5568]">State and regional police sector distribution with classification breakdown</p>
               </div>
               <Badge variant="outline" size="sm">{regionReport.length} Regions Tracked</Badge>
             </div>
 
             <div className="overflow-x-auto max-h-[320px] overflow-y-auto">
               <table className="w-full text-left text-xs border-collapse">
-                <thead className="sticky top-0 bg-[#F7FBFF]">
-                  <tr className="border-b border-[#D6E3F5] text-[#5871A5] font-semibold">
+                <thead className="sticky top-0 bg-[#FBFAF7]">
+                  <tr className="border-b border-[#DCD8CE] text-[#4A5568] font-semibold">
                     <th className="p-2.5">Region</th>
                     <th className="p-2.5">Parent Zone</th>
                     <th className="p-2.5 text-center">Total</th>
+                    <th className="p-2.5 text-center">PQ Bids</th>
+                    <th className="p-2.5 text-center">General / MHA</th>
                     <th className="p-2.5 text-center">In Prep</th>
                     <th className="p-2.5 text-center">Submitted</th>
                     <th className="p-2.5 text-center">Won</th>
                     <th className="p-2.5 text-center">Lost</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#D6E3F5]">
+                <tbody className="divide-y divide-[#DCD8CE]">
                   {regionReport.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="p-4 text-center text-xs text-[#5871A5]">
+                      <td colSpan={9} className="p-4 text-center text-xs text-[#4A5568]">
                         No regional data available.
                       </td>
                     </tr>
                   ) : (
                     regionReport.map((r) => (
                       <tr key={r.region_id} className="hover:bg-[#F8FAFC]">
-                        <td className="p-2.5 font-semibold text-[#1A1A1A]">{r.region_name}</td>
-                        <td className="p-2.5 text-[#5871A5]">{r.zone_name || 'North'}</td>
-                        <td className="p-2.5 text-center font-bold text-[#223FA7]">{r.total || r.total_tenders || 0}</td>
+                        <td className="p-2.5 font-semibold text-[#14213D]">{r.region_name}</td>
+                        <td className="p-2.5 text-[#4A5568]">{r.zone_name || 'North'}</td>
+                        <td className="p-2.5 text-center font-bold text-[#0F5E63]">{r.total || r.total_tenders || 0}</td>
+                        <td className="p-2.5 text-center font-semibold text-[#0F5E63]">{r.pq_count || 0}</td>
+                        <td className="p-2.5 text-center font-semibold text-gray-700">{r.general_mha_count || 0}</td>
                         <td className="p-2.5 text-center text-amber-700">{r.pending || r.pending_tenders || 0}</td>
                         <td className="p-2.5 text-center text-blue-700">{r.submitted || r.submitted_tenders || 0}</td>
                         <td className="p-2.5 text-center text-emerald-700 font-bold">{r.won || r.won_tenders || 0}</td>
@@ -1448,15 +1947,15 @@ export default function TendersPage() {
             </div>
           </div>
 
-          {/* Section 4: Salesperson / Tender Owner Performance Ledger (§21) */}
-          <div className="bg-white rounded-xl border border-[#D6E3F5] p-4 shadow-2xs space-y-3">
+          {/* Section 5: Salesperson / Tender Owner Performance Ledger (§21 & §27) */}
+          <div className="bg-white rounded-xl border border-[#DCD8CE] p-4 shadow-2xs space-y-3">
             <div className="flex items-center justify-between">
               <div>
-                <h4 className="text-sm font-bold text-[#1A1A1A] flex items-center gap-1.5">
-                  <Users className="h-4 w-4 text-[#223FA7]" />
-                  <span>Salesperson & Tender Owner Performance Ledger (§21)</span>
+                <h4 className="text-sm font-bold text-[#14213D] flex items-center gap-1.5">
+                  <Users className="h-4 w-4 text-[#0F5E63]" />
+                  <span>Salesperson & Tender Owner Performance Ledger (§21, §27)</span>
                 </h4>
-                <p className="text-xs text-[#5871A5]">Individual bid handling, throughput, and conversion metrics</p>
+                <p className="text-xs text-[#4A5568]">Individual bid handling, throughput, PQ count, and conversion metrics</p>
               </div>
               <Badge variant="info" size="sm">{salespersonReport.length} Executives</Badge>
             </div>
@@ -1464,10 +1963,12 @@ export default function TendersPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
-                  <tr className="bg-[#F7FBFF] border-b border-[#D6E3F5] text-[#5871A5] font-semibold">
+                  <tr className="bg-[#FBFAF7] border-b border-[#DCD8CE] text-[#4A5568] font-semibold">
                     <th className="p-2.5">Executive</th>
                     <th className="p-2.5">Role</th>
                     <th className="p-2.5 text-center">Assigned Tenders</th>
+                    <th className="p-2.5 text-center">PQ Bids</th>
+                    <th className="p-2.5 text-center">General / MHA</th>
                     <th className="p-2.5 text-center">In Preparation</th>
                     <th className="p-2.5 text-center">Bids Submitted</th>
                     <th className="p-2.5 text-center">Won Awards</th>
@@ -1475,10 +1976,10 @@ export default function TendersPage() {
                     <th className="p-2.5 text-right">Personal Win Rate</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#D6E3F5]">
+                <tbody className="divide-y divide-[#DCD8CE]">
                   {salespersonReport.length === 0 ? (
                     <tr>
-                      <td colSpan={8} className="p-4 text-center text-xs text-[#5871A5]">
+                      <td colSpan={10} className="p-4 text-center text-xs text-[#4A5568]">
                         No salesperson metrics recorded yet.
                       </td>
                     </tr>
@@ -1488,9 +1989,11 @@ export default function TendersPage() {
                       const rate = dec > 0 ? Math.round(((s.won || 0) / dec) * 100) : 0;
                       return (
                         <tr key={s.user_id} className="hover:bg-[#F8FAFC]">
-                          <td className="p-2.5 font-bold text-[#1A1A1A]">{s.salesperson_name}</td>
-                          <td className="p-2.5 text-[#5871A5] capitalize">{s.role?.replace(/_/g, ' ')}</td>
-                          <td className="p-2.5 text-center font-bold text-[#223FA7]">{s.total || s.total_tenders || 0}</td>
+                          <td className="p-2.5 font-bold text-[#14213D]">{s.salesperson_name}</td>
+                          <td className="p-2.5 text-[#4A5568] capitalize">{s.role?.replace(/_/g, ' ')}</td>
+                          <td className="p-2.5 text-center font-bold text-[#0F5E63]">{s.total || s.total_tenders || 0}</td>
+                          <td className="p-2.5 text-center font-semibold text-[#0F5E63]">{s.pq_count || 0}</td>
+                          <td className="p-2.5 text-center font-semibold text-gray-700">{s.general_mha_count || 0}</td>
                           <td className="p-2.5 text-center text-amber-700 font-semibold">{s.pending || s.pending_tenders || 0}</td>
                           <td className="p-2.5 text-center text-blue-700 font-semibold">{s.submitted || s.submitted_tenders || 0}</td>
                           <td className="p-2.5 text-center text-emerald-700 font-bold">{s.won || s.won_tenders || 0}</td>
@@ -1507,72 +2010,282 @@ export default function TendersPage() {
             </div>
           </div>
 
-          {/* Section 5: Structured Win / Loss Post-Mortem Intelligence HUD (§26) */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Loss Reason Breakdown */}
-            <div className="bg-white rounded-xl border border-[#D6E3F5] p-4 shadow-2xs space-y-3">
-              <h4 className="text-sm font-bold text-[#1A1A1A] flex items-center gap-1.5">
-                <XCircle className="h-4 w-4 text-red-600" />
-                <span>Loss Cause Breakdown (§26 Post-Mortem)</span>
-              </h4>
-              <p className="text-xs text-[#5871A5]">Structured deficiency categories on lost bids</p>
+          {/* Section 6: Structured Win / Loss Post-Mortem Intelligence HUD (§26) */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="text-sm font-bold text-[#14213D] flex items-center gap-1.5">
+                  <Award className="h-4 w-4 text-[#0F5E63]" />
+                  <span>Tender Win / Loss Post-Mortem Intelligence (§26)</span>
+                </h4>
+                <p className="text-xs text-[#4A5568]">
+                  Comprehensive analysis of won orders (product, region, responsible person, value) and lost bids (root-cause factors, competitor advantages)
+                </p>
+              </div>
+              <Badge variant="cyber" size="sm">
+                Decided: {(winLossReport.won || 0) + (winLossReport.lost || 0)} Bids
+              </Badge>
+            </div>
 
-              <div className="space-y-2 pt-1">
-                {Object.keys(winLossReport.loss_reasons || {}).length === 0 ? (
-                  <div className="p-4 rounded-lg bg-slate-50 text-center text-xs text-[#5871A5]">
-                    No lost tender post-mortems logged yet.
-                  </div>
-                ) : (
-                  Object.entries(winLossReport.loss_reasons || {}).map(([reason, count]) => {
-                    const totalLost = winLossReport.lost || 1;
-                    const pct = Math.round(((count as number) / totalLost) * 100);
-                    return (
-                      <div key={reason} className="p-2.5 rounded-lg bg-[#F8FAFC] border border-[#D6E3F5] flex items-center justify-between">
-                        <div>
-                          <span className="font-semibold text-xs text-[#1A1A1A] uppercase tracking-wide">
-                            {reason.replace(/_/g, ' ')}
-                          </span>
-                          <span className="text-[10px] text-[#5871A5] block">
-                            {reason === 'pricing' || reason === 'price' ? 'Competitor lower quoted L1 / margin limitation' : reason === 'technical' ? 'QR deviation or proving ground performance gap' : reason === 'eligibility' ? 'Turnover or prior tender experience shortfall' : reason === 'documentation' ? 'OEM Authorization or technical annexure omission' : 'Commercial / procurement board decision'}
-                          </span>
-                        </div>
+            {/* Won Tenders Intelligence Grid */}
+            <div className="bg-white rounded-xl border border-emerald-200 p-4 shadow-2xs space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                  <h4 className="text-sm font-bold text-emerald-950">
+                    Won Contracts Intelligence (§26 Product, Region, Person, Value Breakdown)
+                  </h4>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge variant="success" size="sm">
+                    {winLossReport.won || 0} Tenders Won
+                  </Badge>
+                  {winLossReport.total_won_value_lakh ? (
+                    <Badge variant="cyber" size="sm">
+                      ₹{winLossReport.total_won_value_lakh} Lakh Total Won
+                    </Badge>
+                  ) : null}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
+                {/* Won By Product */}
+                <div className="p-3 rounded-lg bg-[#F8FAFC] border border-[#DCD8CE] space-y-2">
+                  <span className="text-[11px] font-bold text-[#0F5E63] uppercase tracking-wider block">
+                    Won by Product
+                  </span>
+                  {Object.keys(winLossReport.won_by_product || {}).length === 0 ? (
+                    <p className="text-xs text-[#4A5568]">No product award breakdown yet.</p>
+                  ) : (
+                    Object.entries(winLossReport.won_by_product || {}).map(([prod, data]: [string, any]) => (
+                      <div key={prod} className="flex items-center justify-between text-xs py-1 border-b border-gray-100 last:border-none">
+                        <span className="font-medium text-[#14213D] truncate max-w-[150px]">{prod}</span>
                         <div className="text-right">
-                          <span className="text-sm font-black text-red-700">{count as number}</span>
-                          <span className="text-[10px] text-[#5871A5] block">{pct}% of losses</span>
+                          <span className="font-bold text-emerald-700">{data.count} Won</span>
+                          {data.value_lakh > 0 && (
+                            <span className="text-[10px] text-[#4A5568] block">₹{data.value_lakh}L</span>
+                          )}
                         </div>
                       </div>
-                    );
-                  })
-                )}
-              </div>
-            </div>
+                    ))
+                  )}
+                </div>
 
-            {/* Winning Competitor Leaderboard */}
-            <div className="bg-white rounded-xl border border-[#D6E3F5] p-4 shadow-2xs space-y-3">
-              <h4 className="text-sm font-bold text-[#1A1A1A] flex items-center gap-1.5">
-                <Briefcase className="h-4 w-4 text-[#223FA7]" />
-                <span>Competitor Win Intelligence (§26)</span>
-              </h4>
-              <p className="text-xs text-[#5871A5]">Winning competitors recorded during commercial bid evaluations</p>
-
-              <div className="space-y-2 pt-1">
-                {Object.keys(winLossReport.competitors || {}).length === 0 ? (
-                  <div className="p-4 rounded-lg bg-slate-50 text-center text-xs text-[#5871A5]">
-                    No competitor awards recorded in system yet.
-                  </div>
-                ) : (
-                  Object.entries(winLossReport.competitors || {}).map(([comp, count]) => (
-                    <div key={comp} className="p-2.5 rounded-lg bg-[#F8FAFC] border border-[#D6E3F5] flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Building className="h-4 w-4 text-[#223FA7]" />
-                        <span className="font-bold text-xs text-[#1A1A1A]">{comp}</span>
+                {/* Won By Region */}
+                <div className="p-3 rounded-lg bg-[#F8FAFC] border border-[#DCD8CE] space-y-2">
+                  <span className="text-[11px] font-bold text-[#0F5E63] uppercase tracking-wider block">
+                    Won by Region
+                  </span>
+                  {Object.keys(winLossReport.won_by_region || {}).length === 0 ? (
+                    <p className="text-xs text-[#4A5568]">No regional awards logged yet.</p>
+                  ) : (
+                    Object.entries(winLossReport.won_by_region || {}).map(([reg, data]: [string, any]) => (
+                      <div key={reg} className="flex items-center justify-between text-xs py-1 border-b border-gray-100 last:border-none">
+                        <span className="font-medium text-[#14213D]">{reg}</span>
+                        <div className="text-right">
+                          <span className="font-bold text-emerald-700">{data.count} Won</span>
+                          {data.value_lakh > 0 && (
+                            <span className="text-[10px] text-[#4A5568] block">₹{data.value_lakh}L</span>
+                          )}
+                        </div>
                       </div>
-                      <Badge variant="danger" size="sm">{count as number} Tender Awards</Badge>
-                    </div>
-                  ))
-                )}
+                    ))
+                  )}
+                </div>
+
+                {/* Won By Salesperson / Tender Owner */}
+                <div className="p-3 rounded-lg bg-[#F8FAFC] border border-[#DCD8CE] space-y-2">
+                  <span className="text-[11px] font-bold text-[#0F5E63] uppercase tracking-wider block">
+                    Top Winning Executives
+                  </span>
+                  {Object.keys(winLossReport.won_by_person || {}).length === 0 ? (
+                    <p className="text-xs text-[#4A5568]">No salesperson award ledger yet.</p>
+                  ) : (
+                    Object.entries(winLossReport.won_by_person || {}).map(([person, data]: [string, any]) => (
+                      <div key={person} className="flex items-center justify-between text-xs py-1 border-b border-gray-100 last:border-none">
+                        <span className="font-medium text-[#14213D] truncate max-w-[140px]">{person}</span>
+                        <div className="text-right">
+                          <span className="font-bold text-emerald-700">{data.count} Won</span>
+                          {data.value_lakh > 0 && (
+                            <span className="text-[10px] text-[#4A5568] block">₹{data.value_lakh}L</span>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
               </div>
             </div>
+
+            {/* Lost Tenders & Root-Cause Factors Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Primary Loss Cause Breakdown */}
+              <div className="bg-white rounded-xl border border-[#DCD8CE] p-4 shadow-2xs space-y-3">
+                <h4 className="text-sm font-bold text-[#14213D] flex items-center gap-1.5">
+                  <XCircle className="h-4 w-4 text-red-600" />
+                  <span>Primary Loss Cause Breakdown (§26 Post-Mortem)</span>
+                </h4>
+                <p className="text-xs text-[#4A5568]">Structured primary loss categories on lost bids</p>
+
+                <div className="space-y-2 pt-1">
+                  {Object.keys(winLossReport.loss_reasons || {}).length === 0 ? (
+                    <div className="p-4 rounded-lg bg-slate-50 text-center text-xs text-[#4A5568]">
+                      No lost tender post-mortems logged yet.
+                    </div>
+                  ) : (
+                    Object.entries(winLossReport.loss_reasons || {}).map(([reason, count]) => {
+                      const totalLost = winLossReport.lost || 1;
+                      const pct = Math.round(((count as number) / totalLost) * 100);
+                      return (
+                        <div key={reason} className="p-2.5 rounded-lg bg-[#F8FAFC] border border-[#DCD8CE] flex items-center justify-between">
+                          <div>
+                            <span className="font-semibold text-xs text-[#14213D] uppercase tracking-wide">
+                              {reason.replace(/_/g, ' ')}
+                            </span>
+                            <span className="text-[10px] text-[#4A5568] block">
+                              {reason === 'pricing' || reason === 'price' ? 'Competitor lower quoted L1 / margin limitation' : reason === 'technical' ? 'QR deviation or proving ground performance gap' : reason === 'eligibility' ? 'Turnover or prior tender experience shortfall' : reason === 'documentation' ? 'OEM Authorization or technical annexure omission' : 'Commercial / procurement board decision'}
+                            </span>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-sm font-black text-red-700">{count as number}</span>
+                            <span className="text-[10px] text-[#4A5568] block">{pct}% of losses</span>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+
+                {/* Deficiency Factors HUD (§26 Breakdown) */}
+                {winLossReport.loss_factors && (
+                  <div className="pt-2 border-t border-[#DCD8CE]">
+                    <span className="text-[11px] font-bold text-[#4A5568] uppercase tracking-wider block mb-2">
+                      Factor Defect Occurrences
+                    </span>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                      <div className="p-2 rounded bg-red-50/50 border border-red-200">
+                        <span className="text-[10px] text-red-700 font-medium block">Technical Issue</span>
+                        <span className="text-xs font-bold text-red-900">{winLossReport.loss_factors.technical_issues || 0} bids</span>
+                      </div>
+                      <div className="p-2 rounded bg-amber-50/50 border border-amber-200">
+                        <span className="text-[10px] text-amber-700 font-medium block">Pricing Issue</span>
+                        <span className="text-xs font-bold text-amber-900">{winLossReport.loss_factors.pricing_issues || 0} bids</span>
+                      </div>
+                      <div className="p-2 rounded bg-blue-50/50 border border-blue-200">
+                        <span className="text-[10px] text-blue-700 font-medium block">Eligibility Gap</span>
+                        <span className="text-xs font-bold text-blue-900">{winLossReport.loss_factors.eligibility_issues || 0} bids</span>
+                      </div>
+                      <div className="p-2 rounded bg-slate-50 border border-slate-200">
+                        <span className="text-[10px] text-gray-700 font-medium block">Documentation</span>
+                        <span className="text-xs font-bold text-gray-900">{winLossReport.loss_factors.documentation_issues || 0} bids</span>
+                      </div>
+                      <div className="p-2 rounded bg-purple-50/50 border border-purple-200">
+                        <span className="text-[10px] text-purple-700 font-medium block">Other Reason</span>
+                        <span className="text-xs font-bold text-purple-900">{winLossReport.loss_factors.other_reasons || 0} bids</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Winning Competitor Leaderboard */}
+              <div className="bg-white rounded-xl border border-[#DCD8CE] p-4 shadow-2xs space-y-3">
+                <h4 className="text-sm font-bold text-[#14213D] flex items-center gap-1.5">
+                  <Briefcase className="h-4 w-4 text-[#0F5E63]" />
+                  <span>Competitor Win Intelligence (§26)</span>
+                </h4>
+                <p className="text-xs text-[#4A5568]">Winning competitors recorded during commercial bid evaluations</p>
+
+                <div className="space-y-2 pt-1">
+                  {Object.keys(winLossReport.competitors || {}).length === 0 ? (
+                    <div className="p-4 rounded-lg bg-slate-50 text-center text-xs text-[#4A5568]">
+                      No competitor awards recorded in system yet.
+                    </div>
+                  ) : (
+                    Object.entries(winLossReport.competitors || {}).map(([comp, count]) => (
+                      <div key={comp} className="p-2.5 rounded-lg bg-[#F8FAFC] border border-[#DCD8CE] flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Building className="h-4 w-4 text-[#0F5E63]" />
+                          <span className="font-bold text-xs text-[#14213D]">{comp}</span>
+                        </div>
+                        <Badge variant="danger" size="sm">{count as number} Tender Awards</Badge>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Completed Tenders Intelligence Register */}
+            {winLossReport.recent_completed && winLossReport.recent_completed.length > 0 && (
+              <div className="bg-white rounded-xl border border-[#DCD8CE] p-4 shadow-2xs space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-sm font-bold text-[#14213D] flex items-center gap-1.5">
+                    <History className="h-4 w-4 text-[#0F5E63]" />
+                    <span>Completed Tenders Post-Mortem Register (§26)</span>
+                  </h4>
+                  <Badge variant="default" size="sm">{winLossReport.recent_completed.length} Completed Bids</Badge>
+                </div>
+
+                <div className="overflow-x-auto max-h-[300px] overflow-y-auto">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead className="sticky top-0 bg-[#FBFAF7]">
+                      <tr className="border-b border-[#DCD8CE] text-[#4A5568] font-semibold">
+                        <th className="p-2.5">Tender / Buyer</th>
+                        <th className="p-2.5">Verdict</th>
+                        <th className="p-2.5">Product & Region</th>
+                        <th className="p-2.5">Responsible Executive</th>
+                        <th className="p-2.5">Result Date & Value</th>
+                        <th className="p-2.5">Outcome Reason / Competitor</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#DCD8CE]">
+                      {winLossReport.recent_completed.map((o: any) => (
+                        <tr key={o.outcome_id || o.tender_id} className="hover:bg-[#F8FAFC]">
+                          <td className="p-2.5">
+                            <span className="font-bold text-xs text-[#14213D] block">{o.tender_no || 'Tender'}</span>
+                            <span className="text-[10px] text-[#4A5568] truncate block max-w-[180px]">{o.organisation_name || o.tender_department}</span>
+                          </td>
+                          <td className="p-2.5">
+                            <Badge variant={o.result === 'won' ? 'success' : 'danger'} size="sm">
+                              {o.result?.toUpperCase()}
+                            </Badge>
+                          </td>
+                          <td className="p-2.5">
+                            <span className="font-medium text-[#14213D] block">{o.product_name || 'Standard Equipment'}</span>
+                            <span className="text-[10px] text-[#4A5568] block">{o.region_name || 'NCR'}</span>
+                          </td>
+                          <td className="p-2.5 text-[#4A5568]">
+                            {o.tender_owner_name || o.assigned_person_name || 'Unassigned'}
+                          </td>
+                          <td className="p-2.5">
+                            <span className="text-[#14213D] block">{o.result_date ? new Date(o.result_date).toLocaleDateString('en-IN') : 'N/A'}</span>
+                            {o.value_lakh ? (
+                              <span className="text-[10px] font-bold text-emerald-700">₹{o.value_lakh} Lakh</span>
+                            ) : null}
+                          </td>
+                          <td className="p-2.5 max-w-[240px]">
+                            {o.result === 'won' ? (
+                              <span className="text-[#14213D]">{o.notes || o.reason || 'Won L1 Award'}</span>
+                            ) : (
+                              <div>
+                                <span className="font-semibold text-red-700 block">{o.reason || 'Lost'}</span>
+                                {o.competitor && (
+                                  <span className="text-[10px] text-gray-700 block">Awarded to: {o.competitor}</span>
+                                )}
+                                {o.technical_issue && (
+                                  <span className="text-[10px] text-amber-800 block">Tech: {o.technical_issue}</span>
+                                )}
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -1610,13 +2323,13 @@ export default function TendersPage() {
                 {categorizedDeadlines.urgent.map((t) => (
                   <div key={t.id} className="p-3.5 rounded-xl border border-amber-300 bg-amber-50/40 flex items-start justify-between">
                     <div>
-                      <div className="font-bold text-xs text-[#1A1A1A] flex items-center gap-1.5">
+                      <div className="font-bold text-xs text-[#14213D] flex items-center gap-1.5">
                         <span>{t.tender_number || t.tender_no}</span>
                         <Badge variant="urgent" size="sm">CLOSING SOON</Badge>
                       </div>
-                      <p className="text-[11px] text-[#5871A5] mt-1 font-medium">{t.department}</p>
+                      <p className="text-[11px] text-[#4A5568] mt-1 font-medium">{t.department}</p>
                       <p className="text-[10px] text-gray-700 mt-0.5">Deadline: {new Date(t.submission_deadline || t.bid_closing_date).toLocaleString('en-IN')}</p>
-                      <p className="text-[10px] text-[#223FA7] font-semibold mt-1">Owner: {t.owner_name || t.assigned_person_name || 'Unassigned'}</p>
+                      <p className="text-[10px] text-[#0F5E63] font-semibold mt-1">Owner: {t.owner_name || t.assigned_person_name || 'Unassigned'}</p>
                     </div>
                     <Button size="xs" variant="primary" onClick={() => openTenderDetails(t)}>
                       Inspect & Act
@@ -1627,12 +2340,58 @@ export default function TendersPage() {
             )}
           </div>
 
-          {/* Group 2: Pending Internal Approvals (§24) */}
+          {/* Group 2: Upcoming Submissions (Next 3 to 7 Days) (§24) */}
           <div className="bg-white rounded-xl border border-blue-200 p-4 shadow-2xs space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <ShieldCheck className="h-5 w-5 text-[#223FA7]" />
-                <h4 className="text-sm font-bold text-[#1A1A1A]">
+                <Calendar className="h-5 w-5 text-[#0F5E63]" />
+                <h4 className="text-sm font-bold text-[#14213D]">
+                  Upcoming Submissions (Next 3 to 7 Days)
+                </h4>
+              </div>
+              <Badge variant="outline" size="sm">
+                {categorizedDeadlines.upcoming.length} Upcoming
+              </Badge>
+            </div>
+
+            {categorizedDeadlines.upcoming.length === 0 ? (
+              <div className="p-4 rounded-lg bg-blue-50/40 border border-blue-100 text-xs text-[#4A5568] text-center">
+                Zero submissions scheduled between 3 to 7 days.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {categorizedDeadlines.upcoming.map((t) => (
+                  <div key={t.id} className="p-3.5 rounded-xl border border-[#DCD8CE] bg-white flex flex-col justify-between hover:border-[#0F5E63] transition-all">
+                    <div>
+                      <div className="font-bold text-xs text-[#14213D] flex items-center justify-between">
+                        <span className="truncate">{t.tender_number || t.tender_no}</span>
+                        <Badge variant="outline" size="sm">{t.tender_category || t.category || 'Tender'}</Badge>
+                      </div>
+                      <p className="text-[11px] text-[#4A5568] mt-1 font-medium truncate">{t.department}</p>
+                      <p className="text-[10px] text-gray-700 mt-0.5">
+                        Closing: {new Date(t.submission_deadline || t.bid_closing_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </p>
+                      <p className="text-[10px] text-[#0F5E63] font-semibold mt-0.5">
+                        Owner: {t.owner_name || t.assigned_person_name || 'Assigned Team'}
+                      </p>
+                    </div>
+                    <div className="pt-2 flex items-center justify-end gap-1.5 border-t border-[#DCD8CE]/60 mt-2">
+                      <Button size="xs" variant="secondary" onClick={() => openTenderDetails(t)}>
+                        Inspect & Draft
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Group 3: Pending Internal Approvals (§24) */}
+          <div className="bg-white rounded-xl border border-blue-200 p-4 shadow-2xs space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="h-5 w-5 text-[#0F5E63]" />
+                <h4 className="text-sm font-bold text-[#14213D]">
                   Pending Internal Approvals Awaiting Dual-Control Signoff
                 </h4>
               </div>
@@ -1642,16 +2401,16 @@ export default function TendersPage() {
             </div>
 
             {categorizedDeadlines.awaitingSignoff.length === 0 ? (
-              <div className="p-4 rounded-lg bg-blue-50/50 border border-blue-100 text-xs text-[#5871A5] text-center">
+              <div className="p-4 rounded-lg bg-blue-50/50 border border-blue-100 text-xs text-[#4A5568] text-center">
                 All participation requests have been reviewed and approved.
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {categorizedDeadlines.awaitingSignoff.map((t) => (
-                  <div key={t.id} className="p-3.5 rounded-xl border border-[#D6E3F5] bg-white flex items-start justify-between">
+                  <div key={t.id} className="p-3.5 rounded-xl border border-[#DCD8CE] bg-white flex items-start justify-between">
                     <div>
-                      <span className="font-bold text-xs text-[#1A1A1A] block">{t.tender_number || t.tender_no}</span>
-                      <p className="text-[11px] text-[#5871A5] mt-0.5">{t.department}</p>
+                      <span className="font-bold text-xs text-[#14213D] block">{t.tender_number || t.tender_no}</span>
+                      <p className="text-[11px] text-[#4A5568] mt-0.5">{t.department}</p>
                       <p className="text-[10px] text-amber-700 font-semibold mt-1">Status: Awaiting Management Decision</p>
                     </div>
                     <Button size="xs" variant="secondary" onClick={() => openTenderDetails(t)}>
@@ -1663,12 +2422,12 @@ export default function TendersPage() {
             )}
           </div>
 
-          {/* Group 3: Incomplete Tender Preparation (§24) */}
-          <div className="bg-white rounded-xl border border-[#D6E3F5] p-4 shadow-2xs space-y-3">
+          {/* Group 4: Incomplete Tender Preparation (§24) */}
+          <div className="bg-white rounded-xl border border-[#DCD8CE] p-4 shadow-2xs space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Clock className="h-5 w-5 text-blue-600" />
-                <h4 className="text-sm font-bold text-[#1A1A1A]">
+                <h4 className="text-sm font-bold text-[#14213D]">
                   Incomplete Tender Preparation (Under Active Drafting)
                 </h4>
               </div>
@@ -1678,17 +2437,17 @@ export default function TendersPage() {
             </div>
 
             {categorizedDeadlines.incompletePrep.length === 0 ? (
-              <div className="p-4 rounded-lg bg-slate-50 text-center text-xs text-[#5871A5]">
+              <div className="p-4 rounded-lg bg-slate-50 text-center text-xs text-[#4A5568]">
                 No imminent drafting deadlines.
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 {categorizedDeadlines.incompletePrep.map((t) => (
-                  <div key={t.id} className="p-3 rounded-lg border border-[#D6E3F5] bg-[#F8FAFC] space-y-2">
-                    <span className="font-bold text-xs text-[#1A1A1A] block truncate">{t.tender_number || t.tender_no}</span>
-                    <p className="text-[10px] text-[#5871A5] truncate">{t.department}</p>
+                  <div key={t.id} className="p-3 rounded-lg border border-[#DCD8CE] bg-[#F8FAFC] space-y-2">
+                    <span className="font-bold text-xs text-[#14213D] block truncate">{t.tender_number || t.tender_no}</span>
+                    <p className="text-[10px] text-[#4A5568] truncate">{t.department}</p>
                     <div className="flex items-center justify-between pt-1">
-                      <span className="text-[10px] text-[#223FA7] font-semibold">{t.owner_name || 'Assigned Team'}</span>
+                      <span className="text-[10px] text-[#0F5E63] font-semibold">{t.owner_name || 'Assigned Team'}</span>
                       <Button size="xs" variant="outline" onClick={() => openTenderDetails(t)}>Open</Button>
                     </div>
                   </div>
@@ -1697,12 +2456,12 @@ export default function TendersPage() {
             )}
           </div>
 
-          {/* Group 4: Tender Result Follow-Ups (§24) */}
-          <div className="bg-white rounded-xl border border-[#D6E3F5] p-4 shadow-2xs space-y-3">
+          {/* Group 5: Tender Result Follow-Ups (§24) */}
+          <div className="bg-white rounded-xl border border-[#DCD8CE] p-4 shadow-2xs space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Send className="h-5 w-5 text-emerald-600" />
-                <h4 className="text-sm font-bold text-[#1A1A1A]">
+                <h4 className="text-sm font-bold text-[#14213D]">
                   Post-Submission Result Follow-Ups (Awaiting Commercial Evaluation / Award)
                 </h4>
               </div>
@@ -1711,20 +2470,36 @@ export default function TendersPage() {
               </Badge>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              {categorizedDeadlines.resultFollowups.slice(0, 6).map((t) => (
-                <div key={t.id} className="p-3 rounded-lg border border-[#D6E3F5] bg-white space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-xs text-[#1A1A1A] truncate">{t.tender_number || t.tender_no}</span>
-                    <Badge variant="cyber" size="sm">{t.status.replace(/_/g, ' ').toUpperCase()}</Badge>
+            {categorizedDeadlines.resultFollowups.length === 0 ? (
+              <div className="p-4 rounded-lg bg-slate-50 border border-[#DCD8CE] text-center text-xs text-[#4A5568]">
+                No pending result follow-ups. All submitted bids have outcomes recorded.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {categorizedDeadlines.resultFollowups.map((t) => (
+                  <div key={t.id} className="p-3.5 rounded-xl border border-[#DCD8CE] bg-white space-y-2 hover:border-[#0F5E63] transition-all flex flex-col justify-between">
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-xs text-[#14213D] truncate">{t.tender_number || t.tender_no}</span>
+                        <Badge variant="cyber" size="sm">{t.status.replace(/_/g, ' ').toUpperCase()}</Badge>
+                      </div>
+                      <p className="text-[11px] text-[#4A5568] font-medium truncate mt-0.5">{t.department}</p>
+                      <p className="text-[10px] text-gray-600 mt-0.5">
+                        Closing: {t.submission_deadline || t.bid_closing_date ? new Date(t.submission_deadline || t.bid_closing_date).toLocaleDateString('en-IN') : 'Completed'}
+                      </p>
+                    </div>
+                    <div className="pt-2 flex items-center gap-1.5 border-t border-[#DCD8CE]/60">
+                      <Button size="xs" variant="outline" className="flex-1" onClick={() => openTenderDetails(t)}>
+                        Inspect
+                      </Button>
+                      <Button size="xs" variant="primary" className="flex-1" onClick={() => openOutcomeModal(t)}>
+                        Record Verdict
+                      </Button>
+                    </div>
                   </div>
-                  <p className="text-[10px] text-[#5871A5] truncate">{t.department}</p>
-                  <Button size="xs" variant="secondary" fullWidth onClick={() => openTenderDetails(t)}>
-                    Follow Up & Record Verdict
-                  </Button>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -1737,6 +2512,16 @@ export default function TendersPage() {
           <SectionHeader
             title="GeM & External Portal Issues Hub (§25)"
             description="Tracking external portal glitches (e.g. required equipment missing on GeM, DSC token errors, technical BoQ discrepancies) with escalation and resolution governance"
+            actions={
+              <Button
+                size="sm"
+                variant="primary"
+                onClick={() => openNewIssueModal()}
+                leftIcon={<Plus className="h-4 w-4" />}
+              >
+                Log Portal Issue
+              </Button>
+            }
           />
 
           {/* Status Metrics */}
@@ -1745,7 +2530,7 @@ export default function TendersPage() {
               label="Total Portal Issues"
               value={globalPortalIssues.length}
               subtext="Logged on GeM & CPPP"
-              icon={<AlertCircle className="h-4 w-4 text-[#223FA7]" />}
+              icon={<AlertCircle className="h-4 w-4 text-[#0F5E63]" />}
             />
             <StatCard
               label="Open Issues"
@@ -1771,11 +2556,11 @@ export default function TendersPage() {
           </div>
 
           {/* Global Portal Issues Table */}
-          <div className="bg-white rounded-xl border border-[#D6E3F5] overflow-hidden shadow-2xs">
+          <div className="bg-white rounded-xl border border-[#DCD8CE] overflow-hidden shadow-2xs">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
-                  <tr className="bg-[#F7FBFF] border-b border-[#D6E3F5] text-[#5871A5] font-semibold">
+                  <tr className="bg-[#FBFAF7] border-b border-[#DCD8CE] text-[#4A5568] font-semibold">
                     <th className="p-3.5">Issue Details</th>
                     <th className="p-3.5">Affected Tender & Buyer</th>
                     <th className="p-3.5">Portal</th>
@@ -1785,10 +2570,10 @@ export default function TendersPage() {
                     <th className="p-3.5 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#D6E3F5]">
+                <tbody className="divide-y divide-[#DCD8CE]">
                   {globalPortalIssues.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="p-8 text-center text-xs text-[#5871A5]">
+                      <td colSpan={7} className="p-8 text-center text-xs text-[#4A5568]">
                         <CheckCircle2 className="h-8 w-8 text-emerald-600 mx-auto mb-2" />
                         Zero external portal issues recorded. GeM & CPPP submissions operating normally.
                       </td>
@@ -1797,7 +2582,7 @@ export default function TendersPage() {
                     globalPortalIssues.map((issue) => (
                       <tr key={issue.id} className="hover:bg-[#F8FAFC]">
                         <td className="p-3.5 max-w-[280px]">
-                          <span className="font-bold text-xs text-[#1A1A1A] block">{issue.issue}</span>
+                          <span className="font-bold text-xs text-[#14213D] block">{issue.issue}</span>
                           {issue.escalated_to && (
                             <span className="text-[10px] text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200 mt-1 inline-block">
                               Escalated to: {issue.escalated_to}
@@ -1806,8 +2591,8 @@ export default function TendersPage() {
                         </td>
 
                         <td className="p-3.5 whitespace-nowrap">
-                          <span className="font-semibold text-xs text-[#1A1A1A] block">{issue.tender_no || 'Tender'}</span>
-                          <span className="text-[10px] text-[#5871A5] truncate block max-w-[180px]">{issue.tender_department || 'Department'}</span>
+                          <span className="font-semibold text-xs text-[#14213D] block">{issue.tender_no || 'Tender'}</span>
+                          <span className="text-[10px] text-[#4A5568] truncate block max-w-[180px]">{issue.tender_department || 'Department'}</span>
                         </td>
 
                         <td className="p-3.5 whitespace-nowrap">
@@ -1815,10 +2600,10 @@ export default function TendersPage() {
                         </td>
 
                         <td className="p-3.5 whitespace-nowrap">
-                          <span className="text-[#1A1A1A] block">
+                          <span className="text-[#14213D] block">
                             {issue.reported_date ? new Date(issue.reported_date).toLocaleDateString('en-IN') : 'N/A'}
                           </span>
-                          <span className="text-[10px] text-[#5871A5] block">
+                          <span className="text-[10px] text-[#4A5568] block">
                             By {issue.reported_by_name || 'Tender Team'}
                           </span>
                         </td>
@@ -1839,7 +2624,7 @@ export default function TendersPage() {
                         </td>
 
                         <td className="p-3.5 max-w-[240px]">
-                          <span className="text-xs text-[#1A1A1A] block truncate" title={issue.resolution}>
+                          <span className="text-xs text-[#14213D] block truncate" title={issue.resolution}>
                             {issue.resolution || 'Pending resolution from portal desk.'}
                           </span>
                         </td>
@@ -1894,9 +2679,9 @@ export default function TendersPage() {
         {selectedTender && (
           <div className="space-y-6 text-xs">
             {/* Stage Progress Stepper */}
-            <div className="p-3 rounded-xl bg-[#F7FBFF] border border-[#D6E3F5]">
+            <div className="p-3 rounded-xl bg-[#FBFAF7] border border-[#DCD8CE]">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[11px] font-bold text-[#5871A5] uppercase tracking-wider">
+                <span className="text-[11px] font-bold text-[#4A5568] uppercase tracking-wider">
                   Lifecycle Progress
                 </span>
                 <Badge
@@ -1915,19 +2700,19 @@ export default function TendersPage() {
 
               {/* Visual State Tracker */}
               <div className="grid grid-cols-6 gap-1 text-center text-[10px] font-semibold">
-                <div className={`p-1.5 rounded ${['identified', 'awaiting_approval', 'under_preparation', 'pq_submitted', 'pq_qualified', 'submitted', 'technical_eval', 'commercial_eval', 'won', 'lost'].includes(selectedTender.status) ? 'bg-[#223FA7] text-white' : 'bg-slate-200 text-slate-500'}`}>
+                <div className={`p-1.5 rounded ${['identified', 'awaiting_approval', 'under_preparation', 'pq_submitted', 'pq_qualified', 'submitted', 'technical_eval', 'commercial_eval', 'won', 'lost'].includes(selectedTender.status) ? 'bg-[#0F5E63] text-white' : 'bg-slate-200 text-slate-500'}`}>
                   1. Identified
                 </div>
-                <div className={`p-1.5 rounded ${['awaiting_approval', 'under_preparation', 'pq_submitted', 'pq_qualified', 'submitted', 'technical_eval', 'commercial_eval', 'won', 'lost'].includes(selectedTender.status) ? 'bg-[#223FA7] text-white' : 'bg-slate-200 text-slate-500'}`}>
+                <div className={`p-1.5 rounded ${['awaiting_approval', 'under_preparation', 'pq_submitted', 'pq_qualified', 'submitted', 'technical_eval', 'commercial_eval', 'won', 'lost'].includes(selectedTender.status) ? 'bg-[#0F5E63] text-white' : 'bg-slate-200 text-slate-500'}`}>
                   2. Approval
                 </div>
-                <div className={`p-1.5 rounded ${['under_preparation', 'pq_submitted', 'pq_qualified', 'submitted', 'technical_eval', 'commercial_eval', 'won', 'lost'].includes(selectedTender.status) ? 'bg-[#223FA7] text-white' : 'bg-slate-200 text-slate-500'}`}>
+                <div className={`p-1.5 rounded ${['under_preparation', 'pq_submitted', 'pq_qualified', 'submitted', 'technical_eval', 'commercial_eval', 'won', 'lost'].includes(selectedTender.status) ? 'bg-[#0F5E63] text-white' : 'bg-slate-200 text-slate-500'}`}>
                   3. Preparation
                 </div>
-                <div className={`p-1.5 rounded ${['pq_submitted', 'pq_qualified', 'submitted', 'technical_eval', 'commercial_eval', 'won', 'lost'].includes(selectedTender.status) ? 'bg-[#223FA7] text-white' : 'bg-slate-200 text-slate-500'}`}>
+                <div className={`p-1.5 rounded ${['pq_submitted', 'pq_qualified', 'submitted', 'technical_eval', 'commercial_eval', 'won', 'lost'].includes(selectedTender.status) ? 'bg-[#0F5E63] text-white' : 'bg-slate-200 text-slate-500'}`}>
                   4. PQ Phase
                 </div>
-                <div className={`p-1.5 rounded ${['submitted', 'technical_eval', 'commercial_eval', 'won', 'lost'].includes(selectedTender.status) ? 'bg-[#223FA7] text-white' : 'bg-slate-200 text-slate-500'}`}>
+                <div className={`p-1.5 rounded ${['submitted', 'technical_eval', 'commercial_eval', 'won', 'lost'].includes(selectedTender.status) ? 'bg-[#0F5E63] text-white' : 'bg-slate-200 text-slate-500'}`}>
                   5. Submitted
                 </div>
                 <div className={`p-1.5 rounded ${['won', 'lost'].includes(selectedTender.status) ? (selectedTender.status === 'won' ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white') : 'bg-slate-200 text-slate-500'}`}>
@@ -1936,216 +2721,297 @@ export default function TendersPage() {
               </div>
             </div>
 
-            {/* Modal Subtabs */}
-            <div className="flex items-center space-x-1 p-1 bg-[#EEF5FF] border border-[#D6E3F5] rounded-xl overflow-x-auto">
+            {/* Modal Subtabs (Fixed Uniform Grid - Zero Shifting) */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-1.5 p-1 bg-[#E3EFEE] border border-[#DCD8CE] rounded-xl select-none">
               <button
                 type="button"
                 onClick={() => setDetailTab('overview')}
-                className={`px-3 py-1.5 rounded-lg font-semibold transition-all ${detailTab === 'overview' ? 'bg-white text-[#223FA7] shadow-xs' : 'text-[#5871A5] hover:text-[#1A1A1A]'}`}
+                className={`flex items-center justify-center text-center py-2 px-2.5 rounded-lg font-semibold text-xs transition-all cursor-pointer ${
+                  detailTab === 'overview'
+                    ? 'bg-white text-[#0F5E63] shadow-xs border border-[#DCD8CE]/80'
+                    : 'text-[#4A5568] hover:text-[#14213D] hover:bg-white/60'
+                }`}
               >
-                Overview
+                <span>Overview</span>
               </button>
               <button
                 type="button"
                 onClick={() => setDetailTab('approval')}
-                className={`px-3 py-1.5 rounded-lg font-semibold transition-all ${detailTab === 'approval' ? 'bg-white text-[#223FA7] shadow-xs' : 'text-[#5871A5] hover:text-[#1A1A1A]'}`}
+                className={`flex items-center justify-center text-center py-2 px-2.5 rounded-lg font-semibold text-xs transition-all cursor-pointer ${
+                  detailTab === 'approval'
+                    ? 'bg-white text-[#0F5E63] shadow-xs border border-[#DCD8CE]/80'
+                    : 'text-[#4A5568] hover:text-[#14213D] hover:bg-white/60'
+                }`}
               >
-                Approval & Signoff
+                <span>Approval</span>
               </button>
               <button
                 type="button"
                 onClick={() => setDetailTab('transitions')}
-                className={`px-3 py-1.5 rounded-lg font-semibold transition-all ${detailTab === 'transitions' ? 'bg-white text-[#223FA7] shadow-xs' : 'text-[#5871A5] hover:text-[#1A1A1A]'}`}
+                className={`flex items-center justify-center text-center py-2 px-2.5 rounded-lg font-semibold text-xs transition-all cursor-pointer ${
+                  detailTab === 'transitions'
+                    ? 'bg-white text-[#0F5E63] shadow-xs border border-[#DCD8CE]/80'
+                    : 'text-[#4A5568] hover:text-[#14213D] hover:bg-white/60'
+                }`}
               >
-                Workflow Transitions
+                <span>Transitions</span>
               </button>
               <button
                 type="button"
                 onClick={() => setDetailTab('portal_issues')}
-                className={`px-3 py-1.5 rounded-lg font-semibold transition-all ${detailTab === 'portal_issues' ? 'bg-white text-[#223FA7] shadow-xs' : 'text-[#5871A5] hover:text-[#1A1A1A]'}`}
+                className={`flex items-center justify-center text-center py-2 px-2.5 rounded-lg font-semibold text-xs transition-all cursor-pointer ${
+                  detailTab === 'portal_issues'
+                    ? 'bg-white text-[#0F5E63] shadow-xs border border-[#DCD8CE]/80'
+                    : 'text-[#4A5568] hover:text-[#14213D] hover:bg-white/60'
+                }`}
               >
-                Portal Issues ({portalIssues.length})
+                <span>Portal Issues</span>
+                {portalIssues.length > 0 && (
+                  <span className="ml-1.5 px-1.5 py-0.2 text-[10px] font-bold rounded-full bg-amber-100 text-amber-800">
+                    {portalIssues.length}
+                  </span>
+                )}
               </button>
               <button
                 type="button"
                 onClick={() => setDetailTab('outcome')}
-                className={`px-3 py-1.5 rounded-lg font-semibold transition-all ${detailTab === 'outcome' ? 'bg-white text-[#223FA7] shadow-xs' : 'text-[#5871A5] hover:text-[#1A1A1A]'}`}
+                className={`flex items-center justify-center text-center py-2 px-2.5 rounded-lg font-semibold text-xs transition-all cursor-pointer ${
+                  detailTab === 'outcome'
+                    ? 'bg-white text-[#0F5E63] shadow-xs border border-[#DCD8CE]/80'
+                    : 'text-[#4A5568] hover:text-[#14213D] hover:bg-white/60'
+                }`}
               >
-                Win / Loss Outcome
+                <span>Win / Loss</span>
               </button>
               <button
                 type="button"
                 onClick={() => setDetailTab('timeline')}
-                className={`px-3 py-1.5 rounded-lg font-semibold transition-all ${detailTab === 'timeline' ? 'bg-white text-[#223FA7] shadow-xs' : 'text-[#5871A5] hover:text-[#1A1A1A]'}`}
+                className={`flex items-center justify-center text-center py-2 px-2.5 rounded-lg font-semibold text-xs transition-all cursor-pointer ${
+                  detailTab === 'timeline'
+                    ? 'bg-white text-[#0F5E63] shadow-xs border border-[#DCD8CE]/80'
+                    : 'text-[#4A5568] hover:text-[#14213D] hover:bg-white/60'
+                }`}
               >
-                Audit Trail ({activities.length})
+                <span>Audit Trail</span>
+                {activities.length > 0 && (
+                  <span className="ml-1.5 px-1.5 py-0.2 text-[10px] font-bold rounded-full bg-[#E3EFEE] text-[#0F5E63]">
+                    {activities.length}
+                  </span>
+                )}
               </button>
             </div>
 
-            {/* TAB 1: Overview Specifications (15+ Fields) */}
-            {detailTab === 'overview' && (
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3.5 rounded-xl bg-white border border-[#D6E3F5]">
-                  <div>
-                    <span className="text-[10px] text-[#5871A5] uppercase font-bold block">Tender Number</span>
-                    <span className="font-bold text-xs text-[#1A1A1A]">{selectedTender.tender_number || selectedTender.tender_no}</span>
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-[#5871A5] uppercase font-bold block">Portal</span>
-                    <span className="font-semibold text-xs text-[#1A1A1A]">{selectedTender.portal || 'GeM'}</span>
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-[#5871A5] uppercase font-bold block">Category</span>
-                    <span className="font-semibold text-xs text-[#223FA7]">
-                      {selectedTender.category === 'pq' ? 'PQ' : selectedTender.category === 'general_mha' ? 'General / MHA' : selectedTender.category || 'Standard'}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-[#5871A5] uppercase font-bold block">Estimated Value</span>
-                    <span className="font-bold text-xs text-emerald-700">
-                      {selectedTender.estimated_value_lakh ? `₹ ${selectedTender.estimated_value_lakh} Lakh` : selectedTender.tender_value ? `₹ ${(selectedTender.tender_value / 100000).toFixed(2)} Lakh` : 'Not Specified'}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3.5 rounded-xl bg-white border border-[#D6E3F5]">
-                  <div>
-                    <span className="text-[10px] text-[#5871A5] uppercase font-bold block">Buyer Department</span>
-                    <span className="font-semibold text-xs text-[#1A1A1A]">{selectedTender.department || 'N/A'}</span>
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-[#5871A5] uppercase font-bold block">Mapped Organisation</span>
-                    <span className="font-semibold text-xs text-[#1A1A1A]">{selectedTender.organisation_name || 'Direct Buyer'}</span>
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-[#5871A5] uppercase font-bold block">Territory Zone</span>
-                    <span className="font-semibold text-xs text-[#1A1A1A]">{selectedTender.zone || selectedTender.zone_name || 'North'}</span>
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-[#5871A5] uppercase font-bold block">Territory Region</span>
-                    <span className="font-semibold text-xs text-[#1A1A1A]">{selectedTender.region || selectedTender.region_name || 'Delhi NCR'}</span>
-                  </div>
-                </div>
-
-                <div className="p-3.5 rounded-xl bg-white border border-[#D6E3F5] space-y-2">
-                  <span className="text-[10px] text-[#5871A5] uppercase font-bold block">Product Requirement & Technical Scope</span>
-                  <p className="text-xs text-[#1A1A1A] leading-relaxed">{selectedTender.requirement_text || 'No technical specifications logged.'}</p>
-                </div>
-
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3.5 rounded-xl bg-white border border-[#D6E3F5]">
-                  <div>
-                    <span className="text-[10px] text-[#5871A5] uppercase font-bold block">Publication Date</span>
-                    <span className="font-semibold text-xs text-[#1A1A1A]">
-                      {selectedTender.publication_date ? new Date(selectedTender.publication_date).toLocaleDateString('en-IN') : 'N/A'}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-[#5871A5] uppercase font-bold block">Submission Deadline</span>
-                    <span className="font-bold text-xs text-red-700">
-                      {selectedTender.submission_deadline || selectedTender.bid_closing_date ? new Date(selectedTender.submission_deadline || selectedTender.bid_closing_date).toLocaleDateString('en-IN') : 'N/A'}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-[#5871A5] uppercase font-bold block">Assigned Salesperson</span>
-                    <span className="font-semibold text-xs text-[#1A1A1A]">{selectedTender.assigned_person_name || 'Unassigned'}</span>
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-[#5871A5] uppercase font-bold block">Tender Owner</span>
-                    <span className="font-semibold text-xs text-[#1A1A1A]">{selectedTender.owner_name || selectedTender.assigned_person_name || 'Unassigned'}</span>
-                  </div>
-                </div>
-
-                {selectedTender.remarks && (
-                  <div className="p-3 rounded-lg bg-slate-50 border border-[#D6E3F5] text-xs text-[#5871A5]">
-                    <strong>Remarks:</strong> {selectedTender.remarks}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* TAB 2: Approval & Dual-Control Signoff */}
-            {detailTab === 'approval' && (
-              <div className="space-y-4">
-                <SectionHeader
-                  title="Dual-Control Management Approval"
-                  description="Pre-participation qualification signoff required before preparing commercial documents"
-                />
-
-                {selectedTender.status === 'awaiting_approval' ? (
-                  <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 space-y-3">
-                    <div className="flex items-center gap-2">
-                      <AlertTriangle className="h-5 w-5 text-amber-600" />
-                      <span className="font-bold text-xs text-amber-900">
-                        This tender requires formal management endorsement before bid preparation can begin.
+            {/* Consistent Content Container: Prevents Modal Resizing / Jumping Across Tabs */}
+            <div className="min-h-[400px] max-h-[460px] overflow-y-auto pr-1 custom-scrollbar space-y-4">
+              {/* TAB 1: Overview Specifications (15+ Fields) */}
+              {detailTab === 'overview' && (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3.5 rounded-xl bg-white border border-[#DCD8CE]">
+                    <div>
+                      <span className="text-[10px] text-[#4A5568] uppercase font-bold block">Tender Number</span>
+                      <span className="font-bold text-xs text-[#14213D]">{selectedTender.tender_number || selectedTender.tender_no}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-[#4A5568] uppercase font-bold block">Portal</span>
+                      <span className="font-semibold text-xs text-[#14213D]">{selectedTender.portal || 'GeM'}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-[#4A5568] uppercase font-bold block">Category</span>
+                      <span className="font-semibold text-xs text-[#0F5E63]">
+                        {selectedTender.category === 'pq' ? 'PQ' : selectedTender.category === 'general_mha' ? 'General / MHA' : selectedTender.category || 'Standard'}
                       </span>
                     </div>
-
-                    <div className="flex items-center gap-2 pt-2">
-                      <Button
-                        size="sm"
-                        variant="primary"
-                        onClick={() => {
-                          setApprovalDecision('approved');
-                          setIsApproveOpen(true);
-                        }}
-                        leftIcon={<Check className="h-4 w-4" />}
-                      >
-                        Approve & Start Preparation
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="danger"
-                        onClick={() => {
-                          setApprovalDecision('rejected');
-                          setIsApproveOpen(true);
-                        }}
-                        leftIcon={<X className="h-4 w-4" />}
-                      >
-                        Reject Participation
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="p-4 rounded-xl bg-white border border-[#D6E3F5] space-y-2">
-                    <div className="flex items-center gap-2">
-                      <CheckCircle2 className="h-5 w-5 text-emerald-600" />
-                      <span className="font-bold text-xs text-[#1A1A1A]">
-                        Current Stage: {selectedTender.status.replace(/_/g, ' ').toUpperCase()}
+                    <div>
+                      <span className="text-[10px] text-[#4A5568] uppercase font-bold block">Estimated Value</span>
+                      <span className="font-bold text-xs text-emerald-700">
+                        {selectedTender.estimated_value_lakh ? `₹ ${selectedTender.estimated_value_lakh} Lakh` : selectedTender.tender_value ? `₹ ${(selectedTender.tender_value / 100000).toFixed(2)} Lakh` : 'Not Specified'}
                       </span>
                     </div>
-                    {selectedTender.internal_approval_at && (
-                      <p className="text-[11px] text-[#5871A5]">
-                        Decision recorded on {new Date(selectedTender.internal_approval_at).toLocaleString('en-IN')}.
-                      </p>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* TAB 3: Workflow Transitions */}
-            {detailTab === 'transitions' && (
-              <div className="space-y-4">
-                <SectionHeader
-                  title="Available Stage Transitions"
-                  description="Strict stage progression governed by tender state machine"
-                />
-
-                <div className="p-4 rounded-xl bg-white border border-[#D6E3F5] space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-xs text-[#1A1A1A]">
-                      Current Stage: <span className="text-[#223FA7]">{selectedTender.status}</span>
-                    </span>
-                    <Badge variant="outline" size="sm">{selectedTender.category}</Badge>
                   </div>
 
-                  <div className="pt-2">
-                    <span className="text-xs text-[#5871A5] font-semibold block mb-2">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3.5 rounded-xl bg-white border border-[#DCD8CE]">
+                    <div>
+                      <span className="text-[10px] text-[#4A5568] uppercase font-bold block">Buyer Department</span>
+                      <span className="font-semibold text-xs text-[#14213D]">{selectedTender.department || 'N/A'}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-[#4A5568] uppercase font-bold block">Mapped Organisation</span>
+                      <span className="font-semibold text-xs text-[#14213D]">{selectedTender.organisation_name || 'Direct Buyer'}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-[#4A5568] uppercase font-bold block">Territory Zone</span>
+                      <span className="font-semibold text-xs text-[#14213D]">{selectedTender.zone || selectedTender.zone_name || 'North'}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-[#4A5568] uppercase font-bold block">Territory Region</span>
+                      <span className="font-semibold text-xs text-[#14213D]">{selectedTender.region || selectedTender.region_name || 'Delhi NCR'}</span>
+                    </div>
+                  </div>
+
+                  <div className="p-3.5 rounded-xl bg-white border border-[#DCD8CE] space-y-2">
+                    <span className="text-[10px] text-[#4A5568] uppercase font-bold block">Product Requirement & Technical Scope</span>
+                    <p className="text-xs text-[#14213D] leading-relaxed">{selectedTender.requirement_text || 'No technical specifications logged.'}</p>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3.5 rounded-xl bg-white border border-[#DCD8CE]">
+                    <div>
+                      <span className="text-[10px] text-[#4A5568] uppercase font-bold block">Publication Date</span>
+                      <span className="font-semibold text-xs text-[#14213D]">
+                        {selectedTender.publication_date ? new Date(selectedTender.publication_date).toLocaleDateString('en-IN') : 'N/A'}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-[#4A5568] uppercase font-bold block">Submission Deadline</span>
+                      <span className="font-bold text-xs text-red-700">
+                        {selectedTender.submission_deadline || selectedTender.bid_closing_date ? new Date(selectedTender.submission_deadline || selectedTender.bid_closing_date).toLocaleDateString('en-IN') : 'N/A'}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-[#4A5568] uppercase font-bold block">Assigned Salesperson</span>
+                      <span className="font-semibold text-xs text-[#14213D]">{selectedTender.assigned_person_name || 'Unassigned'}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-[#4A5568] uppercase font-bold block">Tender Owner</span>
+                      <span className="font-semibold text-xs text-[#14213D]">{selectedTender.owner_name || selectedTender.assigned_person_name || 'Unassigned'}</span>
+                    </div>
+                  </div>
+
+                  {selectedTender.remarks && (
+                    <div className="p-3 rounded-lg bg-slate-50 border border-[#DCD8CE] text-xs text-[#4A5568]">
+                      <strong>Remarks:</strong> {selectedTender.remarks}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* TAB 2: Approval & Dual-Control Signoff */}
+              {detailTab === 'approval' && (
+                <div className="space-y-4">
+                  <SectionHeader
+                    title="Dual-Control Management Approval"
+                    description="Pre-participation qualification signoff required before preparing commercial documents"
+                  />
+
+                  {/* Commercial Context Card */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3.5 rounded-xl bg-[#FBFAF7] border border-[#DCD8CE]">
+                    <div>
+                      <span className="text-[10px] text-[#4A5568] uppercase font-bold block">Tender Number</span>
+                      <span className="font-bold text-xs text-[#14213D]">{selectedTender.tender_number || selectedTender.tender_no}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-[#4A5568] uppercase font-bold block">Buyer Organisation</span>
+                      <span className="font-semibold text-xs text-[#14213D]">{selectedTender.organisation_name || selectedTender.department || 'Direct Buyer'}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-[#4A5568] uppercase font-bold block">Opportunity Type</span>
+                      <span className="font-semibold text-xs text-[#0F5E63]">
+                        {selectedTender.category === 'pq' ? 'PQ Tender' : selectedTender.category === 'general_mha' ? 'General / MHA' : selectedTender.category || 'Standard'}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-[#4A5568] uppercase font-bold block">Estimated Value</span>
+                      <span className="font-bold text-xs text-emerald-700">
+                        {selectedTender.estimated_value_lakh ? `₹ ${selectedTender.estimated_value_lakh} Lakh` : 'Not Specified'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {selectedTender.status === 'awaiting_approval' ? (
+                    <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 space-y-3">
+                      <div className="flex items-center gap-2">
+                        <AlertTriangle className="h-5 w-5 text-amber-600" />
+                        <span className="font-bold text-xs text-amber-900">
+                          This tender requires formal management endorsement before bid preparation can begin.
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-2 pt-2">
+                        <Button
+                          size="sm"
+                          variant="primary"
+                          onClick={() => {
+                            setApprovalDecision('approved');
+                            setIsApproveOpen(true);
+                          }}
+                          leftIcon={<Check className="h-4 w-4" />}
+                        >
+                          Approve & Start Preparation
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="danger"
+                          onClick={() => {
+                            setApprovalDecision('rejected');
+                            setIsApproveOpen(true);
+                          }}
+                          leftIcon={<X className="h-4 w-4" />}
+                        >
+                          Reject Participation
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-4 rounded-xl bg-white border border-[#DCD8CE] space-y-2">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                        <span className="font-bold text-xs text-[#14213D]">
+                          Current Stage: {selectedTender.status.replace(/_/g, ' ').toUpperCase()}
+                        </span>
+                      </div>
+                      {selectedTender.internal_approval_at && (
+                        <p className="text-[11px] text-[#4A5568]">
+                          Decision recorded on {new Date(selectedTender.internal_approval_at).toLocaleString('en-IN')}.
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="p-3.5 rounded-xl bg-white border border-[#DCD8CE] space-y-1.5">
+                    <span className="text-[10px] text-[#4A5568] uppercase font-bold block">Dual-Control Governance Standard</span>
+                    <p className="text-xs text-[#4A5568] leading-relaxed">
+                      Participation in government and defence tenders must receive dual-control signoff from authorized Regional Managers or executive leadership before commercial packet preparation, financial earnest money deposits (EMD), and technical compliance drafting begin.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 3: Workflow Transitions */}
+              {detailTab === 'transitions' && (
+                <div className="space-y-4">
+                  <SectionHeader
+                    title="Available Stage Transitions"
+                    description="Strict stage progression governed by tender state machine"
+                  />
+
+                  {/* Lifecycle Status Summary */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3.5 rounded-xl bg-[#FBFAF7] border border-[#DCD8CE]">
+                    <div>
+                      <span className="text-[10px] text-[#4A5568] uppercase font-bold block">Current Stage</span>
+                      <Badge variant="cyber" size="sm">{selectedTender.status.replace(/_/g, ' ').toUpperCase()}</Badge>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-[#4A5568] uppercase font-bold block">Opportunity Type</span>
+                      <span className="font-semibold text-xs text-[#14213D]">{selectedTender.category?.toUpperCase() || 'STANDARD'}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-[#4A5568] uppercase font-bold block">Submission Deadline</span>
+                      <span className="font-bold text-xs text-red-700">
+                        {selectedTender.submission_deadline || selectedTender.bid_closing_date ? new Date(selectedTender.submission_deadline || selectedTender.bid_closing_date).toLocaleDateString('en-IN') : 'N/A'}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-[#4A5568] uppercase font-bold block">Assigned Lead</span>
+                      <span className="font-semibold text-xs text-[#0F5E63]">{selectedTender.assigned_person_name || selectedTender.owner_name || 'Assigned Team'}</span>
+                    </div>
+                  </div>
+
+                  <div className="p-4 rounded-xl bg-white border border-[#DCD8CE] space-y-3">
+                    <span className="text-xs text-[#4A5568] font-semibold block">
                       Permitted Stage Advancements:
                     </span>
                     <div className="flex flex-wrap gap-2">
                       {getAllowedTransitions(selectedTender.status, selectedTender.category).length === 0 ? (
-                        <p className="text-xs text-[#5871A5]">
+                        <p className="text-xs text-[#4A5568]">
                           Terminal state reached. No further transitions permitted for this opportunity.
                         </p>
                       ) : (
@@ -2167,214 +3033,245 @@ export default function TendersPage() {
                       )}
                     </div>
                   </div>
-                </div>
-              </div>
-            )}
 
-            {/* TAB 4: External Portal Issues Tracker (§25) */}
-            {detailTab === 'portal_issues' && (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <SectionHeader
-                    title="GeM / External Portal Issues Tracker (§25)"
-                    description="Internal tracker for portal glitches, category errors, or OEM auth upload bugs"
-                  />
-                  <Button
-                    size="xs"
-                    variant="primary"
-                    onClick={() => {
-                      setActionError(null);
-                      setIsNewIssueOpen(true);
-                    }}
-                    leftIcon={<Plus className="h-3.5 w-3.5" />}
-                  >
-                    Log Portal Issue
-                  </Button>
-                </div>
-
-                {portalIssues.length === 0 ? (
-                  <div className="p-6 rounded-xl bg-slate-50 border border-[#D6E3F5] text-center text-xs text-[#5871A5]">
-                    No external portal issues currently recorded for this tender.
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    {portalIssues.map((issue) => (
-                      <div
-                        key={issue.id}
-                        className="p-3.5 rounded-xl bg-white border border-[#D6E3F5] space-y-2 hover:border-[#9FC0F5] transition-all"
-                      >
-                        <div className="flex items-start justify-between gap-2">
-                          <div>
-                            <span className="font-semibold text-xs text-[#1A1A1A] block">
-                              {issue.issue}
-                            </span>
-                            <span className="text-[10px] text-[#5871A5]">
-                              Reported on {new Date(issue.reported_date || issue.created_at).toLocaleDateString('en-IN')} by {issue.reporter_name || 'Tender Team'}
-                            </span>
-                          </div>
-                          <Badge
-                            variant={
-                              issue.resolution_status?.toLowerCase() === 'resolved' || issue.resolution_status?.toLowerCase() === 'closed'
-                                ? 'success'
-                                : issue.resolution_status?.toLowerCase() === 'escalated'
-                                ? 'danger'
-                                : 'warning'
-                            }
-                            size="sm"
-                          >
-                            {issue.resolution_status?.toUpperCase()}
-                          </Badge>
-                        </div>
-
-                        {issue.escalated_to && (
-                          <div className="text-[11px] text-amber-800 bg-amber-50 p-2 rounded border border-amber-200">
-                            <strong>Escalated to:</strong> {issue.escalated_to}
-                          </div>
-                        )}
-
-                        {issue.resolution && (
-                          <div className="text-[11px] text-emerald-800 bg-emerald-50 p-2 rounded border border-emerald-200">
-                            <strong>Resolution:</strong> {issue.resolution}
-                          </div>
-                        )}
-
-                        {!['resolved', 'closed'].includes(issue.resolution_status?.toLowerCase()) && (
-                          <div className="flex items-center gap-2 pt-1">
-                            {!['escalated'].includes(issue.resolution_status?.toLowerCase()) && (
-                              <Button
-                                size="xs"
-                                variant="outline"
-                                onClick={() => handleUpdateIssueStatus(selectedTender.id, issue.id, 'escalated')}
-                              >
-                                Escalate to Management
-                              </Button>
-                            )}
-                            <Button
-                              size="xs"
-                              variant="secondary"
-                              onClick={() => {
-                                const res = prompt('Enter resolution description:');
-                                if (res) handleUpdateIssueStatus(selectedTender.id, issue.id, 'resolved', res);
-                              }}
-                            >
-                              Resolve Issue
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* TAB 5: Win / Loss Outcome Verdict (§26) */}
-            {detailTab === 'outcome' && (
-              <div className="space-y-4">
-                <SectionHeader
-                  title="Final Commercial Outcome Analysis (§26)"
-                  description="Structured post-bid intelligence for win rate calculation and loss pattern tracking"
-                />
-
-                {selectedTender.result ? (
-                  <div className="p-4 rounded-xl bg-white border border-[#D6E3F5] space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        {selectedTender.result === 'won' ? (
-                          <Award className="h-6 w-6 text-emerald-600" />
-                        ) : (
-                          <XCircle className="h-6 w-6 text-red-600" />
-                        )}
-                        <div>
-                          <span className="text-sm font-black uppercase text-[#1A1A1A]">
-                            Final Result: {selectedTender.result}
-                          </span>
-                          <span className="text-[10px] text-[#5871A5] block">
-                            Declared on {selectedTender.result_date ? new Date(selectedTender.result_date).toLocaleDateString('en-IN') : 'N/A'}
-                          </span>
-                        </div>
-                      </div>
-                      <Badge
-                        variant={selectedTender.result === 'won' ? 'success' : 'danger'}
-                        size="sm"
-                      >
-                        {selectedTender.result.toUpperCase()}
-                      </Badge>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3 p-3 rounded-lg bg-[#F7FBFF] border border-[#D6E3F5]">
-                      <div>
-                        <span className="text-[10px] text-[#5871A5] uppercase font-bold block">
-                          Contract Award Value
-                        </span>
-                        <span className="font-semibold text-xs text-[#1A1A1A]">
-                          {selectedTender.value_lakh ? `₹ ${selectedTender.value_lakh} Lakh` : selectedTender.tender_value ? `₹ ${(selectedTender.tender_value / 100000).toFixed(2)} Lakh` : 'Not recorded'}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-[10px] text-[#5871A5] uppercase font-bold block">
-                          Winning Competitor
-                        </span>
-                        <span className="font-semibold text-xs text-[#1A1A1A]">
-                          {selectedTender.competitor || 'Arihant (Direct Award)'}
-                        </span>
-                      </div>
-                    </div>
-
-                    {selectedTender.outcome_reason && (
-                      <div className="p-2.5 rounded-lg bg-slate-50 border border-[#D6E3F5] text-xs text-gray-800">
-                        <strong>Structured Post-Mortem Intelligence:</strong> {selectedTender.outcome_reason}
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="p-4 rounded-xl bg-white border border-[#D6E3F5] space-y-3 text-center">
-                    <p className="text-xs text-[#5871A5]">
-                      Commercial verdict has not been recorded yet. You can mark this tender as Won or Lost once the buyer declares final evaluation.
+                  <div className="p-3.5 rounded-xl bg-white border border-[#DCD8CE] space-y-1.5">
+                    <span className="text-[10px] text-[#4A5568] uppercase font-bold block">Lifecycle Governance & Procedural Flow</span>
+                    <p className="text-xs text-[#4A5568] leading-relaxed">
+                      Stage advancements strictly follow Arihant BOS state machine constraints. Illegal skipping of quality gates (such as moving from Under Preparation directly to Won without bid submission) is programmatically prohibited.
                     </p>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 4: External Portal Issues Tracker (§25) */}
+              {detailTab === 'portal_issues' && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <SectionHeader
+                      title="GeM / External Portal Issues Tracker (§25)"
+                      description="Internal tracker for portal glitches, category errors, or OEM auth upload bugs"
+                    />
                     <Button
+                      size="xs"
                       variant="primary"
-                      size="sm"
-                      onClick={() => setIsOutcomeOpen(true)}
-                      leftIcon={<Award className="h-4 w-4" />}
+                      onClick={() => openNewIssueModal(selectedTender)}
+                      leftIcon={<Plus className="h-3.5 w-3.5" />}
                     >
-                      Record Commercial Verdict (Won / Lost)
+                      Log Portal Issue
                     </Button>
                   </div>
-                )}
-              </div>
-            )}
 
-            {/* TAB 6: Audit History & Activity Timeline */}
-            {detailTab === 'timeline' && (
-              <div className="space-y-3">
-                <SectionHeader
-                  title="Activity Audit Trail"
-                  description="Complete audit trail of all state transitions and management interventions"
-                />
+                  {portalIssues.length === 0 ? (
+                    <div className="p-8 rounded-xl bg-slate-50 border border-[#DCD8CE] text-center text-xs text-[#4A5568] space-y-2">
+                      <CheckCircle2 className="h-8 w-8 text-emerald-600 mx-auto" />
+                      <p className="font-semibold text-xs text-[#14213D]">No External Portal Glitches Logged</p>
+                      <p className="text-[11px] text-[#4A5568]">
+                        Document uploads, DSC token authentication, and BoQ requirements are functioning normally.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {portalIssues.map((issue) => (
+                        <div
+                          key={issue.id}
+                          className="p-3.5 rounded-xl bg-white border border-[#DCD8CE] space-y-2 hover:border-[#0F5E63] transition-all"
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div>
+                              <span className="font-semibold text-xs text-[#14213D] block">
+                                {issue.issue}
+                              </span>
+                              <span className="text-[10px] text-[#4A5568]">
+                                Reported on {new Date(issue.reported_date || issue.created_at).toLocaleDateString('en-IN')} by {issue.reporter_name || 'Tender Team'}
+                              </span>
+                            </div>
+                            <Badge
+                              variant={
+                                issue.resolution_status?.toLowerCase() === 'resolved' || issue.resolution_status?.toLowerCase() === 'closed'
+                                  ? 'success'
+                                  : issue.resolution_status?.toLowerCase() === 'escalated'
+                                  ? 'danger'
+                                  : 'warning'
+                              }
+                              size="sm"
+                            >
+                              {issue.resolution_status?.toUpperCase()}
+                            </Badge>
+                          </div>
 
-                {activities.length === 0 ? (
-                  <div className="p-6 rounded-xl bg-slate-50 border border-[#D6E3F5] text-center text-xs text-[#5871A5]">
-                    No activity records found for this tender.
-                  </div>
-                ) : (
-                  <div className="relative pl-4 border-l-2 border-[#D6E3F5] space-y-4 my-2">
-                    {activities.map((act) => (
-                      <div key={act.id} className="relative">
-                        <div className="absolute -left-[21px] top-1 h-2.5 w-2.5 rounded-full bg-[#223FA7] border-2 border-white ring-2 ring-[#D6E3F5]" />
-                        <div className="flex items-center justify-between text-[11px]">
-                          <span className="font-bold text-[#1A1A1A]">{act.description}</span>
-                          <span className="text-[10px] text-[#5871A5]">
-                            {new Date(act.created_at).toLocaleString('en-IN')}
+                          {issue.escalated_to && (
+                            <div className="text-[11px] text-amber-800 bg-amber-50 p-2 rounded border border-amber-200">
+                              <strong>Escalated to:</strong> {issue.escalated_to}
+                            </div>
+                          )}
+
+                          {issue.resolution && (
+                            <div className="text-[11px] text-emerald-800 bg-emerald-50 p-2 rounded border border-emerald-200">
+                              <strong>Resolution:</strong> {issue.resolution}
+                            </div>
+                          )}
+
+                          {!['resolved', 'closed'].includes(issue.resolution_status?.toLowerCase()) && (
+                            <div className="flex items-center gap-2 pt-1">
+                              {!['escalated'].includes(issue.resolution_status?.toLowerCase()) && (
+                                <Button
+                                  size="xs"
+                                  variant="outline"
+                                  onClick={() => handleUpdateIssueStatus(selectedTender.id, issue.id, 'escalated')}
+                                >
+                                  Escalate to Desk
+                                </Button>
+                              )}
+                              <Button
+                                size="xs"
+                                variant="secondary"
+                                onClick={() => {
+                                  const res = prompt('Enter resolution description:');
+                                  if (res) handleUpdateIssueStatus(selectedTender.id, issue.id, 'resolved', res);
+                                }}
+                              >
+                                Mark Resolved
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* TAB 5: Win / Loss Outcome Verdict (§26) */}
+              {detailTab === 'outcome' && (
+                <div className="space-y-4">
+                  <SectionHeader
+                    title="Final Commercial Outcome Analysis (§26)"
+                    description="Structured post-bid intelligence for win rate calculation and loss pattern tracking"
+                  />
+
+                  {selectedTender.result ? (
+                    <div className="p-4 rounded-xl bg-white border border-[#DCD8CE] space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          {selectedTender.result === 'won' ? (
+                            <Award className="h-6 w-6 text-emerald-600" />
+                          ) : (
+                            <XCircle className="h-6 w-6 text-red-600" />
+                          )}
+                          <div>
+                            <span className="text-sm font-black uppercase text-[#14213D]">
+                              Final Result: {selectedTender.result}
+                            </span>
+                            <span className="text-[10px] text-[#4A5568] block">
+                              Declared on {selectedTender.result_date ? new Date(selectedTender.result_date).toLocaleDateString('en-IN') : 'N/A'}
+                            </span>
+                          </div>
+                        </div>
+                        <Badge
+                          variant={selectedTender.result === 'won' ? 'success' : 'danger'}
+                          size="sm"
+                        >
+                          {selectedTender.result.toUpperCase()}
+                        </Badge>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3 p-3 rounded-lg bg-[#FBFAF7] border border-[#DCD8CE]">
+                        <div>
+                          <span className="text-[10px] text-[#4A5568] uppercase font-bold block">
+                            Contract Award Value
+                          </span>
+                          <span className="font-semibold text-xs text-[#14213D]">
+                            {selectedTender.value_lakh ? `₹ ${selectedTender.value_lakh} Lakh` : selectedTender.tender_value ? `₹ ${(selectedTender.tender_value / 100000).toFixed(2)} Lakh` : 'Not recorded'}
                           </span>
                         </div>
-                        <span className="text-[10px] text-[#5871A5]">By {act.performed_by_name || 'System Operator'}</span>
+                        <div>
+                          <span className="text-[10px] text-[#4A5568] uppercase font-bold block">
+                            Winning Competitor
+                          </span>
+                          <span className="font-semibold text-xs text-[#14213D]">
+                            {selectedTender.competitor || 'Arihant (Direct Award)'}
+                          </span>
+                        </div>
                       </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
+
+                      {selectedTender.outcome_reason && (
+                        <div className="p-2.5 rounded-lg bg-slate-50 border border-[#DCD8CE] text-xs text-gray-800">
+                          <strong>Structured Post-Mortem Intelligence:</strong> {selectedTender.outcome_reason}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3.5 rounded-xl bg-[#FBFAF7] border border-[#DCD8CE]">
+                        <div>
+                          <span className="text-[10px] text-[#4A5568] uppercase font-bold block">Tender Number</span>
+                          <span className="font-bold text-xs text-[#14213D]">{selectedTender.tender_number || selectedTender.tender_no}</span>
+                        </div>
+                        <div>
+                          <span className="text-[10px] text-[#4A5568] uppercase font-bold block">Current Stage</span>
+                          <Badge variant="cyber" size="sm">{selectedTender.status.replace(/_/g, ' ').toUpperCase()}</Badge>
+                        </div>
+                        <div>
+                          <span className="text-[10px] text-[#4A5568] uppercase font-bold block">Estimated Value</span>
+                          <span className="font-bold text-xs text-emerald-700">
+                            {selectedTender.estimated_value_lakh ? `₹ ${selectedTender.estimated_value_lakh} Lakh` : 'Not Specified'}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-[10px] text-[#4A5568] uppercase font-bold block">Verdict Status</span>
+                          <span className="font-semibold text-xs text-amber-700">Pending Declaration</span>
+                        </div>
+                      </div>
+
+                      <div className="p-6 rounded-xl bg-white border border-[#DCD8CE] space-y-3 text-center">
+                        <p className="text-xs text-[#4A5568]">
+                          Commercial verdict has not been recorded yet. You can mark this tender as Won or Lost once the buyer declares final evaluation.
+                        </p>
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          onClick={() => setIsOutcomeOpen(true)}
+                          leftIcon={<Award className="h-4 w-4" />}
+                        >
+                          Record Commercial Verdict (Won / Lost)
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* TAB 6: Audit History & Activity Timeline */}
+              {detailTab === 'timeline' && (
+                <div className="space-y-3">
+                  <SectionHeader
+                    title="Activity Audit Trail"
+                    description="Complete audit trail of all state transitions and management interventions"
+                  />
+
+                  {activities.length === 0 ? (
+                    <div className="p-6 rounded-xl bg-slate-50 border border-[#DCD8CE] text-center text-xs text-[#4A5568]">
+                      No activity records found for this tender.
+                    </div>
+                  ) : (
+                    <div className="relative pl-4 border-l-2 border-[#DCD8CE] space-y-4 my-2">
+                      {activities.map((act) => (
+                        <div key={act.id} className="relative">
+                          <div className="absolute -left-[21px] top-1 h-2.5 w-2.5 rounded-full bg-[#0F5E63] border-2 border-white ring-2 ring-[#DCD8CE]" />
+                          <div className="flex items-center justify-between text-[11px]">
+                            <span className="font-bold text-[#14213D]">{act.description}</span>
+                            <span className="text-[10px] text-[#4A5568]">
+                              {new Date(act.created_at).toLocaleString('en-IN')}
+                            </span>
+                          </div>
+                          <span className="text-[10px] text-[#4A5568]">By {act.performed_by_name || 'System Operator'}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         )}
       </Modal>
@@ -2396,8 +3293,8 @@ export default function TendersPage() {
             </div>
           )}
 
-          {/* Section 1: Identification & Portal */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {/* Section 1: Identification & Classification (§19, §20) */}
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
             <Input
               label="Tender / GeM Bid No."
               required
@@ -2417,35 +3314,34 @@ export default function TendersPage() {
               ]}
             />
             <Select
-              label="Classification Category (§20)"
+              label="Classification (§20)"
               value={newTender.category}
               onChange={(e) => setNewTender({ ...newTender, category: e.target.value })}
-              options={
-                categories.length > 0
-                  ? categories.map((c) => ({ value: c.code, label: c.name || c.code }))
-                  : [
-                      { value: 'general_mha', label: 'General / MHA' },
-                      { value: 'pq', label: 'Pre-Qualification (PQ)' },
-                      { value: 'other', label: 'Other Defence / Govt' },
-                    ]
-              }
+              options={[
+                { value: 'general_mha', label: 'General / MHA Tender' },
+                { value: 'pq', label: 'Pre-Qualification (PQ)' },
+                { value: 'other', label: 'Other Configured Tender' },
+              ]}
+            />
+            <Select
+              label="Current Stage (§19)"
+              value={newTender.current_stage}
+              onChange={(e) => setNewTender({ ...newTender, current_stage: e.target.value })}
+              options={[
+                { value: 'identified', label: '1. Tender Identified' },
+                { value: 'awaiting_approval', label: '2. Submitted for Review' },
+                { value: 'under_preparation', label: '4. Tender Preparation' },
+              ]}
             />
           </div>
 
           {/* Section 2: Buyer & Organisation */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Input
-              label="Buyer Department / Ministry"
-              required
-              value={newTender.department}
-              onChange={(e) => setNewTender({ ...newTender, department: e.target.value })}
-              placeholder="e.g. Directorate General Border Security Force (BSF)"
-            />
             <Select
               label="Mapped Organisation"
               required
               value={newTender.organisation_id}
-              onChange={(e) => setNewTender({ ...newTender, organisation_id: e.target.value })}
+              onChange={(e) => handleOrgChange(e.target.value)}
             >
               <option value="">-- Select Organisation --</option>
               {organisations.map((org) => (
@@ -2454,10 +3350,50 @@ export default function TendersPage() {
                 </option>
               ))}
             </Select>
+            <Input
+              label="Buyer Department / Ministry"
+              required
+              value={newTender.department}
+              onChange={(e) => setNewTender({ ...newTender, department: e.target.value })}
+              placeholder="e.g. Directorate General Border Security Force (BSF)"
+            />
           </div>
 
-          {/* Section 3: Geographic Coordinates (§21) */}
+          {/* Section 3: Geographic Coordinates (§21 Zone & Region Structure) */}
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+            <Select
+              label="Territory Zone (§21)"
+              value={newTender.zone}
+              onChange={(e) => handleZoneChange(e.target.value)}
+              options={
+                zonesMaster.length > 0
+                  ? zonesMaster.map((z) => ({ value: z.name, label: `${z.name} Zone (${z.code})` }))
+                  : [
+                      { value: 'North', label: 'North Zone (N)' },
+                      { value: 'North East', label: 'North East Zone (NE)' },
+                      { value: 'South', label: 'South Zone (S)' },
+                      { value: 'East', label: 'East Zone (E)' },
+                      { value: 'West', label: 'West Zone (W)' },
+                    ]
+              }
+            />
+            <Select
+              label="Territory Region (§21)"
+              value={newTender.region}
+              onChange={(e) => handleRegionChange(e.target.value)}
+              options={
+                availableRegions.length > 0
+                  ? availableRegions.map((r) => ({ value: r.name, label: r.name }))
+                  : [
+                      { value: 'Delhi NCR', label: 'Delhi NCR' },
+                      { value: 'Punjab & Chandigarh', label: 'Punjab & Chandigarh' },
+                      { value: 'Haryana', label: 'Haryana' },
+                      { value: 'Rajasthan', label: 'Rajasthan' },
+                      { value: 'Uttar Pradesh', label: 'Uttar Pradesh' },
+                      { value: 'Jammu & Kashmir', label: 'Jammu & Kashmir' },
+                    ]
+              }
+            />
             <Input
               label="City"
               required
@@ -2471,24 +3407,6 @@ export default function TendersPage() {
               value={newTender.state}
               onChange={(e) => setNewTender({ ...newTender, state: e.target.value })}
               placeholder="e.g. Delhi"
-            />
-            <Select
-              label="Territory Zone (§21)"
-              value={newTender.zone}
-              onChange={(e) => setNewTender({ ...newTender, zone: e.target.value })}
-              options={[
-                { value: 'North', label: 'North' },
-                { value: 'South', label: 'South' },
-                { value: 'East', label: 'East' },
-                { value: 'West', label: 'West' },
-                { value: 'Central', label: 'Central' },
-              ]}
-            />
-            <Input
-              label="Territory Region (§21)"
-              value={newTender.region}
-              onChange={(e) => setNewTender({ ...newTender, region: e.target.value })}
-              placeholder="e.g. Delhi NCR"
             />
           </div>
 
@@ -2767,14 +3685,61 @@ export default function TendersPage() {
           />
 
           {outcomeResult === 'won' ? (
-            <Input
-              label="Final Contract Award Value (₹ Lakh)"
-              type="number"
-              step="0.01"
-              value={outcomeValueLakh}
-              onChange={(e) => setOutcomeValueLakh(e.target.value)}
-              placeholder="e.g. 145.50"
-            />
+            <div className="space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <Select
+                  label="Awarded Product (§26)"
+                  value={outcomeProductId}
+                  onChange={(e) => setOutcomeProductId(e.target.value)}
+                  options={[
+                    { value: '', label: 'Select or retain assigned product...' },
+                    ...products.map((p) => ({ value: p.id, label: p.name })),
+                  ]}
+                />
+
+                <Select
+                  label="Tender Category (§26)"
+                  value={outcomeCategory}
+                  onChange={(e) => setOutcomeCategory(e.target.value)}
+                  options={[
+                    { value: 'pq', label: 'PQ - Pre-Qualification' },
+                    { value: 'general_mha', label: 'General / MHA' },
+                    { value: 'other', label: 'Other Opportunity' },
+                  ]}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <Select
+                  label="Award Region (§26)"
+                  value={outcomeRegionId}
+                  onChange={(e) => setOutcomeRegionId(e.target.value)}
+                  options={[
+                    { value: '', label: 'Select region...' },
+                    ...regionsMaster.map((r) => ({ value: r.id, label: `${r.name} (${r.zone_name || 'Zone'})` })),
+                  ]}
+                />
+
+                <Select
+                  label="Responsible Executive (§26)"
+                  value={outcomeResponsiblePersonId}
+                  onChange={(e) => setOutcomeResponsiblePersonId(e.target.value)}
+                  options={[
+                    { value: '', label: 'Select responsible person...' },
+                    ...users.map((u) => ({ value: u.id, label: `${u.full_name} (${u.role})` })),
+                  ]}
+                />
+              </div>
+
+              <Input
+                label="Final Contract Award Value (₹ Lakh)"
+                type="number"
+                step="0.01"
+                value={outcomeValueLakh}
+                onChange={(e) => setOutcomeValueLakh(e.target.value)}
+                placeholder="e.g. 145.50"
+              />
+            </div>
           ) : (
             <div className="space-y-3">
               <Select
@@ -2800,32 +3765,48 @@ export default function TendersPage() {
                 placeholder="e.g. Falcon Security / BEL / MKU / Zicom"
               />
 
-              {outcomeLossReason === 'technical' && (
-                <Input
-                  label="Technical Defect / QR Non-Compliance Details"
-                  value={outcomeTechnicalIssue}
-                  onChange={(e) => setOutcomeTechnicalIssue(e.target.value)}
-                  placeholder="e.g. Belgium tube phosphor resolution failed DGQA lab check"
-                />
-              )}
+              <div className="p-3 bg-[#F8FAFC] rounded-lg border border-[#DCD8CE] space-y-2">
+                <span className="text-[11px] font-bold text-[#0F5E63] uppercase tracking-wider block">
+                  Root Cause Factors (§26 Detailed Post-Mortem)
+                </span>
 
-              {outcomeLossReason === 'price' && (
-                <Input
-                  label="Pricing Gap / L1 Rate Difference"
-                  value={outcomePricingIssue}
-                  onChange={(e) => setOutcomePricingIssue(e.target.value)}
-                  placeholder="e.g. Quoted ₹14.2L vs competitor L1 ₹13.8L (3% margin gap)"
-                />
-              )}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <Input
+                    label="Technical Issue (if applicable)"
+                    value={outcomeTechnicalIssue}
+                    onChange={(e) => setOutcomeTechnicalIssue(e.target.value)}
+                    placeholder="e.g. Lab trial QR shortfall"
+                  />
 
-              {['eligibility', 'documentation'].includes(outcomeLossReason) && (
+                  <Input
+                    label="Pricing Issue / L1 Gap (if applicable)"
+                    value={outcomePricingIssue}
+                    onChange={(e) => setOutcomePricingIssue(e.target.value)}
+                    placeholder="e.g. Quoted ₹14.2L vs L1 ₹13.8L"
+                  />
+
+                  <Input
+                    label="Eligibility Shortfall (if applicable)"
+                    value={outcomeEligibilityIssue}
+                    onChange={(e) => setOutcomeEligibilityIssue(e.target.value)}
+                    placeholder="e.g. 3-yr turnover criteria"
+                  />
+
+                  <Input
+                    label="Documentation Issue (if applicable)"
+                    value={outcomeDocumentationIssue}
+                    onChange={(e) => setOutcomeDocumentationIssue(e.target.value)}
+                    placeholder="e.g. Missing OEM authorization"
+                  />
+                </div>
+
                 <Input
-                  label="Eligibility / Documentation Shortfall"
-                  value={outcomeEligibilityIssue}
-                  onChange={(e) => setOutcomeEligibilityIssue(e.target.value)}
-                  placeholder="e.g. Missing 3-year CA audited net-worth certificate"
+                  label="Other Reason Notes (if applicable)"
+                  value={outcomeOtherReason}
+                  onChange={(e) => setOutcomeOtherReason(e.target.value)}
+                  placeholder="e.g. Buyer canceled tender due to budget re-allocation"
                 />
-              )}
+              </div>
             </div>
           )}
 
@@ -2870,8 +3851,42 @@ export default function TendersPage() {
             </div>
           )}
 
+          {!selectedTender && (
+            <Select
+              label="Affected Tender (§25)"
+              required
+              value={issueTenderId}
+              onChange={(e) => setIssueTenderId(e.target.value)}
+              options={tenders.map((t) => ({
+                value: t.id,
+                label: `${t.tender_number || t.tender_no} - ${t.department || t.organisation_name || 'Tender'}`,
+              }))}
+            />
+          )}
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Input
+              label="Date of Incident / Report (§25)"
+              type="date"
+              required
+              value={issueReportedDate}
+              onChange={(e) => setIssueReportedDate(e.target.value)}
+            />
+
+            <Select
+              label="Initial Status (§25)"
+              value={issueResolutionStatus}
+              onChange={(e) => setIssueResolutionStatus(e.target.value)}
+              options={[
+                { value: 'OPEN', label: 'OPEN - Under investigation' },
+                { value: 'IN_PROGRESS', label: 'IN_PROGRESS - Workaround in flight' },
+                { value: 'ESCALATED', label: 'ESCALATED - Raised to GeM Desk' },
+              ]}
+            />
+          </div>
+
           <Textarea
-            label="Issue Description"
+            label="Issue Description (§25)"
             required
             rows={3}
             value={newIssueText}
@@ -2879,19 +3894,24 @@ export default function TendersPage() {
             placeholder="e.g. Required equipment category does not appear on GeM portal dropdown."
           />
 
-          <Input
-            label="Responsible Person / Team"
-            value={issueResponsiblePerson}
-            onChange={(e) => setIssueResponsiblePerson(e.target.value)}
-            placeholder="e.g. Tender Team / Rahul"
-          />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Select
+              label="Responsible Person (§25)"
+              value={issueResponsiblePerson}
+              onChange={(e) => setIssueResponsiblePerson(e.target.value)}
+              options={[
+                { value: '', label: 'Select responsible person...' },
+                ...users.map((u) => ({ value: u.id, label: `${u.full_name} (${u.role})` })),
+              ]}
+            />
 
-          <Input
-            label="Escalation Target (Optional)"
-            value={issueEscalatedTo}
-            onChange={(e) => setIssueEscalatedTo(e.target.value)}
-            placeholder="e.g. Executive Management & GeM Desk Ticket #88412"
-          />
+            <Input
+              label="Escalation Target (§25)"
+              value={issueEscalatedTo}
+              onChange={(e) => setIssueEscalatedTo(e.target.value)}
+              placeholder="e.g. Executive Management & GeM Desk Ticket #88412"
+            />
+          </div>
 
           <div className="pt-2 flex justify-end gap-2">
             <Button

@@ -704,7 +704,15 @@ export const Sidebar: React.FC = () => {
   };
 
   const renderNavContent = (isCompact: boolean, onNavigate?: () => void) => (
-    <nav className={`px-2 py-3 ${isCompact ? 'space-y-3' : 'space-y-4'} overflow-y-auto custom-scrollbar flex-1 min-h-0`}>
+    <nav className={`px-2 py-2 ${isCompact ? 'space-y-3' : 'space-y-4'} overflow-y-auto custom-scrollbar flex-1 min-h-0`}>
+      {!isCompact && user && (
+        <div className="mx-1 mb-3 p-3 rounded-[10px] bg-[#1F2E52] border border-[#3A4A70]/60 flex flex-col gap-0.5 select-none">
+          <span className="text-[10px] tracking-wider text-[#B8BFCC] uppercase font-semibold">Active Clearance</span>
+          <span className="text-white text-xs font-bold truncate">{roleProfile?.title || role.replace('_', ' ')}</span>
+          <span className="text-[11px] text-[#B8BFCC] truncate">{(user as any)?.territory || roleProfile?.territorialScope || 'All India Operations'}</span>
+        </div>
+      )}
+
       {navGroups.map((group, gIdx) => {
         const visibleItems = group.items.filter((item) => isModuleAllowed(item.moduleKey));
         if (visibleItems.length === 0) return null;
@@ -712,9 +720,9 @@ export const Sidebar: React.FC = () => {
         return (
           <div key={group.title} className="space-y-0.5">
             {isCompact ? (
-              gIdx > 0 && <div className="h-px bg-[#D6E3F5] my-2 mx-1" />
+              gIdx > 0 && <div className="h-px bg-[#3A4A70] my-2 mx-1" />
             ) : (
-              <div className="px-3 text-[10px] font-bold text-[#5871A5] uppercase tracking-wider mb-1">
+              <div className="px-3 text-[10px] font-bold text-[#B8BFCC] uppercase tracking-wider mb-1">
                 {group.title}
               </div>
             )}
@@ -731,25 +739,25 @@ export const Sidebar: React.FC = () => {
                     href={item.href}
                     onClick={onNavigate}
                     title={item.label + (item.badge ? ` (${item.badge})` : '')}
-                    className={`relative w-10 h-10 mx-auto flex items-center justify-center rounded-lg transition-all cursor-pointer group ${
+                    className={`relative w-10 h-10 mx-auto flex items-center justify-center rounded-[8px] transition-all cursor-pointer group ${
                       isActive
-                        ? 'bg-[#EAF2FF] text-[#223FA7] font-semibold border border-[#9FC0F5] shadow-2xs'
-                        : 'text-gray-600 hover:bg-[#F7FBFF] hover:text-[#223FA7] hover:border-[#D6E3F5] border border-transparent'
+                        ? 'bg-white text-[#14213D] font-semibold shadow-sm'
+                        : 'text-[#E8EAF0] hover:bg-[#1F2E52] hover:text-white border border-transparent'
                     }`}
                   >
                     <Icon
                       className={`w-4 h-4 transition-transform group-hover:scale-110 ${
-                        isActive ? 'text-[#223FA7]' : 'text-gray-500'
+                        isActive ? 'text-[#14213D]' : 'text-[#B8BFCC]'
                       }`}
                     />
                     {item.badge && (
                       <span
                         className={`absolute top-1 right-1 w-2 h-2 rounded-full ${
                           item.badgeVariant === 'urgent'
-                            ? 'bg-red-500'
+                            ? 'bg-[#9A3412]'
                             : item.badgeVariant === 'warning'
-                            ? 'bg-amber-500'
-                            : 'bg-[#223FA7]'
+                            ? 'bg-amber-400'
+                            : 'bg-[#F2B872]'
                         }`}
                       />
                     )}
@@ -762,16 +770,16 @@ export const Sidebar: React.FC = () => {
                   key={item.href + item.label}
                   href={item.href}
                   onClick={onNavigate}
-                  className={`flex items-center justify-between py-2 text-[13px] transition-colors rounded-lg px-3 min-w-0 max-w-full ${
+                  className={`flex items-center justify-between py-2 text-[13px] transition-colors rounded-[8px] px-3 min-w-0 max-w-full ${
                     isActive
-                      ? 'bg-[#EAF2FF] text-[#223FA7] font-semibold border-r-2 border-[#223FA7]'
-                      : 'text-gray-600 hover:bg-[#F7FBFF] hover:text-[#1A1A1A]'
+                      ? 'bg-white text-[#14213D] font-semibold shadow-xs'
+                      : 'text-[#E8EAF0] hover:bg-[#1F2E52] hover:text-white'
                   }`}
                 >
                   <div className="flex items-center space-x-2.5 min-w-0 flex-1 mr-1.5">
                     <Icon
                       className={`w-4 h-4 shrink-0 ${
-                        isActive ? 'text-[#223FA7]' : 'text-gray-500'
+                        isActive ? 'text-[#14213D]' : 'text-[#B8BFCC]'
                       }`}
                     />
                     <span className="truncate">{item.label}</span>
@@ -780,14 +788,14 @@ export const Sidebar: React.FC = () => {
                   <div className="flex items-center space-x-1 shrink-0">
                     {item.badge && (
                       <span
-                        className={`px-1.5 py-0.2 rounded text-[10px] font-bold shrink-0 ${
-                          item.badgeVariant === 'urgent'
-                            ? 'bg-red-50 text-red-700 border border-red-200'
+                        className={`px-1.5 py-0.2 rounded font-mono text-[10px] font-bold shrink-0 ${
+                          isActive
+                            ? 'text-[#14213D]'
+                            : item.badgeVariant === 'urgent'
+                            ? 'bg-[#9A3412] text-white'
                             : item.badgeVariant === 'warning'
-                            ? 'bg-amber-50 text-amber-800 border border-amber-200'
-                            : item.badgeVariant === 'neutral'
-                            ? 'bg-gray-100 text-gray-700 border border-gray-200'
-                            : 'bg-[#EAF2FF] text-[#223FA7] border border-[#D6E3F5]'
+                            ? 'bg-amber-400/20 text-amber-300 border border-amber-400/30'
+                            : 'text-[#F2B872]'
                         }`}
                       >
                         {item.badge}
@@ -809,19 +817,19 @@ export const Sidebar: React.FC = () => {
       {/* DESKTOP SIDEBAR (Collapsible with Open & Close buttons)                    */}
       {/* ========================================================================= */}
       <aside
-        className={`hidden lg:flex flex-col justify-between shrink-0 z-20 select-none shadow-xs text-[#1A1A1A] bg-white border-r border-[#D6E3F5] transition-all duration-300 ease-in-out h-screen max-h-screen ${
+        className={`hidden lg:flex flex-col justify-between shrink-0 z-20 select-none shadow-sm text-[#E8EAF0] bg-[#14213D] border-r border-[#3A4A70] transition-all duration-300 ease-in-out h-screen max-h-screen ${
           isCollapsed ? 'w-[72px]' : 'w-72'
         }`}
       >
         <div className="flex flex-col flex-1 min-h-0">
           {/* Header with Open/Close Buttons */}
           {isCollapsed ? (
-            <div className="h-[64px] px-2 border-b border-[#D6E3F5] flex items-center justify-center bg-white shrink-0">
+            <div className="h-[64px] px-2 border-b border-[#3A4A70] flex items-center justify-center bg-[#14213D] shrink-0">
               {/* OPEN BUTTON IN SIDEBAR */}
               <button
                 type="button"
                 onClick={toggleCollapse}
-                className="h-10 w-10 rounded-lg bg-[#F7FBFF] hover:bg-[#EAF2FF] border border-[#D6E3F5] hover:border-[#9FC0F5] text-[#223FA7] flex items-center justify-center transition-all cursor-pointer shadow-2xs group"
+                className="h-10 w-10 rounded-[8px] bg-[#1F2E52] hover:bg-[#283A66] border border-[#3A4A70] text-[#E8EAF0] hover:text-white flex items-center justify-center transition-all cursor-pointer shadow-2xs group"
                 title="Open sidebar (Expand) [Ctrl+B]"
                 aria-label="Open sidebar"
               >
@@ -829,26 +837,26 @@ export const Sidebar: React.FC = () => {
               </button>
             </div>
           ) : (
-            <div className="h-[64px] px-4 border-b border-[#D6E3F5] flex items-center justify-between bg-white shrink-0">
+            <div className="h-[64px] px-4 border-b border-[#3A4A70] flex items-center justify-between bg-[#14213D] shrink-0">
               <div className="flex items-center space-x-2.5 min-w-0">
-                <div className="h-9 w-9 rounded-lg bg-[#223FA7] flex items-center justify-center text-white shadow-xs shrink-0">
+                <div className="h-9 w-9 rounded-[8px] bg-[#0F5E63] flex items-center justify-center text-white shadow-xs shrink-0">
                   <Shield className="h-5 w-5" />
                 </div>
                 <div className="min-w-0">
-                  <div className="font-bold text-[#1A1A1A] text-sm tracking-tight flex items-center gap-1.5">
+                  <div className="font-serif font-bold text-white text-sm tracking-tight flex items-center gap-1.5">
                     <span>ARIHANT</span>
-                    <span className="text-[#223FA7] font-extrabold text-xs px-1.5 py-0.2 rounded bg-[#EAF2FF] border border-[#D6E3F5]">
+                    <span className="text-white font-sans font-bold text-[10px] px-1.5 py-0.2 rounded bg-[#0F5E63]">
                       BOS
                     </span>
                   </div>
-                  <div className="text-[10px] text-[#5871A5] font-medium truncate">
-                    Defence GeM Portal
+                  <div className="text-[10px] text-[#B8BFCC] font-medium truncate">
+                    Defence &amp; Security ERP
                   </div>
                 </div>
               </div>
 
               <div className="flex items-center space-x-1 shrink-0">
-                <span className="hidden xl:inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                <span className="hidden xl:inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold bg-[#1F2E52] text-emerald-400 border border-emerald-500/30">
                   <ShieldCheck className="w-2.5 h-2.5 mr-0.5" />
                   Verified
                 </span>
@@ -856,7 +864,7 @@ export const Sidebar: React.FC = () => {
                 <button
                   type="button"
                   onClick={toggleCollapse}
-                  className="p-1.5 rounded-lg text-[#5871A5] hover:text-[#223FA7] hover:bg-[#EAF2FF] border border-transparent hover:border-[#D6E3F5] transition-all cursor-pointer shrink-0 ml-1 group"
+                  className="p-1.5 rounded-[8px] text-[#B8BFCC] hover:text-white hover:bg-[#1F2E52] border border-transparent transition-all cursor-pointer shrink-0 ml-1 group"
                   title="Close sidebar (Collapse) [Ctrl+B]"
                   aria-label="Close sidebar"
                 >
@@ -872,14 +880,14 @@ export const Sidebar: React.FC = () => {
 
         {/* Footer / Status / Logout */}
         {isCollapsed ? (
-          <div className="p-2 border-t border-[#D6E3F5] bg-[#F7FBFF] flex flex-col items-center space-y-2 shrink-0">
+          <div className="p-2 border-t border-[#3A4A70] bg-[#14213D] flex flex-col items-center space-y-2 shrink-0">
             <div
-              className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse my-1"
+              className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse my-1"
               title="GeM Gateway: Online & Connected"
             />
             {user && (
               <div
-                className="h-8 w-8 rounded-lg bg-[#223FA7] text-white flex items-center justify-center text-xs font-bold shrink-0 cursor-default"
+                className="h-8 w-8 rounded-[8px] bg-[#1F2E52] text-white flex items-center justify-center text-xs font-bold shrink-0 cursor-default border border-[#3A4A70]"
                 title={`${user.full_name} (${user.role.replace('_', ' ')})`}
               >
                 {user.full_name ? user.full_name[0].toUpperCase() : 'U'}
@@ -889,31 +897,31 @@ export const Sidebar: React.FC = () => {
               onClick={logout}
               title="Sign Out"
               aria-label="Sign Out"
-              className="h-8 w-8 flex items-center justify-center rounded-lg text-gray-500 hover:text-red-700 bg-white hover:bg-red-50 border border-[#D6E3F5] hover:border-red-200 transition-colors cursor-pointer"
+              className="h-8 w-8 flex items-center justify-center rounded-[8px] text-[#B8BFCC] hover:text-red-400 bg-[#1F2E52] hover:bg-red-950/40 border border-[#3A4A70] transition-colors cursor-pointer"
             >
               <LogOut className="h-3.5 w-3.5" />
             </button>
           </div>
         ) : (
-          <div className="p-3 border-t border-[#D6E3F5] bg-[#F7FBFF] space-y-2 shrink-0">
-            <div className="flex items-center justify-between text-[11px] text-[#5871A5] px-1 font-medium">
+          <div className="p-3 border-t border-[#3A4A70] bg-[#14213D] space-y-2 shrink-0">
+            <div className="flex items-center justify-between text-[11px] text-[#B8BFCC] px-1 font-medium">
               <div className="flex items-center space-x-1.5">
-                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
                 <span>GeM Gateway: Online</span>
               </div>
-              <span className="text-[10px] text-emerald-700 font-semibold bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">
+              <span className="text-[10px] text-emerald-400 font-semibold bg-[#1F2E52] px-1.5 py-0.2 rounded border border-emerald-500/30">
                 Connected
               </span>
             </div>
 
             {user && (
-              <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-white border border-[#D6E3F5]">
-                <div className="h-6 w-6 rounded-md bg-[#223FA7] text-white flex items-center justify-center text-[11px] font-bold shrink-0">
+              <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-[8px] bg-[#1F2E52] border border-[#3A4A70]">
+                <div className="h-6 w-6 rounded-md bg-[#0F5E63] text-white flex items-center justify-center text-[11px] font-bold shrink-0">
                   {user.full_name ? user.full_name[0].toUpperCase() : 'U'}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="text-xs font-bold text-[#1A1A1A] truncate">{user.full_name}</div>
-                  <div className="text-[9px] text-[#5871A5] font-semibold uppercase tracking-wider truncate">
+                  <div className="text-xs font-bold text-white truncate">{user.full_name}</div>
+                  <div className="text-[9px] text-[#B8BFCC] font-semibold uppercase tracking-wider truncate">
                     {user.role.replace('_', ' ')}
                   </div>
                 </div>
@@ -922,9 +930,9 @@ export const Sidebar: React.FC = () => {
 
             <button
               onClick={logout}
-              className="w-full flex items-center justify-center space-x-2 px-3 py-2 rounded-lg text-xs font-semibold text-gray-700 hover:text-red-700 bg-white hover:bg-red-50 border border-[#D6E3F5] hover:border-red-200 transition-colors min-w-0 truncate cursor-pointer shadow-2xs group"
+              className="w-full flex items-center justify-center space-x-2 px-3 py-2 rounded-[8px] text-xs font-semibold text-[#E8EAF0] hover:text-red-300 bg-[#1F2E52] hover:bg-red-950/40 border border-[#3A4A70] transition-colors min-w-0 truncate cursor-pointer shadow-2xs group"
             >
-              <LogOut className="h-3.5 w-3.5 shrink-0 text-gray-500 group-hover:text-red-600 transition-colors" />
+              <LogOut className="h-3.5 w-3.5 shrink-0 text-[#B8BFCC] group-hover:text-red-300 transition-colors" />
               <span className="truncate">Sign Out</span>
             </button>
           </div>
@@ -938,28 +946,28 @@ export const Sidebar: React.FC = () => {
         <div className="fixed inset-0 z-50 lg:hidden">
           {/* Backdrop */}
           <div
-            className="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity"
+            className="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity"
             onClick={closeMobile}
           />
 
           {/* Drawer Panel */}
-          <aside className="fixed top-0 left-0 bottom-0 w-72 max-w-[85vw] bg-white z-50 shadow-2xl flex flex-col justify-between select-none text-[#1A1A1A] border-r border-[#D6E3F5] animate-in slide-in-from-left duration-200">
+          <aside className="fixed top-0 left-0 bottom-0 w-72 max-w-[85vw] bg-[#14213D] z-50 shadow-2xl flex flex-col justify-between select-none text-[#E8EAF0] border-r border-[#3A4A70] animate-in slide-in-from-left duration-200">
             <div className="flex flex-col flex-1 min-h-0">
               {/* Header with Close Button */}
-              <div className="h-[64px] px-4 border-b border-[#D6E3F5] flex items-center justify-between bg-white shrink-0">
+              <div className="h-[64px] px-4 border-b border-[#3A4A70] flex items-center justify-between bg-[#14213D] shrink-0">
                 <div className="flex items-center space-x-2.5 min-w-0">
-                  <div className="h-9 w-9 rounded-lg bg-[#223FA7] flex items-center justify-center text-white shadow-xs shrink-0">
+                  <div className="h-9 w-9 rounded-[8px] bg-[#0F5E63] flex items-center justify-center text-white shadow-xs shrink-0">
                     <Shield className="h-5 w-5" />
                   </div>
                   <div className="min-w-0">
-                    <div className="font-bold text-[#1A1A1A] text-sm tracking-tight flex items-center gap-1.5">
+                    <div className="font-serif font-bold text-white text-sm tracking-tight flex items-center gap-1.5">
                       <span>ARIHANT</span>
-                      <span className="text-[#223FA7] font-extrabold text-xs px-1.5 py-0.2 rounded bg-[#EAF2FF] border border-[#D6E3F5]">
+                      <span className="text-white font-sans font-bold text-[10px] px-1.5 py-0.2 rounded bg-[#0F5E63]">
                         BOS
                       </span>
                     </div>
-                    <div className="text-[10px] text-[#5871A5] font-medium truncate">
-                      Defence GeM Portal
+                    <div className="text-[10px] text-[#B8BFCC] font-medium truncate">
+                      Defence &amp; Security ERP
                     </div>
                   </div>
                 </div>
@@ -968,7 +976,7 @@ export const Sidebar: React.FC = () => {
                 <button
                   type="button"
                   onClick={closeMobile}
-                  className="p-1.5 rounded-lg text-gray-500 hover:text-red-600 hover:bg-red-50 border border-transparent hover:border-red-200 transition-colors cursor-pointer"
+                  className="p-1.5 rounded-[8px] text-[#B8BFCC] hover:text-white hover:bg-[#1F2E52] transition-colors cursor-pointer"
                   title="Close sidebar drawer"
                   aria-label="Close sidebar drawer"
                 >
@@ -981,15 +989,15 @@ export const Sidebar: React.FC = () => {
             </div>
 
             {/* Mobile Footer */}
-            <div className="p-3 border-t border-[#D6E3F5] bg-[#F7FBFF] space-y-2 shrink-0">
+            <div className="p-3 border-t border-[#3A4A70] bg-[#14213D] space-y-2 shrink-0">
               {user && (
-                <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-white border border-[#D6E3F5]">
-                  <div className="h-6 w-6 rounded-md bg-[#223FA7] text-white flex items-center justify-center text-[11px] font-bold shrink-0">
+                <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-[8px] bg-[#1F2E52] border border-[#3A4A70]">
+                  <div className="h-6 w-6 rounded-md bg-[#0F5E63] text-white flex items-center justify-center text-[11px] font-bold shrink-0">
                     {user.full_name ? user.full_name[0].toUpperCase() : 'U'}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="text-xs font-bold text-[#1A1A1A] truncate">{user.full_name}</div>
-                    <div className="text-[9px] text-[#5871A5] font-semibold uppercase tracking-wider truncate">
+                    <div className="text-xs font-bold text-white truncate">{user.full_name}</div>
+                    <div className="text-[9px] text-[#B8BFCC] font-semibold uppercase tracking-wider truncate">
                       {user.role.replace('_', ' ')}
                     </div>
                   </div>
@@ -1001,9 +1009,9 @@ export const Sidebar: React.FC = () => {
                   closeMobile();
                   logout();
                 }}
-                className="w-full flex items-center justify-center space-x-2 px-3 py-2 rounded-lg text-xs font-semibold text-gray-700 hover:text-red-700 bg-white hover:bg-red-50 border border-[#D6E3F5] hover:border-red-200 transition-colors min-w-0 truncate cursor-pointer shadow-2xs"
+                className="w-full flex items-center justify-center space-x-2 px-3 py-2 rounded-[8px] text-xs font-semibold text-[#E8EAF0] hover:text-red-300 bg-[#1F2E52] hover:bg-red-950/40 border border-[#3A4A70] transition-colors min-w-0 truncate cursor-pointer shadow-2xs"
               >
-                <LogOut className="h-3.5 w-3.5 shrink-0 text-gray-500" />
+                <LogOut className="h-3.5 w-3.5 shrink-0 text-[#B8BFCC]" />
                 <span className="truncate">Sign Out</span>
               </button>
             </div>

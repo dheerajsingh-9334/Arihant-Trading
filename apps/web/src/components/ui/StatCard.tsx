@@ -32,36 +32,36 @@ export const StatCard: React.FC<StatCardProps> = ({
   const effectiveColor = valueColor || variant;
 
   const valueColorCls = {
-    default: 'text-[#1A1A1A]',
-    primary: 'text-[#223FA7]',
-    emerald: 'text-emerald-700',
-    amber: 'text-amber-700',
-    rose: 'text-red-700',
+    default: 'text-[#14213D]',
+    primary: 'text-[#0F5E63]',
+    emerald: 'text-[#0F5E63]',
+    amber: 'text-[#9A3412]',
+    rose: 'text-[#881337]',
   }[effectiveColor];
 
   const progressColorCls = {
-    primary: 'bg-[#223FA7]',
-    emerald: 'bg-emerald-600',
-    amber: 'bg-amber-500',
-    rose: 'bg-red-500',
+    primary: 'bg-[#0F5E63]',
+    emerald: 'bg-[#0F5E63]',
+    amber: 'bg-[#9A3412]',
+    rose: 'bg-[#881337]',
   }[progressColor];
 
   return (
     <div
       className={twMerge(
-        'p-4 bg-white border border-[#D6E3F5] rounded-xl shadow-2xs hover:border-[#9FC0F5] transition-all duration-150 flex flex-col justify-between relative overflow-hidden',
+        'p-4 bg-white border border-[#DCD8CE] rounded-[14px] shadow-2xs hover:border-[#0F5E63] transition-all duration-150 flex flex-col justify-between relative overflow-hidden',
         className,
       )}
       {...props}
     >
       <div className="flex items-start justify-between gap-2 mb-2">
-        <span className="text-xs font-bold uppercase tracking-wider text-[#5871A5] line-clamp-1">
+        <span className="text-xs font-semibold uppercase tracking-wider text-[#4A5568] line-clamp-1">
           {displayLabel}
         </span>
         <div className="flex items-center gap-1.5 shrink-0">
           {badge}
           {icon && (
-            <span className="p-1.5 rounded-lg bg-[#F7FBFF] border border-[#D6E3F5] text-[#223FA7]">
+            <span className="p-1.5 rounded-[8px] bg-[#FBFAF7] border border-[#DCD8CE] text-[#0F5E63]">
               {icon}
             </span>
           )}
@@ -69,12 +69,12 @@ export const StatCard: React.FC<StatCardProps> = ({
       </div>
 
       <div>
-        <div className={twMerge('text-2xl font-black tracking-tight', valueColorCls)}>
+        <div className={twMerge('text-2xl font-mono font-bold tracking-tight', valueColorCls)}>
           {value}
         </div>
 
         {progress !== undefined && (
-          <div className="w-full bg-[#EAF2FF] h-1.5 rounded-full mt-2 overflow-hidden">
+          <div className="w-full bg-[#ECE9E2] h-1.5 rounded-full mt-2 overflow-hidden">
             <div
               className={twMerge('h-full rounded-full transition-all duration-300', progressColorCls)}
               style={{ width: `${Math.min(Math.max(progress, 0), 100)}%` }}
@@ -83,7 +83,7 @@ export const StatCard: React.FC<StatCardProps> = ({
         )}
 
         {subtext && (
-          <span className="text-xs text-[#5871A5] mt-1.5 block font-medium">
+          <span className="text-xs text-[#4A5568] mt-1.5 block font-medium">
             {subtext}
           </span>
         )}

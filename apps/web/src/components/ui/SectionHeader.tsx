@@ -21,19 +21,19 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
   return (
     <div
       className={twMerge(
-        'flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#D6E3F5]',
+        'flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#DCD8CE]',
         className,
       )}
       {...props}
     >
       <div>
         <div className="flex items-center gap-2">
-          {icon && <span className="text-[#223FA7]">{icon}</span>}
-          <h3 className="text-base font-bold text-[#1A1A1A] tracking-tight">{title}</h3>
+          {icon && <span className="text-[#0F5E63]">{icon}</span>}
+          <h3 className="font-serif text-base font-bold text-[#14213D] tracking-tight">{title}</h3>
           {badge && <div className="ml-1">{badge}</div>}
         </div>
         {description && (
-          <p className="text-xs text-[#5871A5] mt-0.5 max-w-2xl">{description}</p>
+          <p className="text-xs text-[#4A5568] mt-0.5 max-w-2xl">{description}</p>
         )}
       </div>
 

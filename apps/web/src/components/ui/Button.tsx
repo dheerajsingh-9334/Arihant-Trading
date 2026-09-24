@@ -36,23 +36,23 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ref,
   ) => {
     const baseStyles =
-      'inline-flex items-center justify-center font-semibold rounded-lg transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#223FA7]/20 disabled:opacity-50 disabled:cursor-not-allowed select-none active:scale-[0.98] text-[13px] min-w-0 cursor-pointer';
+      'inline-flex items-center justify-center font-semibold rounded-lg transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-[#0F5E63]/20 disabled:opacity-50 disabled:cursor-not-allowed select-none active:scale-[0.98] text-[13px] min-w-0 cursor-pointer';
 
     const variants = {
       primary:
-        'bg-[#223FA7] hover:bg-[#1B326F] text-white shadow-xs border border-transparent hover:shadow-sm',
+        'bg-[#0F5E63] hover:bg-[#0B4A4E] text-white shadow-xs border border-[#0F5E63] hover:shadow-sm',
       secondary:
-        'bg-[#EAF2FF] hover:bg-[#DCE8FC] text-[#223FA7] border border-[#D6E3F5]',
+        'bg-white hover:bg-[#FBFAF7] text-[#14213D] border border-[#C9C4B8]',
       outline:
-        'border border-[#D6E3F5] bg-white text-[#1A1A1A] hover:bg-[#F7FBFF] hover:text-[#223FA7] hover:border-[#9FC0F5] shadow-2xs',
+        'border border-[#DCD8CE] bg-white text-[#14213D] hover:bg-[#FBFAF7] hover:border-[#14213D] shadow-2xs',
       danger:
-        'bg-red-600 hover:bg-red-700 text-white shadow-xs border border-transparent',
+        'bg-[#881337] hover:bg-[#700F2D] text-white shadow-xs border border-transparent',
       success:
-        'bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs border border-transparent',
+        'bg-[#0F5E63] hover:bg-[#0B4A4E] text-white shadow-xs border border-transparent',
       ghost:
-        'text-[#5871A5] hover:text-[#223FA7] hover:bg-[#EAF2FF] border border-transparent',
+        'text-[#4A5568] hover:text-[#14213D] hover:bg-[#E3EFEE] border border-transparent',
       cyber:
-        'bg-[#EAF2FF] hover:bg-[#DCE8FC] text-[#223FA7] border border-[#223FA7]/30 font-bold',
+        'bg-[#FBEBDD] hover:bg-[#F2B872]/20 text-[#7C2D12] border border-[#9A3412]/30 font-bold',
     };
 
     const sizes = {

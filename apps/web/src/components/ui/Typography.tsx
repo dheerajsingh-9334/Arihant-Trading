@@ -5,7 +5,7 @@ import { clsx } from 'clsx';
 export interface HeadingProps extends React.HTMLAttributes<HTMLHeadingElement> {
   as?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
   size?: '3xl' | '2xl' | 'xl' | 'lg' | 'md' | 'sm' | 'xs';
-  color?: 'primary' | 'secondary' | 'muted' | 'brand' | 'danger' | 'success' | 'white';
+  color?: 'primary' | 'secondary' | 'muted' | 'brand' | 'danger' | 'success' | 'white' | 'accent';
   weight?: 'normal' | 'medium' | 'semibold' | 'bold' | 'extrabold';
   align?: 'left' | 'center' | 'right';
   truncate?: boolean;
@@ -49,12 +49,13 @@ export const Heading = React.forwardRef<HTMLHeadingElement, HeadingProps>(
     };
 
     const colors = {
-      primary: 'text-[#1A1A1A]',
-      secondary: 'text-[#5871A5]',
-      muted: 'text-[#7D92B5]',
-      brand: 'text-[#223FA7]',
-      danger: 'text-red-700',
-      success: 'text-emerald-700',
+      primary: 'text-[#14213D]',
+      secondary: 'text-[#3D4A5C]',
+      muted: 'text-[#4A5568]',
+      brand: 'text-[#0F5E63]',
+      accent: 'text-[#9A3412]',
+      danger: 'text-[#881337]',
+      success: 'text-[#0F5E63]',
       white: 'text-white',
     };
 
@@ -68,9 +69,9 @@ export const Heading = React.forwardRef<HTMLHeadingElement, HeadingProps>(
 
     const defaultWeight =
       effectiveSize === '3xl' || effectiveSize === '2xl'
-        ? 'extrabold'
-        : effectiveSize === 'xl' || effectiveSize === 'lg' || effectiveSize === 'md'
         ? 'bold'
+        : effectiveSize === 'xl' || effectiveSize === 'lg' || effectiveSize === 'md'
+        ? 'semibold'
         : 'semibold';
 
     const effectiveWeight = weight ? weights[weight] : weights[defaultWeight];
@@ -86,6 +87,7 @@ export const Heading = React.forwardRef<HTMLHeadingElement, HeadingProps>(
         ref={ref}
         className={twMerge(
           clsx(
+            'font-serif',
             sizes[effectiveSize],
             colors[color],
             effectiveWeight,
@@ -111,6 +113,7 @@ export interface TextProps extends React.HTMLAttributes<HTMLElement> {
     | 'secondary'
     | 'muted'
     | 'brand'
+    | 'accent'
     | 'danger'
     | 'success'
     | 'warning'
@@ -148,13 +151,14 @@ export const Text = React.forwardRef<HTMLElement, TextProps>(
     };
 
     const colors = {
-      primary: 'text-[#1A1A1A]',
-      secondary: 'text-[#5871A5]',
-      muted: 'text-[#7D92B5]',
-      brand: 'text-[#223FA7]',
-      danger: 'text-red-700',
-      success: 'text-emerald-700',
-      warning: 'text-amber-800',
+      primary: 'text-[#14213D]',
+      secondary: 'text-[#3D4A5C]',
+      muted: 'text-[#4A5568]',
+      brand: 'text-[#0F5E63]',
+      accent: 'text-[#9A3412]',
+      danger: 'text-[#881337]',
+      success: 'text-[#0F5E63]',
+      warning: 'text-[#9A3412]',
       white: 'text-white',
     };
 
@@ -217,7 +221,7 @@ export const Label: React.FC<LabelProps> = ({
   return (
     <label
       className={twMerge(
-        'block font-semibold text-[#1A1A1A] select-none',
+        'block font-semibold text-[#14213D] select-none',
         sizes[size],
         className,
       )}
@@ -225,10 +229,10 @@ export const Label: React.FC<LabelProps> = ({
     >
       <span className="flex items-center gap-1">
         {children}
-        {required && <span className="text-red-600 font-bold">*</span>}
+        {required && <span className="text-[#881337] font-bold">*</span>}
       </span>
       {subtext && (
-        <span className="block text-[11px] font-normal text-[#5871A5] mt-0.5">
+        <span className="block text-[11px] font-normal text-[#4A5568] mt-0.5">
           {subtext}
         </span>
       )}
@@ -254,7 +258,7 @@ export const Kbd: React.FC<KbdProps> = ({
   return (
     <kbd
       className={twMerge(
-        'inline-flex items-center justify-center font-mono font-semibold rounded bg-white text-[#223FA7] border border-[#D6E3F5] shadow-2xs select-none',
+        'inline-flex items-center justify-center font-mono font-semibold rounded bg-[#FBFAF7] text-[#14213D] border border-[#DCD8CE] shadow-2xs select-none',
         sizes[size],
         className,
       )}

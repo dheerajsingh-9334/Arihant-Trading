@@ -3,12 +3,12 @@ import { twMerge } from 'tailwind-merge';
 import { clsx } from 'clsx';
 
 export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
-  accent?: 'blue' | 'emerald' | 'amber' | 'red' | 'purple' | 'none';
+  accent?: 'blue' | 'emerald' | 'amber' | 'red' | 'purple' | 'primary' | 'none';
   padding?: 'none' | 'xs' | 'sm' | 'md' | 'lg';
   hover?: boolean;
   selected?: boolean;
-  variant?: 'default' | 'interactive' | 'flat';
-  bg?: 'white' | 'canvas' | 'muted';
+  variant?: 'default' | 'interactive' | 'flat' | 'dark' | 'leading' | 'trailing' | 'flush';
+  bg?: 'white' | 'canvas' | 'muted' | 'dark';
 }
 
 export const Card = React.forwardRef<HTMLDivElement, CardProps>(
@@ -17,7 +17,7 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
       className,
       accent = 'none',
       padding = 'none',
-      hover = true,
+      hover = false,
       selected = false,
       variant = 'default',
       bg = 'white',
@@ -27,11 +27,12 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
     ref,
   ) => {
     const accentCls = {
-      blue: 'border-t-[3px] border-t-[#223FA7]',
-      emerald: 'border-t-[3px] border-t-emerald-500',
-      amber: 'border-t-[3px] border-t-amber-500',
-      red: 'border-t-[3px] border-t-red-500',
-      purple: 'border-t-[3px] border-t-purple-500',
+      primary: 'border-t-[3px] border-t-[#0F5E63]',
+      blue: 'border-t-[3px] border-t-[#0F5E63]',
+      emerald: 'border-t-[3px] border-t-emerald-600',
+      amber: 'border-t-[3px] border-t-[#9A3412]',
+      red: 'border-t-[3px] border-t-[#881337]',
+      purple: 'border-t-[3px] border-t-[#14213D]',
       none: '',
     }[accent];
 
@@ -43,10 +44,21 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
       lg: 'p-6 sm:p-7',
     }[padding];
 
+    const variantCls = {
+      default: 'bg-white border-[#DCD8CE] text-[#14213D]',
+      interactive: 'bg-white border-[#DCD8CE] text-[#14213D] hover:border-[#0F5E63] cursor-pointer active:scale-[0.995]',
+      flat: 'bg-[#FBFAF7] border-[#DCD8CE] text-[#14213D]',
+      dark: 'bg-[#14213D] border-[#14213D] text-white',
+      leading: 'bg-[#E3EFEE] border-2 border-[#0F5E63] text-[#0B4A4E]',
+      trailing: 'bg-[#FBEBDD] border-2 border-[#9A3412] text-[#7C2D12]',
+      flush: 'p-0 overflow-hidden gap-0 bg-white border-[#DCD8CE] text-[#14213D]',
+    }[variant];
+
     const bgCls = {
       white: 'bg-white',
-      canvas: 'bg-[#F7FBFF]',
-      muted: 'bg-[#EEF5FF]',
+      canvas: 'bg-[#F6F5F1]',
+      muted: 'bg-[#FBFAF7]',
+      dark: 'bg-[#14213D] text-white',
     }[bg];
 
     const isInteractive = variant === 'interactive' || hover;
@@ -55,11 +67,11 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
       <div
         ref={ref}
         className={twMerge(
-          'rounded-xl border border-[#D6E3F5] text-[#1A1A1A] shadow-2xs transition-all duration-150 overflow-hidden relative',
-          bgCls,
-          isInteractive && 'hover:border-[#9FC0F5] hover:shadow-xs',
-          variant === 'interactive' && 'cursor-pointer active:scale-[0.995]',
-          selected && 'border-[#223FA7] ring-1 ring-[#223FA7]/20 bg-[#EAF2FF]/30',
+          'rounded-[14px] border border-[#DCD8CE] text-[#14213D] shadow-2xs transition-all duration-150 overflow-hidden relative',
+          variantCls,
+          bg !== 'white' && bgCls,
+          isInteractive && variant !== 'interactive' && 'hover:border-[#0F5E63] hover:shadow-xs',
+          selected && 'border-[#0F5E63] ring-1 ring-[#0F5E63]/20 bg-[#E3EFEE]/40',
           accentCls,
           paddingCls,
           className,
@@ -80,7 +92,7 @@ export const CardHeader = React.forwardRef<
   <div
     ref={ref}
     className={twMerge(
-      'flex items-center justify-between px-5 py-4 border-b border-[#F0F5FC] bg-white shrink-0 gap-3',
+      'flex items-center justify-between px-5 py-4 border-b border-[#ECE9E2] bg-white shrink-0 gap-3',
       className,
     )}
     {...props}
@@ -95,7 +107,7 @@ export const CardTitle = React.forwardRef<
   <h3
     ref={ref}
     className={twMerge(
-      'font-bold text-[15px] tracking-tight text-[#1A1A1A] flex items-center gap-2',
+      'font-bold text-[15px] tracking-tight text-[#14213D] flex items-center gap-2',
       className,
     )}
     {...props}
@@ -109,7 +121,7 @@ export const CardDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <p
     ref={ref}
-    className={twMerge('text-xs text-[#5871A5] font-normal mt-0.5 leading-relaxed', className)}
+    className={twMerge('text-xs text-[#4A5568] font-normal mt-0.5 leading-relaxed', className)}
     {...props}
   />
 ));
@@ -142,7 +154,7 @@ export const CardFooter = React.forwardRef<
   <div
     ref={ref}
     className={twMerge(
-      'flex items-center px-5 py-3 border-t border-[#F0F5FC] bg-[#F7FBFF]',
+      'flex items-center px-5 py-3 border-t border-[#ECE9E2] bg-[#FBFAF7] text-xs text-[#4A5568]',
       className,
     )}
     {...props}

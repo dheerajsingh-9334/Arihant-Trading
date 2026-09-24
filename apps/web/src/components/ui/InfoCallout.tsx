@@ -20,27 +20,27 @@ export const InfoCallout: React.FC<InfoCalloutProps> = ({
   ...props
 }) => {
   const variantStyles = {
-    info: 'bg-[#EAF2FF] border-[#D6E3F5] text-[#223FA7]',
-    warning: 'bg-amber-50 border-amber-200 text-amber-800',
-    danger: 'bg-red-50 border-red-200 text-red-800',
-    success: 'bg-emerald-50 border-emerald-200 text-emerald-800',
-    neutral: 'bg-[#F7FBFF] border-[#D6E3F5] text-[#1A1A1A]',
+    info: 'bg-[#E3EFEE] border-[#0F5E63]/30 text-[#0F5E63]',
+    warning: 'bg-[#FBEBDD] border-[#9A3412]/30 text-[#7C2D12]',
+    danger: 'bg-[#FCE8EC] border-red-200 text-[#881337]',
+    success: 'bg-[#E3EFEE] border-emerald-300 text-[#0F5E63]',
+    neutral: 'bg-[#FBFAF7] border-[#DCD8CE] text-[#14213D]',
   }[variant];
 
   const closeButtonColors = {
-    info: 'text-[#223FA7] hover:bg-[#DCE8FC]',
-    warning: 'text-amber-800 hover:bg-amber-100',
-    danger: 'text-red-800 hover:bg-red-100',
-    success: 'text-emerald-800 hover:bg-emerald-100',
-    neutral: 'text-[#5871A5] hover:bg-[#EEF5FF]',
+    info: 'text-[#0F5E63] hover:bg-[#D3E7E6]',
+    warning: 'text-[#7C2D12] hover:bg-[#F2B872]/30',
+    danger: 'text-[#881337] hover:bg-red-100',
+    success: 'text-[#0F5E63] hover:bg-emerald-100',
+    neutral: 'text-[#4A5568] hover:bg-[#ECE9E2]',
   }[variant];
 
   const defaultIcons = {
-    info: <Info className="h-4 w-4 shrink-0 text-[#223FA7]" />,
-    warning: <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600" />,
-    danger: <AlertCircle className="h-4 w-4 shrink-0 text-red-600" />,
-    success: <CheckCircle className="h-4 w-4 shrink-0 text-emerald-600" />,
-    neutral: <Info className="h-4 w-4 shrink-0 text-[#5871A5]" />,
+    info: <Info className="h-4 w-4 shrink-0 text-[#0F5E63]" />,
+    warning: <AlertTriangle className="h-4 w-4 shrink-0 text-[#9A3412]" />,
+    danger: <AlertCircle className="h-4 w-4 shrink-0 text-[#881337]" />,
+    success: <CheckCircle className="h-4 w-4 shrink-0 text-[#0F5E63]" />,
+    neutral: <Info className="h-4 w-4 shrink-0 text-[#4A5568]" />,
   };
 
   const renderedIcon = icon !== undefined ? icon : defaultIcons[variant];
@@ -48,7 +48,7 @@ export const InfoCallout: React.FC<InfoCalloutProps> = ({
   return (
     <div
       className={twMerge(
-        'p-3.5 rounded-xl border text-xs leading-relaxed flex items-start gap-3 relative',
+        'p-3.5 rounded-[10px] border text-xs leading-relaxed flex items-start gap-3 relative',
         variantStyles,
         className,
       )}

@@ -181,7 +181,7 @@ export default function ConsolidatedReportsPage() {
         badge="Executive Intelligence"
         title="Consolidated Operational Reports"
         subtitle="Consolidated enterprise data aggregates and business intelligence with direct CSV spreadsheet exports."
-        icon={<FileText className="w-5 h-5 text-[#223FA7]" />}
+        icon={<FileText className="w-5 h-5 text-[#0F5E63]" />}
         actions={
           <div className="flex items-center space-x-3">
             {activeTab === 'tenders' && (
@@ -267,15 +267,15 @@ export default function ConsolidatedReportsPage() {
 
       {/* Content Body */}
       {isLoading ? (
-        <div className="p-12 text-center text-xs text-[#5871A5]">
+        <div className="p-12 text-center text-xs text-[#4A5568]">
           Loading consolidated records...
         </div>
       ) : (
-        <div className="bg-white border border-[#D6E3F5] rounded-2xl shadow-xs overflow-hidden">
+        <div className="bg-white border border-[#DCD8CE] rounded-2xl shadow-xs overflow-hidden">
           {activeTab === 'tenders' && (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-[#F7FBFF] border-b border-[#D6E3F5] text-[#5871A5] uppercase font-bold text-[10px]">
+                <thead className="bg-[#FBFAF7] border-b border-[#DCD8CE] text-[#4A5568] uppercase font-bold text-[10px]">
                   <tr>
                     <th className="p-3.5">Bid Number</th>
                     <th className="p-3.5">Department / Org</th>
@@ -289,8 +289,8 @@ export default function ConsolidatedReportsPage() {
                 <tbody className="divide-y divide-gray-100">
                   {tenders.map((t) => (
                     <tr key={t.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="p-3.5 font-semibold text-[#223FA7]">{t.tender_no}</td>
-                      <td className="p-3.5 text-[#1A1A1A]">{t.organisation_name || t.department || 'N/A'}</td>
+                      <td className="p-3.5 font-semibold text-[#0F5E63]">{t.tender_no}</td>
+                      <td className="p-3.5 text-[#14213D]">{t.organisation_name || t.department || 'N/A'}</td>
                       <td className="p-3.5">
                         <Badge variant={t.category === 'pq' ? 'urgent' : 'outline'}>
                           {t.category?.toUpperCase() || 'GENERAL'}
@@ -300,7 +300,7 @@ export default function ConsolidatedReportsPage() {
                       <td className="p-3.5 text-right font-medium text-emerald-700">
                         {t.emd_fee ? formatINR(t.emd_fee) : 'Exempt'}
                       </td>
-                      <td className="p-3.5 text-[#5871A5]">{t.bid_closing_date ? new Date(t.bid_closing_date).toLocaleDateString('en-IN') : 'N/A'}</td>
+                      <td className="p-3.5 text-[#4A5568]">{t.bid_closing_date ? new Date(t.bid_closing_date).toLocaleDateString('en-IN') : 'N/A'}</td>
                       <td className="p-3.5">
                         <span className="capitalize px-2 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 text-blue-700">
                           {t.status?.replace('_', ' ')}
@@ -316,7 +316,7 @@ export default function ConsolidatedReportsPage() {
           {activeTab === 'leads' && (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-[#F7FBFF] border-b border-[#D6E3F5] text-[#5871A5] uppercase font-bold text-[10px]">
+                <thead className="bg-[#FBFAF7] border-b border-[#DCD8CE] text-[#4A5568] uppercase font-bold text-[10px]">
                   <tr>
                     <th className="p-3.5">Customer Organisation</th>
                     <th className="p-3.5">Product</th>
@@ -330,16 +330,16 @@ export default function ConsolidatedReportsPage() {
                 <tbody className="divide-y divide-gray-100">
                   {leads.map((l) => (
                     <tr key={l.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="p-3.5 font-medium text-[#1A1A1A]">{l.organisation_name}</td>
-                      <td className="p-3.5 text-[#5871A5]">{l.product_name}</td>
+                      <td className="p-3.5 font-medium text-[#14213D]">{l.organisation_name}</td>
+                      <td className="p-3.5 text-[#4A5568]">{l.product_name}</td>
                       <td className="p-3.5">
                         <Badge variant="outline">{l.category?.toUpperCase()}</Badge>
                       </td>
                       <td className="p-3.5 capitalize">{l.probability}</td>
-                      <td className="p-3.5 text-right font-bold text-[#1A1A1A]">
+                      <td className="p-3.5 text-right font-bold text-[#14213D]">
                         {l.value_lakh ? `₹ ${l.value_lakh} L` : '-'}
                       </td>
-                      <td className="p-3.5 text-[#5871A5]">{l.assigned_to_name || 'Unassigned'}</td>
+                      <td className="p-3.5 text-[#4A5568]">{l.assigned_to_name || 'Unassigned'}</td>
                       <td className="p-3.5">
                         <span className="capitalize px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700">
                           {l.status}
@@ -355,7 +355,7 @@ export default function ConsolidatedReportsPage() {
           {activeTab === 'visits' && (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-[#F7FBFF] border-b border-[#D6E3F5] text-[#5871A5] uppercase font-bold text-[10px]">
+                <thead className="bg-[#FBFAF7] border-b border-[#DCD8CE] text-[#4A5568] uppercase font-bold text-[10px]">
                   <tr>
                     <th className="p-3.5">Client & Destination</th>
                     <th className="p-3.5">Planned Date</th>
@@ -369,12 +369,12 @@ export default function ConsolidatedReportsPage() {
                   {visits.map((v) => (
                     <tr key={v.id} className="hover:bg-slate-50 transition-colors">
                       <td className="p-3.5">
-                        <p className="font-semibold text-[#1A1A1A]">{v.organisation_name}</p>
-                        <p className="text-[11px] text-[#5871A5]">{v.location || v.city}</p>
+                        <p className="font-semibold text-[#14213D]">{v.organisation_name}</p>
+                        <p className="text-[11px] text-[#4A5568]">{v.location || v.city}</p>
                       </td>
-                      <td className="p-3.5 text-[#5871A5]">{v.planned_date}</td>
-                      <td className="p-3.5 text-[#1A1A1A] font-medium">{v.assignee_name}</td>
-                      <td className="p-3.5 text-[#5871A5]">{v.purpose || 'Client meeting'}</td>
+                      <td className="p-3.5 text-[#4A5568]">{v.planned_date}</td>
+                      <td className="p-3.5 text-[#14213D] font-medium">{v.assignee_name}</td>
+                      <td className="p-3.5 text-[#4A5568]">{v.purpose || 'Client meeting'}</td>
                       <td className="p-3.5">
                         {v.manager_name ? (
                           <span className="text-[11px] font-medium text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-200">
@@ -399,7 +399,7 @@ export default function ConsolidatedReportsPage() {
           {activeTab === 'expenses' && (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-[#F7FBFF] border-b border-[#D6E3F5] text-[#5871A5] uppercase font-bold text-[10px]">
+                <thead className="bg-[#FBFAF7] border-b border-[#DCD8CE] text-[#4A5568] uppercase font-bold text-[10px]">
                   <tr>
                     <th className="p-3.5">Employee</th>
                     <th className="p-3.5">Date</th>
@@ -412,11 +412,11 @@ export default function ConsolidatedReportsPage() {
                 <tbody className="divide-y divide-gray-100">
                   {expenses.map((e) => (
                     <tr key={e.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="p-3.5 font-medium text-[#1A1A1A]">{e.employee_name}</td>
-                      <td className="p-3.5 text-[#5871A5]">{e.expense_date}</td>
+                      <td className="p-3.5 font-medium text-[#14213D]">{e.employee_name}</td>
+                      <td className="p-3.5 text-[#4A5568]">{e.expense_date}</td>
                       <td className="p-3.5 capitalize">{e.category?.replace('_', ' ')}</td>
-                      <td className="p-3.5 text-right font-bold text-[#1A1A1A]">{formatINR(e.amount)}</td>
-                      <td className="p-3.5 text-[#5871A5]">{e.purpose || 'Travel expense'}</td>
+                      <td className="p-3.5 text-right font-bold text-[#14213D]">{formatINR(e.amount)}</td>
+                      <td className="p-3.5 text-[#4A5568]">{e.purpose || 'Travel expense'}</td>
                       <td className="p-3.5">
                         <span className="capitalize px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-800">
                           {e.status?.replace('_', ' ')}
@@ -432,7 +432,7 @@ export default function ConsolidatedReportsPage() {
           {activeTab === 'service' && (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-[#F7FBFF] border-b border-[#D6E3F5] text-[#5871A5] uppercase font-bold text-[10px]">
+                <thead className="bg-[#FBFAF7] border-b border-[#DCD8CE] text-[#4A5568] uppercase font-bold text-[10px]">
                   <tr>
                     <th className="p-3.5">Ticket No</th>
                     <th className="p-3.5">Customer & Asset</th>
@@ -446,19 +446,19 @@ export default function ConsolidatedReportsPage() {
                 <tbody className="divide-y divide-gray-100">
                   {tickets.map((s) => (
                     <tr key={s.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="p-3.5 font-semibold text-[#223FA7]">{s.ticket_no}</td>
+                      <td className="p-3.5 font-semibold text-[#0F5E63]">{s.ticket_no}</td>
                       <td className="p-3.5">
-                        <p className="font-medium text-[#1A1A1A]">{s.organisation_name}</p>
-                        <p className="text-[11px] text-[#5871A5]">S/N: {s.equipment_serial || 'N/A'}</p>
+                        <p className="font-medium text-[#14213D]">{s.organisation_name}</p>
+                        <p className="text-[11px] text-[#4A5568]">S/N: {s.equipment_serial || 'N/A'}</p>
                       </td>
                       <td className="p-3.5">
                         <Badge variant={s.priority === 'critical' ? 'urgent' : 'outline'}>
                           {s.priority?.toUpperCase()}
                         </Badge>
                       </td>
-                      <td className="p-3.5 capitalize text-[#5871A5]">{s.warranty_status?.replace('_', ' ')}</td>
-                      <td className="p-3.5 text-[#1A1A1A] font-medium">{s.assigned_to_name || 'Unassigned'}</td>
-                      <td className="p-3.5 text-[#5871A5] max-w-xs truncate">{s.complaint}</td>
+                      <td className="p-3.5 capitalize text-[#4A5568]">{s.warranty_status?.replace('_', ' ')}</td>
+                      <td className="p-3.5 text-[#14213D] font-medium">{s.assigned_to_name || 'Unassigned'}</td>
+                      <td className="p-3.5 text-[#4A5568] max-w-xs truncate">{s.complaint}</td>
                       <td className="p-3.5">
                         <span className="capitalize px-2 py-0.5 rounded-full text-[11px] font-semibold bg-cyan-50 text-cyan-800">
                           {s.status?.replace('_', ' ')}

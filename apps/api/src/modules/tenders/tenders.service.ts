@@ -278,11 +278,22 @@ export class TendersService {
       .offset(offset)
       .execute();
 
-    // Map deadline urgency tags
+    // Map deadline urgency tags and indicative sheet aliases (§19-§21)
     const enrichedTenders = tenders.map((t) => ({
       ...t,
-      deadline_tag: this.calculateDeadlineTag(t.bid_closing_date, t.status),
+      tender_number: t.tender_no,
+      organisation: t.organisation_name,
+      product: t.product_name || t.requirement_text,
+      zone: t.zone_name,
+      region: t.region_name,
+      tender_category: t.category,
+      publication_date: t.publish_date,
+      submission_deadline: t.bid_closing_date,
+      assigned_person: t.assigned_to_name,
+      tender_owner: t.tender_owner_name,
       current_stage: t.status,
+      deadline_tag: this.calculateDeadlineTag(t.bid_closing_date, t.status),
+      estimated_value_lakh: t.estimated_value ? Number((Number(t.estimated_value) / 100000).toFixed(2)) : null,
     }));
 
     return buildPaginatedResult(enrichedTenders, total, page, limit);
@@ -371,7 +382,19 @@ export class TendersService {
 
     return {
       ...tender,
+      tender_number: tender.tender_no,
+      organisation: tender.organisation_name,
+      product: tender.product_name || tender.requirement_text,
+      zone: tender.zone_name,
+      region: tender.region_name,
+      tender_category: tender.category,
+      publication_date: tender.publish_date,
+      submission_deadline: tender.bid_closing_date,
+      assigned_person: tender.assigned_to_name,
+      tender_owner: tender.tender_owner_name,
+      current_stage: tender.status,
       deadline_tag: this.calculateDeadlineTag(tender.bid_closing_date, tender.status),
+      estimated_value_lakh: tender.estimated_value ? Number((Number(tender.estimated_value) / 100000).toFixed(2)) : null,
       history,
       outcome: outcomes || null,
       approvals,
@@ -381,11 +404,12 @@ export class TendersService {
   }
 
   /**
-   * Create a tender transactionally with Outbox domain event emission
+   * Create a tender transactionally with Outbox domain event emission (§19-§21)
    */
   async create(dto: CreateTenderDto, user: AuthUser) {
     // 1. Required fields validation
-    if (!dto.tender_no || !dto.tender_no.trim()) {
+    const tenderNo = (dto.tender_no || dto.tender_number || '').trim();
+    if (!tenderNo) {
       throw new BadRequestException('Tender number is required for tender registration');
     }
     if (!dto.organisation_id) {
@@ -393,18 +417,16 @@ export class TendersService {
     }
 
     // 2. Validate duplicate tender number
-    if (dto.tender_no && dto.tender_no.trim()) {
-      const existing = await this.db
-        .selectFrom('tenders')
-        .select('id')
-        .where('tender_no', '=', dto.tender_no.trim())
-        .where('is_deleted', '=', false)
-        .executeTakeFirst();
-      if (existing) {
-        throw new ConflictException(
-          `Tender with number "${dto.tender_no.trim()}" is already registered.`,
-        );
-      }
+    const existing = await this.db
+      .selectFrom('tenders')
+      .select('id')
+      .where('tender_no', '=', tenderNo)
+      .where('is_deleted', '=', false)
+      .executeTakeFirst();
+    if (existing) {
+      throw new ConflictException(
+        `Tender with number "${tenderNo}" is already registered.`,
+      );
     }
 
     // 3. Validate dates
@@ -414,24 +436,71 @@ export class TendersService {
       throw new BadRequestException('Submission deadline cannot be earlier than publication date.');
     }
 
-    const assignedTo = dto.assigned_to || dto.assigned_person_id;
+    const assignedTo = dto.assigned_to || dto.assigned_person_id || null;
     const tenderOwner = dto.tender_owner_id || assignedTo || user.id;
-    const category = (dto.category || 'general_mha').toLowerCase() as any;
-    const status = dto.status ? this.workflowService.normalizeStatus(dto.status) : 'identified';
+    const rawCategory = dto.category || dto.tender_category || 'general_mha';
+    const category = rawCategory.toLowerCase() as any;
+    const rawStatus = dto.status || dto.current_stage || 'identified';
+    const status = this.workflowService.normalizeStatus(rawStatus);
+
+    // 4. Resolve Zone & Region (§21)
+    let zoneId = dto.zone_id || null;
+    let regionId = dto.region_id || null;
+
+    if (!zoneId && dto.zone) {
+      const zMatch = await this.db
+        .selectFrom('zones')
+        .select('id')
+        .where((eb) =>
+          eb.or([
+            eb('code', '=', dto.zone!.trim()),
+            eb(sql`lower(name)`, '=', dto.zone!.trim().toLowerCase()),
+          ]),
+        )
+        .executeTakeFirst();
+      if (zMatch) zoneId = zMatch.id;
+    }
+
+    if (!regionId && dto.region) {
+      const rMatch = await this.db
+        .selectFrom('regions')
+        .select('id')
+        .where(sql`lower(name)`, '=', dto.region!.trim().toLowerCase())
+        .executeTakeFirst();
+      if (rMatch) regionId = rMatch.id;
+    }
+
+    // Inherit geographic mapping from mapped organisation if missing
+    if (dto.organisation_id && (!zoneId || !regionId)) {
+      const org = await this.db
+        .selectFrom('organisations')
+        .select(['zone_id', 'region_id', 'city', 'state'])
+        .where('id', '=', dto.organisation_id)
+        .executeTakeFirst();
+      if (org) {
+        if (!zoneId && org.zone_id) zoneId = org.zone_id;
+        if (!regionId && org.region_id) regionId = org.region_id;
+      }
+    }
+
+    if (!zoneId && user.zone_id) zoneId = user.zone_id;
+    if (!regionId && user.region_id) regionId = user.region_id;
+
+    const estValue = dto.estimated_value ?? (dto.estimated_value_lakh ? Number(dto.estimated_value_lakh) * 100000 : null);
 
     const tender = await this.db.transaction().execute(async (trx) => {
       const created = await trx
         .insertInto('tenders')
         .values({
-          tender_no: dto.tender_no.trim(),
+          tender_no: tenderNo,
           organisation_id: dto.organisation_id || null,
           department: dto.department || null,
           product_id: dto.product_id || null,
           requirement_text: dto.requirement_text || null,
           city: dto.city || null,
           state: dto.state || null,
-          zone_id: dto.zone_id || user.zone_id || null,
-          region_id: dto.region_id || user.region_id || null,
+          zone_id: zoneId,
+          region_id: regionId,
           category,
           quantity: dto.quantity || 1,
           bidder_turnover: dto.bidder_turnover || null,
@@ -439,7 +508,7 @@ export class TendersService {
           emd_fee: dto.emd_fee || 0,
           portal: dto.portal || 'GeM',
           reference_number: dto.reference_number || null,
-          estimated_value: dto.estimated_value || null,
+          estimated_value: estValue,
           tender_value: dto.tender_value || null,
           publish_date: pubDate || null,
           bid_start_date: dto.bid_start_date || null,
@@ -908,14 +977,30 @@ export class TendersService {
     const resultDate = dto.result_date || new Date().toISOString().split('T')[0];
 
     await this.db.transaction().execute(async (trx) => {
+      const tenderUpdate: Record<string, any> = {
+        status: result as any,
+        result_date: resultDate,
+        tender_value: dto.value_lakh ? dto.value_lakh * 100000 : null,
+        updated_at: sql`NOW()`,
+      };
+      if (dto.product_id) tenderUpdate.product_id = dto.product_id;
+      if (dto.region_id) tenderUpdate.region_id = dto.region_id;
+      if (dto.responsible_person_id) {
+        tenderUpdate.assigned_to = dto.responsible_person_id;
+        tenderUpdate.assigned_person_id = dto.responsible_person_id;
+      }
+      if (dto.category || dto.tender_category) {
+        tenderUpdate.category = (dto.category || dto.tender_category) as any;
+      }
+      if (result === 'lost') {
+        tenderUpdate.loss_reason = lossReason || null;
+        tenderUpdate.competitor = dto.competitor || null;
+        tenderUpdate.loss_notes = dto.notes || dto.remarks || null;
+      }
+
       await trx
         .updateTable('tenders')
-        .set({
-          status: result as any,
-          result_date: resultDate,
-          tender_value: dto.value_lakh ? dto.value_lakh * 100000 : null,
-          updated_at: sql`NOW()`,
-        })
+        .set(tenderUpdate)
         .where('id', '=', id)
         .execute();
 
@@ -926,16 +1011,24 @@ export class TendersService {
         .where('tender_id', '=', id)
         .executeTakeFirst();
 
+      const outcomeData = {
+        result,
+        reason: lossReason || null,
+        competitor: dto.competitor || null,
+        value_lakh: dto.value_lakh || null,
+        result_date: resultDate,
+        technical_issue: dto.technical_issue || null,
+        pricing_issue: dto.pricing_issue || null,
+        eligibility_issue: dto.eligibility_issue || null,
+        documentation_issue: dto.documentation_issue || null,
+        other_reason: dto.other_reason || null,
+        notes: dto.notes || dto.remarks || null,
+      };
+
       if (existingOutcome) {
         await trx
           .updateTable('tender_outcomes')
-          .set({
-            result,
-            reason: lossReason || null,
-            competitor: dto.competitor || null,
-            value_lakh: dto.value_lakh || null,
-            result_date: resultDate,
-          })
+          .set(outcomeData)
           .where('id', '=', existingOutcome.id)
           .execute();
       } else {
@@ -943,11 +1036,7 @@ export class TendersService {
           .insertInto('tender_outcomes')
           .values({
             tender_id: id,
-            result,
-            reason: lossReason || null,
-            competitor: dto.competitor || null,
-            value_lakh: dto.value_lakh || null,
-            result_date: resultDate,
+            ...outcomeData,
           })
           .execute();
       }
@@ -975,6 +1064,11 @@ export class TendersService {
             loss_reason: lossReason,
             competitor: dto.competitor,
             value_lakh: dto.value_lakh,
+            technical_issue: dto.technical_issue,
+            pricing_issue: dto.pricing_issue,
+            eligibility_issue: dto.eligibility_issue,
+            documentation_issue: dto.documentation_issue,
+            other_reason: dto.other_reason,
           },
         })
         .execute();
@@ -993,6 +1087,11 @@ export class TendersService {
           competitor: dto.competitor,
           valueLakh: dto.value_lakh,
           resultDate,
+          technicalIssue: dto.technical_issue,
+          pricingIssue: dto.pricing_issue,
+          eligibilityIssue: dto.eligibility_issue,
+          documentationIssue: dto.documentation_issue,
+          otherReason: dto.other_reason,
         },
       });
     });
@@ -1005,6 +1104,11 @@ export class TendersService {
       reason: lossReason,
       competitor: dto.competitor,
       value_lakh: dto.value_lakh,
+      technical_issue: dto.technical_issue,
+      pricing_issue: dto.pricing_issue,
+      eligibility_issue: dto.eligibility_issue,
+      documentation_issue: dto.documentation_issue,
+      other_reason: dto.other_reason,
     };
   }
 
@@ -1267,6 +1371,7 @@ export class TendersService {
         sql<number>`count(case when tenders.status in ('lost') then 1 end)::int`.as('tenders_lost'),
         sql<number>`count(case when tenders.status not in ('won', 'lost', 'cancelled') then 1 end)::int`.as('pending_tenders'),
         sql<number>`count(case when tenders.status in ('awaiting_approval') then 1 end)::int`.as('pending_approvals'),
+        sql<number>`count(case when tenders.status in ('under_preparation') then 1 end)::int`.as('incomplete_preparation'),
         sql<number>`count(case when tenders.status in ('submitted', 'technical_eval', 'commercial_eval') then 1 end)::int`.as('result_followups'),
         // Deadlines
         sql<number>`count(case when tenders.status not in ('won', 'lost', 'cancelled') and tenders.bid_closing_date is not null and tenders.bid_closing_date >= NOW() and tenders.bid_closing_date <= NOW() + make_interval(days => ${TENDER_UPCOMING_DAYS}) then 1 end)::int`.as('upcoming_deadlines'),
@@ -1298,6 +1403,7 @@ export class TendersService {
       tenders_lost: lost,
       pending_tenders: metrics?.pending_tenders || 0,
       pending_approvals: metrics?.pending_approvals || 0,
+      incomplete_preparation: metrics?.incomplete_preparation || 0,
       upcoming_deadlines: metrics?.upcoming_deadlines || 0,
       urgent_deadlines: metrics?.urgent_deadlines || 0,
       overdue_tenders: metrics?.overdue_tenders || 0,
@@ -1346,30 +1452,102 @@ export class TendersService {
   }
 
   /**
-   * Win/Loss Report with loss reason distribution and competitor insights
+   * Win/Loss Report with loss reason distribution, factor breakdown, won analysis, and competitor insights (§26)
    */
   async getWinLossReport(user: AuthUser) {
-    const outcomes = await this.db
+    let query = this.db
       .selectFrom('tender_outcomes')
-      .leftJoin('tenders', 'tender_outcomes.tender_id', 'tenders.id')
+      .innerJoin('tenders', 'tender_outcomes.tender_id', 'tenders.id')
+      .leftJoin('products', 'tenders.product_id', 'products.id')
+      .leftJoin('regions', 'tenders.region_id', 'regions.id')
+      .leftJoin('zones', 'tenders.zone_id', 'zones.id')
+      .leftJoin('users as assigned_user', 'tenders.assigned_to', 'assigned_user.id')
+      .leftJoin('users as owner_user', 'tenders.tender_owner_id', 'owner_user.id')
+      .leftJoin('organisations', 'tenders.organisation_id', 'organisations.id')
       .select([
+        'tender_outcomes.id as outcome_id',
+        'tender_outcomes.tender_id',
         'tender_outcomes.result',
         'tender_outcomes.reason',
         'tender_outcomes.competitor',
         'tender_outcomes.value_lakh',
-        'tenders.category',
-      ])
-      .where('tenders.is_deleted', '=', false)
-      .execute();
+        'tender_outcomes.result_date',
+        'tender_outcomes.technical_issue',
+        'tender_outcomes.pricing_issue',
+        'tender_outcomes.eligibility_issue',
+        'tender_outcomes.documentation_issue',
+        'tender_outcomes.other_reason',
+        'tender_outcomes.notes',
+        'tenders.tender_no',
+        'tenders.requirement_text as tender_title',
+        'tenders.category as tender_category',
+        'products.name as product_name',
+        'regions.name as region_name',
+        'zones.name as zone_name',
+        'assigned_user.full_name as assigned_person_name',
+        'owner_user.full_name as tender_owner_name',
+        'organisations.name as organisation_name',
+      ] as any)
+      .where('tenders.is_deleted', '=', false);
+
+    if (user.role === 'regional_manager' && user.zone_id) {
+      query = query.where('tenders.zone_id', '=', user.zone_id);
+    } else if (user.role === 'sales' && user.region_id) {
+      query = query.where((eb) =>
+        eb.or([
+          eb('tenders.region_id', '=', user.region_id),
+          eb('tenders.assigned_to', '=', user.id),
+        ]),
+      );
+    }
+
+    const outcomes = (await query.orderBy('tender_outcomes.result_date', 'desc').execute()) as any[];
 
     let wonCount = 0;
     let lostCount = 0;
+    let totalWonValueLakh = 0;
     const lossReasons: Record<string, number> = {};
     const competitors: Record<string, number> = {};
+    const wonByProduct: Record<string, { count: number; value_lakh: number }> = {};
+    const wonByRegion: Record<string, { count: number; value_lakh: number }> = {};
+    const wonByCategory: Record<string, { count: number; value_lakh: number }> = {};
+    const wonByPerson: Record<string, { count: number; value_lakh: number }> = {};
+
+    let technicalIssuesCount = 0;
+    let pricingIssuesCount = 0;
+    let eligibilityIssuesCount = 0;
+    let documentationIssuesCount = 0;
+    let otherReasonsCount = 0;
 
     for (const o of outcomes) {
+      const val = Number(o.value_lakh) || 0;
       if (o.result === 'won') {
         wonCount++;
+        totalWonValueLakh += val;
+
+        const prod = o.product_name || 'Standard Equipment';
+        wonByProduct[prod] = {
+          count: (wonByProduct[prod]?.count || 0) + 1,
+          value_lakh: Math.round(((wonByProduct[prod]?.value_lakh || 0) + val) * 100) / 100,
+        };
+
+        const reg = o.region_name || 'Unassigned Region';
+        wonByRegion[reg] = {
+          count: (wonByRegion[reg]?.count || 0) + 1,
+          value_lakh: Math.round(((wonByRegion[reg]?.value_lakh || 0) + val) * 100) / 100,
+        };
+
+        const cat = o.tender_category || 'General / MHA';
+        wonByCategory[cat] = {
+          count: (wonByCategory[cat]?.count || 0) + 1,
+          value_lakh: Math.round(((wonByCategory[cat]?.value_lakh || 0) + val) * 100) / 100,
+        };
+
+        const person = o.tender_owner_name || o.assigned_person_name || 'Unassigned Team';
+        wonByPerson[person] = {
+          count: (wonByPerson[person]?.count || 0) + 1,
+          value_lakh: Math.round(((wonByPerson[person]?.value_lakh || 0) + val) * 100) / 100,
+        };
       } else if (o.result === 'lost') {
         lostCount++;
         const r = o.reason || 'UNSPECIFIED';
@@ -1377,6 +1555,12 @@ export class TendersService {
         if (o.competitor) {
           competitors[o.competitor] = (competitors[o.competitor] || 0) + 1;
         }
+
+        if (o.technical_issue || r.toLowerCase().includes('tech')) technicalIssuesCount++;
+        if (o.pricing_issue || r.toLowerCase().includes('price') || r.toLowerCase().includes('l1')) pricingIssuesCount++;
+        if (o.eligibility_issue || r.toLowerCase().includes('eligib')) eligibilityIssuesCount++;
+        if (o.documentation_issue || r.toLowerCase().includes('doc')) documentationIssuesCount++;
+        if (o.other_reason || r.toLowerCase().includes('other')) otherReasonsCount++;
       }
     }
 
@@ -1390,9 +1574,38 @@ export class TendersService {
       lost_count: lostCount,
       total_decided: totalDecided,
       win_rate: winRate,
+      total_won_value_lakh: Math.round(totalWonValueLakh * 100) / 100,
       reasons: lossReasons,
       loss_reasons: lossReasons,
-      competitors,
+      won_by_product: wonByProduct,
+      won_by_region: wonByRegion,
+      won_by_category: wonByCategory,
+      won_by_person: wonByPerson,
+      won_breakdown: {
+        by_product: wonByProduct,
+        by_region: wonByRegion,
+        by_category: wonByCategory,
+        by_salesperson: wonByPerson,
+      },
+      loss_factors: {
+        technical_issues: technicalIssuesCount,
+        pricing_issues: pricingIssuesCount,
+        eligibility_issues: eligibilityIssuesCount,
+        documentation_issues: documentationIssuesCount,
+        other_reasons: otherReasonsCount,
+      },
+      lost_breakdown: {
+        reasons: lossReasons,
+        competitors,
+        factors: {
+          technical: technicalIssuesCount,
+          pricing: pricingIssuesCount,
+          eligibility: eligibilityIssuesCount,
+          documentation: documentationIssuesCount,
+          other: otherReasonsCount,
+        },
+      },
+      recent_completed: outcomes.slice(0, 50),
     };
   }
 
@@ -1410,6 +1623,8 @@ export class TendersService {
         'zones.name as zone_name',
         sql<number>`count(tenders.id)::int`.as('total'),
         sql<number>`count(tenders.id)::int`.as('total_tenders'),
+        sql<number>`count(case when tenders.category::text ilike 'pq%' then 1 end)::int`.as('pq_count'),
+        sql<number>`count(case when tenders.category::text ilike 'general%' then 1 end)::int`.as('general_mha_count'),
         sql<number>`count(case when tenders.status in ('under_preparation', 'awaiting_approval', 'identified') then 1 end)::int`.as('pending'),
         sql<number>`count(case when tenders.status in ('under_preparation', 'awaiting_approval', 'identified') then 1 end)::int`.as('pending_tenders'),
         sql<number>`count(case when tenders.status in ('submitted', 'technical_eval', 'commercial_eval') then 1 end)::int`.as('submitted'),
@@ -1440,6 +1655,8 @@ export class TendersService {
         'zones.name as zone_name',
         sql<number>`count(tenders.id)::int`.as('total'),
         sql<number>`count(tenders.id)::int`.as('total_tenders'),
+        sql<number>`count(case when tenders.category::text ilike 'pq%' then 1 end)::int`.as('pq_count'),
+        sql<number>`count(case when tenders.category::text ilike 'general%' then 1 end)::int`.as('general_mha_count'),
         sql<number>`count(case when tenders.status in ('under_preparation', 'awaiting_approval', 'identified') then 1 end)::int`.as('pending'),
         sql<number>`count(case when tenders.status in ('under_preparation', 'awaiting_approval', 'identified') then 1 end)::int`.as('pending_tenders'),
         sql<number>`count(case when tenders.status in ('submitted', 'technical_eval', 'commercial_eval') then 1 end)::int`.as('submitted'),
@@ -1476,6 +1693,8 @@ export class TendersService {
         'users.role',
         sql<number>`count(distinct tenders.id)::int`.as('total'),
         sql<number>`count(distinct tenders.id)::int`.as('total_tenders'),
+        sql<number>`count(distinct case when tenders.category::text ilike 'pq%' then tenders.id end)::int`.as('pq_count'),
+        sql<number>`count(distinct case when tenders.category::text ilike 'general%' then tenders.id end)::int`.as('general_mha_count'),
         sql<number>`count(distinct case when tenders.status in ('under_preparation', 'awaiting_approval', 'identified') then tenders.id end)::int`.as('pending'),
         sql<number>`count(distinct case when tenders.status in ('under_preparation', 'awaiting_approval', 'identified') then tenders.id end)::int`.as('pending_tenders'),
         sql<number>`count(distinct case when tenders.status in ('submitted', 'technical_eval', 'commercial_eval') then tenders.id end)::int`.as('submitted'),
@@ -1488,5 +1707,50 @@ export class TendersService {
       .groupBy(['users.id', 'users.full_name', 'users.role'])
       .orderBy('total', 'desc')
       .execute();
+  }
+
+  /**
+   * Organisation-wise pipeline report (§21)
+   */
+  async getOrganisationReport(user: AuthUser) {
+    let query = this.db
+      .selectFrom('organisations')
+      .leftJoin('tenders', (join) =>
+        join.onRef('organisations.id', '=', 'tenders.organisation_id').on('tenders.is_deleted', '=', false),
+      )
+      .select([
+        'organisations.id as organisation_id',
+        'organisations.name as organisation_name',
+        'organisations.sector',
+        'organisations.city',
+        'organisations.state',
+        sql<number>`count(tenders.id)::int`.as('total'),
+        sql<number>`count(tenders.id)::int`.as('total_tenders'),
+        sql<number>`count(case when tenders.category::text ilike 'pq%' then 1 end)::int`.as('pq_count'),
+        sql<number>`count(case when tenders.category::text ilike 'general%' then 1 end)::int`.as('general_mha_count'),
+        sql<number>`count(case when tenders.status in ('under_preparation', 'awaiting_approval', 'identified') then 1 end)::int`.as('pending'),
+        sql<number>`count(case when tenders.status in ('under_preparation', 'awaiting_approval', 'identified') then 1 end)::int`.as('pending_tenders'),
+        sql<number>`count(case when tenders.status in ('submitted', 'technical_eval', 'commercial_eval') then 1 end)::int`.as('submitted'),
+        sql<number>`count(case when tenders.status in ('submitted', 'technical_eval', 'commercial_eval') then 1 end)::int`.as('submitted_tenders'),
+        sql<number>`count(case when tenders.status = 'won' then 1 end)::int`.as('won'),
+        sql<number>`count(case when tenders.status = 'won' then 1 end)::int`.as('won_tenders'),
+        sql<number>`count(case when tenders.status = 'lost' then 1 end)::int`.as('lost'),
+        sql<number>`count(case when tenders.status = 'lost' then 1 end)::int`.as('lost_tenders'),
+      ])
+      .groupBy([
+        'organisations.id',
+        'organisations.name',
+        'organisations.sector',
+        'organisations.city',
+        'organisations.state',
+      ])
+      .having(sql`count(tenders.id)`, '>', 0)
+      .orderBy('total', 'desc');
+
+    if (user.role === 'regional_manager' && user.zone_id) {
+      query = query.where('organisations.zone_id', '=', user.zone_id);
+    }
+
+    return query.execute();
   }
 }

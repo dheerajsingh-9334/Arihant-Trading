@@ -15,13 +15,21 @@ const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{
 
 export class CreateTenderDto {
   @IsString()
-  @IsNotEmpty({ message: 'Tender number is required' })
-  tender_no!: string;
+  @IsOptional()
+  tender_no?: string;
+
+  @IsString()
+  @IsOptional()
+  tender_number?: string; // alias from Arihant tender sheet
 
   @IsOptional()
   @ValidateIf((o, v) => Boolean(v))
   @Matches(UUID_PATTERN)
   organisation_id?: string;
+
+  @IsString()
+  @IsOptional()
+  organisation?: string; // alias
 
   @IsString()
   @IsOptional()
@@ -31,6 +39,10 @@ export class CreateTenderDto {
   @ValidateIf((o, v) => Boolean(v))
   @Matches(UUID_PATTERN)
   product_id?: string;
+
+  @IsString()
+  @IsOptional()
+  product?: string; // alias
 
   @IsString()
   @IsOptional()
@@ -49,6 +61,10 @@ export class CreateTenderDto {
   @Matches(UUID_PATTERN)
   zone_id?: string;
 
+  @IsString()
+  @IsOptional()
+  zone?: string; // zone name or code
+
   @IsOptional()
   @ValidateIf((o, v) => Boolean(v))
   @Matches(UUID_PATTERN)
@@ -56,7 +72,15 @@ export class CreateTenderDto {
 
   @IsString()
   @IsOptional()
+  region?: string; // region name
+
+  @IsString()
+  @IsOptional()
   category?: string;
+
+  @IsString()
+  @IsOptional()
+  tender_category?: string; // alias (PQ / General-MHA / Other)
 
   @IsNumber()
   @IsOptional()
@@ -85,6 +109,10 @@ export class CreateTenderDto {
   @IsNumber()
   @IsOptional()
   estimated_value?: number;
+
+  @IsNumber()
+  @IsOptional()
+  estimated_value_lakh?: number; // alias in Lakhs
 
   @IsNumber()
   @IsOptional()
@@ -128,6 +156,10 @@ export class CreateTenderDto {
   @Matches(UUID_PATTERN)
   assigned_person_id?: string; // alias
 
+  @IsString()
+  @IsOptional()
+  assigned_person?: string; // alias
+
   @IsOptional()
   @ValidateIf((o, v) => Boolean(v))
   @Matches(UUID_PATTERN)
@@ -135,7 +167,15 @@ export class CreateTenderDto {
 
   @IsString()
   @IsOptional()
+  tender_owner?: string; // alias
+
+  @IsString()
+  @IsOptional()
   status?: string;
+
+  @IsString()
+  @IsOptional()
+  current_stage?: string; // alias
 
   @IsString()
   @IsOptional()
@@ -147,9 +187,17 @@ export class UpdateTenderDto {
   @IsOptional()
   tender_no?: string;
 
+  @IsString()
+  @IsOptional()
+  tender_number?: string; // alias
+
   @Matches(UUID_PATTERN)
   @IsOptional()
   organisation_id?: string;
+
+  @IsString()
+  @IsOptional()
+  organisation?: string; // alias
 
   @IsString()
   @IsOptional()
@@ -158,6 +206,10 @@ export class UpdateTenderDto {
   @Matches(UUID_PATTERN)
   @IsOptional()
   product_id?: string;
+
+  @IsString()
+  @IsOptional()
+  product?: string; // alias
 
   @IsString()
   @IsOptional()
@@ -175,13 +227,25 @@ export class UpdateTenderDto {
   @IsOptional()
   zone_id?: string;
 
+  @IsString()
+  @IsOptional()
+  zone?: string; // zone name or code
+
   @Matches(UUID_PATTERN)
   @IsOptional()
   region_id?: string;
 
   @IsString()
   @IsOptional()
+  region?: string; // region name
+
+  @IsString()
+  @IsOptional()
   category?: string;
+
+  @IsString()
+  @IsOptional()
+  tender_category?: string; // alias
 
   @IsNumber()
   @IsOptional()
@@ -210,6 +274,10 @@ export class UpdateTenderDto {
   @IsNumber()
   @IsOptional()
   estimated_value?: number;
+
+  @IsNumber()
+  @IsOptional()
+  estimated_value_lakh?: number; // alias
 
   @IsNumber()
   @IsOptional()
@@ -259,13 +327,25 @@ export class UpdateTenderDto {
   @IsOptional()
   assigned_person_id?: string;
 
+  @IsString()
+  @IsOptional()
+  assigned_person?: string; // alias
+
   @Matches(UUID_PATTERN)
   @IsOptional()
   tender_owner_id?: string;
 
   @IsString()
   @IsOptional()
+  tender_owner?: string; // alias
+
+  @IsString()
+  @IsOptional()
   status?: string;
+
+  @IsString()
+  @IsOptional()
+  current_stage?: string; // alias
 
   @IsString()
   @IsOptional()
@@ -355,6 +435,49 @@ export class RecordTenderOutcomeDto {
 
   @IsString()
   @IsOptional()
+  technical_issue?: string;
+
+  @IsString()
+  @IsOptional()
+  pricing_issue?: string;
+
+  @IsString()
+  @IsOptional()
+  eligibility_issue?: string;
+
+  @IsString()
+  @IsOptional()
+  documentation_issue?: string;
+
+  @IsString()
+  @IsOptional()
+  other_reason?: string;
+
+  @IsOptional()
+  @ValidateIf((o, v) => Boolean(v))
+  @Matches(UUID_PATTERN)
+  product_id?: string;
+
+  @IsOptional()
+  @ValidateIf((o, v) => Boolean(v))
+  @Matches(UUID_PATTERN)
+  region_id?: string;
+
+  @IsOptional()
+  @ValidateIf((o, v) => Boolean(v))
+  @Matches(UUID_PATTERN)
+  responsible_person_id?: string;
+
+  @IsString()
+  @IsOptional()
+  category?: string;
+
+  @IsString()
+  @IsOptional()
+  tender_category?: string;
+
+  @IsString()
+  @IsOptional()
   remarks?: string;
 
   @IsString()
@@ -366,6 +489,11 @@ export class CreateTenderPortalIssueDto {
   @IsString()
   @IsNotEmpty({ message: 'Issue description is required' })
   issue!: string;
+
+  @IsOptional()
+  @ValidateIf((o, v) => Boolean(v))
+  @Matches(UUID_PATTERN)
+  tender_id?: string;
 
   @IsDateString()
   @IsOptional()

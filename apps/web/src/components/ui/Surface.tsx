@@ -28,7 +28,7 @@ export const Surface = React.forwardRef<HTMLDivElement, SurfaceProps>(
       as: Component = 'div',
       bg = 'card',
       border = 'default',
-      rounded = 'xl',
+      rounded = 'lg',
       padding = 'none',
       shadow = 'none',
       hover = false,
@@ -39,22 +39,22 @@ export const Surface = React.forwardRef<HTMLDivElement, SurfaceProps>(
     ref,
   ) => {
     const backgrounds = {
-      canvas: 'bg-[#F7FBFF]',
+      canvas: 'bg-[#F6F5F1]',
       card: 'bg-white',
       white: 'bg-white',
-      muted: 'bg-[#EEF5FF]',
-      secondary: 'bg-[#EAF2FF]',
-      brand: 'bg-[#223FA7] text-white',
-      dangerSubtle: 'bg-red-50 text-red-900',
-      successSubtle: 'bg-emerald-50 text-emerald-900',
-      warningSubtle: 'bg-amber-50 text-amber-900',
+      muted: 'bg-[#FBFAF7]',
+      secondary: 'bg-[#E3EFEE]',
+      brand: 'bg-[#0F5E63] text-white',
+      dangerSubtle: 'bg-[#FCE8EC] text-[#881337]',
+      successSubtle: 'bg-[#E3EFEE] text-[#0F5E63]',
+      warningSubtle: 'bg-[#FBEBDD] text-[#7C2D12]',
       transparent: 'bg-transparent',
     };
 
     const borders = {
-      default: 'border border-[#D6E3F5]',
-      subtle: 'border border-[#F0F5FC]',
-      brand: 'border border-[#223FA7]',
+      default: 'border border-[#DCD8CE]',
+      subtle: 'border border-[#ECE9E2]',
+      brand: 'border border-[#0F5E63]',
       danger: 'border border-red-200',
       warning: 'border border-amber-200',
       success: 'border border-emerald-200',
@@ -63,12 +63,12 @@ export const Surface = React.forwardRef<HTMLDivElement, SurfaceProps>(
 
     const roundeds = {
       none: 'rounded-none',
-      xs: 'rounded',
-      sm: 'rounded-md',
-      md: 'rounded-lg',
-      lg: 'rounded-xl',
-      xl: 'rounded-2xl',
-      '2xl': 'rounded-3xl',
+      xs: 'rounded-[4px]',
+      sm: 'rounded-[6px]',
+      md: 'rounded-[8px]',
+      lg: 'rounded-[14px]',
+      xl: 'rounded-[16px]',
+      '2xl': 'rounded-[20px]',
       full: 'rounded-full',
     };
 
@@ -99,7 +99,7 @@ export const Surface = React.forwardRef<HTMLDivElement, SurfaceProps>(
             roundeds[rounded],
             paddings[padding],
             shadows[shadow],
-            hover && 'transition-all duration-150 hover:border-[#9FC0F5] hover:shadow-xs',
+            hover && 'transition-all duration-150 hover:border-[#0F5E63] hover:shadow-xs',
             className,
           ),
         )}

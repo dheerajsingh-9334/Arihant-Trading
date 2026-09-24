@@ -570,13 +570,13 @@ export default function VisitsPage() {
   const renderManagerVisitCard = (v: any) => (
     <div
       key={v.id}
-      className="p-4 bg-white border border-[#D6E3F5] rounded-xl hover:border-[#9FC0F5] transition-all shadow-2xs space-y-3"
+      className="p-4 bg-white border border-[#DCD8CE] rounded-xl hover:border-[#0F5E63] transition-all shadow-2xs space-y-3"
     >
       {/* Top row: Organisation, Tour tag, Requirement badges, Status */}
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 border-b border-gray-100 pb-2.5">
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <span className="font-extrabold text-[#1A1A1A] text-base">{v.organisation_name}</span>
+            <span className="font-extrabold text-[#14213D] text-base">{v.organisation_name}</span>
             {v.trip_base_location && (
               <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 flex items-center gap-1">
                 <Route className="h-3 w-3" />
@@ -613,7 +613,7 @@ export default function VisitsPage() {
           </div>
 
           {/* Key metadata row: Location, Date & Time, Assigned Officer, Contact Person */}
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[#5871A5] mt-1.5">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[#4A5568] mt-1.5">
             <span className="flex items-center gap-1">
               <MapPin className="h-3.5 w-3.5 text-gray-400 shrink-0" />
               <span className="font-medium text-gray-700">{v.location || 'HQ Station'}</span>
@@ -635,8 +635,8 @@ export default function VisitsPage() {
               <span>Officer: <strong className="text-gray-800">{v.assignee_name || 'Sales Staff'}</strong></span>
             </span>
             {(v.contact_name || v.contact_person) && (
-              <span className="flex items-center gap-1 text-[#223FA7]">
-                <Users className="h-3.5 w-3.5 text-[#223FA7] shrink-0" />
+              <span className="flex items-center gap-1 text-[#0F5E63]">
+                <Users className="h-3.5 w-3.5 text-[#0F5E63] shrink-0" />
                 <span>Contact: <strong className="text-gray-800">{v.contact_name || v.contact_person}</strong></span>
               </span>
             )}
@@ -650,13 +650,13 @@ export default function VisitsPage() {
 
       {/* Purpose & Product/Outcome 2-column grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-        <div className="p-2.5 bg-[#F7FBFF] rounded-lg border border-[#D6E3F5]/60 space-y-1">
-          <span className="text-[10px] font-bold text-[#5871A5] uppercase tracking-wider block">Visit Purpose</span>
+        <div className="p-2.5 bg-[#FBFAF7] rounded-lg border border-[#DCD8CE]/60 space-y-1">
+          <span className="text-[10px] font-bold text-[#4A5568] uppercase tracking-wider block">Visit Purpose</span>
           <p className="text-gray-800 font-medium">{v.purpose || 'Portfolio review & client engagement'}</p>
         </div>
 
-        <div className="p-2.5 bg-[#F7FBFF] rounded-lg border border-[#D6E3F5]/60 space-y-1">
-          <span className="text-[10px] font-bold text-[#5871A5] uppercase tracking-wider block">Product & Expected Outcome</span>
+        <div className="p-2.5 bg-[#FBFAF7] rounded-lg border border-[#DCD8CE]/60 space-y-1">
+          <span className="text-[10px] font-bold text-[#4A5568] uppercase tracking-wider block">Product & Expected Outcome</span>
           <div className="flex items-center gap-1.5 text-gray-800 font-medium">
             <Layers className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
             <span>{v.product_name || 'General Defence Portfolio'}</span>
@@ -695,7 +695,7 @@ export default function VisitsPage() {
 
       {/* Manager Actions Bar */}
       <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-gray-100">
-        <div className="text-[11px] text-[#5871A5]">
+        <div className="text-[11px] text-[#4A5568]">
           Visit ID: <span className="font-mono text-gray-600 font-semibold">{v.id.slice(0, 8)}</span>
         </div>
 
@@ -738,7 +738,7 @@ export default function VisitsPage() {
                 });
                 setIsRescheduleOpen(true);
               }}
-              className="text-[#223FA7] text-xs"
+              className="text-[#0F5E63] text-xs"
             >
               <span>Reschedule</span>
             </Button>
@@ -752,7 +752,7 @@ export default function VisitsPage() {
     <PageContainer>
       {/* ── TOP HERO BANNER: VISIT & FIELD PLANNING ── */}
       <PageHeader
-        icon={<Calendar className="h-7 w-7 text-[#223FA7]" />}
+        icon={<Calendar className="h-7 w-7 text-[#0F5E63]" />}
         title="Field Visits & Tour Operations"
         description="Weekly tour programs, multi-stop trips, regional manager directives, and post-visit intelligence."
         actions={
@@ -760,7 +760,7 @@ export default function VisitsPage() {
             <Button
               onClick={() => setIsCreateTripOpen(true)}
               variant="outline"
-              className="border-[#D6E3F5] text-[#223FA7] hover:bg-[#F7FBFF] shadow-xs"
+              className="border-[#DCD8CE] text-[#0F5E63] hover:bg-[#FBFAF7] shadow-xs"
             >
               <Car className="h-4 w-4 mr-1.5" />
               <span>New Tour Program</span>
@@ -784,7 +784,7 @@ export default function VisitsPage() {
           label="Total Field Visits"
           value={stats.total}
           subtext="Scheduled itineraries"
-          icon={<CalendarDays className="h-4 w-4 text-[#223FA7]" />}
+          icon={<CalendarDays className="h-4 w-4 text-[#0F5E63]" />}
         />
 
         <StatCard
@@ -808,7 +808,7 @@ export default function VisitsPage() {
           value={stats.completed}
           valueColor="primary"
           subtext="Intelligence & outcomes logged"
-          icon={<CheckCircle2 className="h-4 w-4 text-[#223FA7]" />}
+          icon={<CheckCircle2 className="h-4 w-4 text-[#0F5E63]" />}
         />
       </StatGrid>
 
@@ -853,7 +853,7 @@ export default function VisitsPage() {
       />
 
       {/* Filter Toolbar */}
-      <div className="p-4 bg-white border border-[#D6E3F5] rounded-xl shadow-xs space-y-3">
+      <div className="p-4 bg-white border border-[#DCD8CE] rounded-xl shadow-xs space-y-3">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
           {/* Search */}
           <div className="col-span-1 sm:col-span-2">
@@ -940,7 +940,7 @@ export default function VisitsPage() {
               setFilterDemoOnly(false);
               fetchData();
             }}
-            className="text-xs text-[#5871A5]"
+            className="text-xs text-[#4A5568]"
           >
             <RefreshCw className="h-3 w-3 mr-1" />
             <span>Reset Filters</span>
@@ -952,18 +952,18 @@ export default function VisitsPage() {
       {activeTab === 'my_visits' && (
         <div className="space-y-3.5">
           {isLoading ? (
-            <div className="p-8 text-center text-xs text-[#5871A5] bg-white border border-[#D6E3F5] rounded-xl">
+            <div className="p-8 text-center text-xs text-[#4A5568] bg-white border border-[#DCD8CE] rounded-xl">
               Loading field visit schedules...
             </div>
           ) : visits.length === 0 ? (
-            <div className="p-8 text-center text-xs text-[#5871A5] bg-white border border-[#D6E3F5] rounded-xl">
+            <div className="p-8 text-center text-xs text-[#4A5568] bg-white border border-[#DCD8CE] rounded-xl">
               No field visits match the active filters.
             </div>
           ) : (
             visits.map((v) => (
               <div
                 key={v.id}
-                className="p-5 rounded-xl border border-[#D6E3F5] bg-white hover:border-[#3770E3] transition-all space-y-4 shadow-xs"
+                className="p-5 rounded-xl border border-[#DCD8CE] bg-white hover:border-[#3770E3] transition-all space-y-4 shadow-xs"
               >
                 <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
                   <div className="space-y-1.5 flex-1">
@@ -1012,18 +1012,18 @@ export default function VisitsPage() {
                         )
                       )}
 
-                      <span className="text-sm font-bold text-[#1A1A1A]">
+                      <span className="text-sm font-bold text-[#14213D]">
                         {v.organisation_name || 'Client Agency'}
                       </span>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[#5871A5]">
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[#4A5568]">
                       <span className="flex items-center gap-1 text-gray-700 font-medium">
-                        <MapPin className="h-3.5 w-3.5 text-[#223FA7]" />
+                        <MapPin className="h-3.5 w-3.5 text-[#0F5E63]" />
                         {v.location || 'Site Location'}
                       </span>
                       <span className="flex items-center gap-1 font-mono text-gray-700">
-                        <Clock className="h-3.5 w-3.5 text-[#5871A5]" />
+                        <Clock className="h-3.5 w-3.5 text-[#4A5568]" />
                         {new Date(v.planned_date).toLocaleDateString('en-IN', {
                           weekday: 'short',
                           year: 'numeric',
@@ -1032,8 +1032,8 @@ export default function VisitsPage() {
                         })}
                         {v.start_time ? ` • ${v.start_time} - ${v.end_time || ''}` : ''}
                       </span>
-                      <span className="flex items-center gap-1 text-[#5871A5]">
-                        <User className="h-3.5 w-3.5 text-[#5871A5]" />
+                      <span className="flex items-center gap-1 text-[#4A5568]">
+                        <User className="h-3.5 w-3.5 text-[#4A5568]" />
                         Officer: {v.assignee_name || 'Sales Staff'}
                       </span>
                       {v.product_name && (
@@ -1043,8 +1043,8 @@ export default function VisitsPage() {
                         </span>
                       )}
                       {(v.contact_name || v.contact_person) && (
-                        <span className="flex items-center gap-1 text-[#223FA7] font-medium">
-                          <User className="h-3.5 w-3.5 text-[#223FA7]" />
+                        <span className="flex items-center gap-1 text-[#0F5E63] font-medium">
+                          <User className="h-3.5 w-3.5 text-[#0F5E63]" />
                           Contact: <span className="font-semibold text-gray-800">{v.contact_name || v.contact_person}</span>
                         </span>
                       )}
@@ -1052,18 +1052,18 @@ export default function VisitsPage() {
 
                     {v.purpose && (
                       <p className="text-xs text-gray-700 pt-1 font-medium">
-                        <span className="text-[#5871A5] font-semibold">Purpose:</span> {v.purpose}
+                        <span className="text-[#4A5568] font-semibold">Purpose:</span> {v.purpose}
                       </p>
                     )}
 
                     {v.expected_outcome && (
-                      <p className="text-xs text-[#5871A5]">
+                      <p className="text-xs text-[#4A5568]">
                         <span className="font-semibold text-gray-600">Expected Outcome:</span> {v.expected_outcome}
                       </p>
                     )}
 
                     {v.remarks && !v.remarks.startsWith('Manager Directive:') && (
-                      <p className="text-xs text-[#5871A5] bg-[#F7FBFF] px-2.5 py-1.5 rounded-lg border border-[#D6E3F5] mt-1">
+                      <p className="text-xs text-[#4A5568] bg-[#FBFAF7] px-2.5 py-1.5 rounded-lg border border-[#DCD8CE] mt-1">
                         <span className="font-semibold text-gray-700">Remarks: </span>
                         {v.remarks}
                       </p>
@@ -1149,7 +1149,7 @@ export default function VisitsPage() {
                             });
                             setIsRescheduleOpen(true);
                           }}
-                          className="text-[#223FA7]"
+                          className="text-[#0F5E63]"
                         >
                           <span>Reschedule</span>
                         </Button>
@@ -1187,8 +1187,8 @@ export default function VisitsPage() {
 
                     {/* Claim Expense for this visit */}
                     <Link href={`/expenses?visit_id=${v.id}`}>
-                      <Button size="sm" variant="ghost" className="text-[#223FA7]">
-                        <Receipt className="h-3.5 w-3.5 mr-1 text-[#5871A5]" />
+                      <Button size="sm" variant="ghost" className="text-[#0F5E63]">
+                        <Receipt className="h-3.5 w-3.5 mr-1 text-[#4A5568]" />
                         <span>Claim Expense</span>
                       </Button>
                     </Link>
@@ -1222,14 +1222,14 @@ export default function VisitsPage() {
 
                 {/* Completed Report Callout */}
                 {v.updates && v.updates.length > 0 && (
-                  <div className="p-3.5 rounded-xl bg-[#F7FBFF] border border-[#D6E3F5] text-xs text-gray-800 space-y-1.5">
+                  <div className="p-3.5 rounded-xl bg-[#FBFAF7] border border-[#DCD8CE] text-xs text-gray-800 space-y-1.5">
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-[#223FA7] uppercase tracking-wider text-[10px] flex items-center gap-1">
+                      <span className="font-bold text-[#0F5E63] uppercase tracking-wider text-[10px] flex items-center gap-1">
                         <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
                         POST-VISIT INTELLIGENCE LOGGED:
                       </span>
                       {v.updates[0].updated_by_name && (
-                        <span className="text-[10px] text-[#5871A5]">Logged by {v.updates[0].updated_by_name}</span>
+                        <span className="text-[10px] text-[#4A5568]">Logged by {v.updates[0].updated_by_name}</span>
                       )}
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
@@ -1244,7 +1244,7 @@ export default function VisitsPage() {
                       {v.updates[0].product_discussed && (
                         <div>
                           <span className="font-bold text-gray-700">Product Discussed: </span>
-                          <span className="text-[#223FA7] font-medium">{v.updates[0].product_discussed}</span>
+                          <span className="text-[#0F5E63] font-medium">{v.updates[0].product_discussed}</span>
                         </div>
                       )}
                       {v.updates[0].opportunity && (
@@ -1255,15 +1255,15 @@ export default function VisitsPage() {
                       )}
                       {v.updates[0].tender_opportunity && (
                         <div className="col-span-full">
-                          <span className="font-bold text-[#223FA7]">Tender / GeM Bid: </span>
-                          <span className="font-mono text-[#223FA7] bg-[#EAF2FF] px-2 py-0.5 rounded text-[11px] font-semibold border border-[#D6E3F5]">
+                          <span className="font-bold text-[#0F5E63]">Tender / GeM Bid: </span>
+                          <span className="font-mono text-[#0F5E63] bg-[#E3EFEE] px-2 py-0.5 rounded text-[11px] font-semibold border border-[#DCD8CE]">
                             {v.updates[0].tender_opportunity}
                           </span>
                         </div>
                       )}
                       {v.updates[0].demo_required && (
                         <div>
-                          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#223FA7] bg-[#EAF2FF] px-2 py-0.5 rounded-full border border-[#D6E3F5]">
+                          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#0F5E63] bg-[#E3EFEE] px-2 py-0.5 rounded-full border border-[#DCD8CE]">
                             <Sparkles className="h-3 w-3" /> Technical Demo Requested
                           </span>
                         </div>
@@ -1275,12 +1275,12 @@ export default function VisitsPage() {
                       </p>
                     )}
                     {v.updates[0].remarks && (
-                      <p className="text-xs text-gray-600 bg-white p-2 rounded border border-[#D6E3F5] mt-1">
+                      <p className="text-xs text-gray-600 bg-white p-2 rounded border border-[#DCD8CE] mt-1">
                         <span className="font-bold text-gray-700">Field Remarks: </span>{v.updates[0].remarks}
                       </p>
                     )}
                     {v.updates[0].followup_date && (
-                      <div className="text-[11px] text-[#223FA7] font-semibold flex items-center gap-1 mt-1.5">
+                      <div className="text-[11px] text-[#0F5E63] font-semibold flex items-center gap-1 mt-1.5">
                         <Clock className="h-3 w-3" />
                         Next Follow-up Commitment: {new Date(v.updates[0].followup_date).toLocaleDateString('en-IN')}
                         {v.updates[0].next_action ? ` — ${v.updates[0].next_action}` : ''}
@@ -1298,24 +1298,24 @@ export default function VisitsPage() {
       {activeTab === 'manager_dashboard' && managerData && (
         <div className="space-y-6">
           {/* Summary counters banner - Light Executive */}
-          <div className="p-4 bg-[#EAF2FF] border border-[#D6E3F5] rounded-xl shadow-xs">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-[#223FA7]">Team Field Deployment Horizon</h2>
+          <div className="p-4 bg-[#E3EFEE] border border-[#DCD8CE] rounded-xl shadow-xs">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-[#0F5E63]">Team Field Deployment Horizon</h2>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-3">
-              <div className="bg-white p-3 rounded-lg border border-[#D6E3F5]">
-                <span className="text-2xl font-black text-[#1A1A1A]">{managerData.summary?.todayCount || 0}</span>
-                <span className="block text-xs text-[#5871A5]">Deployed Today</span>
+              <div className="bg-white p-3 rounded-lg border border-[#DCD8CE]">
+                <span className="text-2xl font-black text-[#14213D]">{managerData.summary?.todayCount || 0}</span>
+                <span className="block text-xs text-[#4A5568]">Deployed Today</span>
               </div>
-              <div className="bg-white p-3 rounded-lg border border-[#D6E3F5]">
-                <span className="text-2xl font-black text-[#1A1A1A]">{managerData.summary?.tomorrowCount || 0}</span>
-                <span className="block text-xs text-[#5871A5]">Tomorrow</span>
+              <div className="bg-white p-3 rounded-lg border border-[#DCD8CE]">
+                <span className="text-2xl font-black text-[#14213D]">{managerData.summary?.tomorrowCount || 0}</span>
+                <span className="block text-xs text-[#4A5568]">Tomorrow</span>
               </div>
-              <div className="bg-white p-3 rounded-lg border border-[#D6E3F5]">
-                <span className="text-2xl font-black text-[#1A1A1A]">{managerData.summary?.next7DaysCount || 0}</span>
-                <span className="block text-xs text-[#5871A5]">Next 7 Days (1-Wk Cycle)</span>
+              <div className="bg-white p-3 rounded-lg border border-[#DCD8CE]">
+                <span className="text-2xl font-black text-[#14213D]">{managerData.summary?.next7DaysCount || 0}</span>
+                <span className="block text-xs text-[#4A5568]">Next 7 Days (1-Wk Cycle)</span>
               </div>
-              <div className="bg-white p-3 rounded-lg border border-[#D6E3F5]">
-                <span className="text-2xl font-black text-[#1A1A1A]">{managerData.summary?.laterCount || 0}</span>
-                <span className="block text-xs text-[#5871A5]">Later</span>
+              <div className="bg-white p-3 rounded-lg border border-[#DCD8CE]">
+                <span className="text-2xl font-black text-[#14213D]">{managerData.summary?.laterCount || 0}</span>
+                <span className="block text-xs text-[#4A5568]">Later</span>
               </div>
             </div>
           </div>
@@ -1390,7 +1390,7 @@ export default function VisitsPage() {
       {activeTab === 'trips' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <p className="text-xs text-[#5871A5]">
+            <p className="text-xs text-[#4A5568]">
               Multi-stop tour programs. Managers can optimize trips by adding adjacent client visits to save travel overhead.
             </p>
             <Button size="sm" onClick={() => setIsCreateTripOpen(true)}>
@@ -1400,21 +1400,21 @@ export default function VisitsPage() {
           </div>
 
           {trips.length === 0 ? (
-            <div className="p-8 text-center text-xs text-[#5871A5] bg-white border border-[#D6E3F5] rounded-xl">
+            <div className="p-8 text-center text-xs text-[#4A5568] bg-white border border-[#DCD8CE] rounded-xl">
               No tour programs planned yet. Create one to organize multi-stop customer visits.
             </div>
           ) : (
             trips.map((t) => (
-              <div key={t.id} className="p-5 bg-white border border-[#D6E3F5] rounded-xl shadow-xs space-y-4">
+              <div key={t.id} className="p-5 bg-white border border-[#DCD8CE] rounded-xl shadow-xs space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-3">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <Badge variant="info" size="sm">TRIP</Badge>
-                      <span className="text-base font-bold text-[#1A1A1A]">
+                      <span className="text-base font-bold text-[#14213D]">
                         {t.base_location} Tour
                       </span>
                     </div>
-                    <div className="flex items-center gap-3 text-xs text-[#5871A5]">
+                    <div className="flex items-center gap-3 text-xs text-[#4A5568]">
                       <span className="flex items-center gap-1">
                         <Calendar className="h-3.5 w-3.5" />
                         {new Date(t.trip_date).toLocaleDateString('en-IN', {
@@ -1460,7 +1460,7 @@ export default function VisitsPage() {
 
                 {/* Tree Structure of Visits */}
                 <div className="space-y-2">
-                  <span className="text-[11px] font-bold text-[#5871A5] uppercase tracking-wider block">
+                  <span className="text-[11px] font-bold text-[#4A5568] uppercase tracking-wider block">
                     Planned Stop Itinerary ({t.visits?.length || 0} visits)
                   </span>
 
@@ -1473,19 +1473,19 @@ export default function VisitsPage() {
                         className="flex items-center justify-between p-3 rounded-lg bg-gray-50 border border-gray-200 text-xs"
                       >
                         <div className="flex items-center gap-3">
-                          <span className="h-6 w-6 rounded-full bg-[#223FA7] text-white flex items-center justify-center font-bold text-[10px]">
+                          <span className="h-6 w-6 rounded-full bg-[#0F5E63] text-white flex items-center justify-center font-bold text-[10px]">
                             {idx + 1}
                           </span>
                           <div>
                             <div className="flex items-center gap-2">
-                              <span className="font-bold text-[#1A1A1A]">{tv.organisation_name}</span>
+                              <span className="font-bold text-[#14213D]">{tv.organisation_name}</span>
                               {tv.manager_assigned && (
                                 <Badge variant="warning" size="sm" className="text-[9px] py-0">
                                   MANAGER DIRECTIVE
                                 </Badge>
                               )}
                             </div>
-                            <div className="text-[11px] text-[#5871A5] flex items-center gap-2 mt-0.5">
+                            <div className="text-[11px] text-[#4A5568] flex items-center gap-2 mt-0.5">
                               <span>{tv.location}</span>
                               <span>•</span>
                               <span>{tv.start_time ? `${tv.start_time} - ${tv.end_time || ''}` : 'Slot TBD'}</span>
@@ -1518,7 +1518,7 @@ export default function VisitsPage() {
       {/* TAB CONTENT: CUSTOMER TIMELINE */}
       {activeTab === 'customer_history' && (
         <div className="space-y-4">
-          <div className="flex items-center gap-3 bg-white p-4 rounded-xl border border-[#D6E3F5] shadow-xs">
+          <div className="flex items-center gap-3 bg-white p-4 rounded-xl border border-[#DCD8CE] shadow-xs">
             <span className="text-xs font-bold text-gray-700 shrink-0">Select Customer / Agency:</span>
             <Select
               value={selectedOrgId}
@@ -1530,14 +1530,14 @@ export default function VisitsPage() {
 
           <div className="space-y-3">
             {selectedOrgHistory.length === 0 ? (
-              <div className="p-8 text-center text-xs text-[#5871A5] bg-white border border-[#D6E3F5] rounded-xl">
+              <div className="p-8 text-center text-xs text-[#4A5568] bg-white border border-[#DCD8CE] rounded-xl">
                 No past field visits or interactions recorded for this customer.
               </div>
             ) : (
               selectedOrgHistory.map((item) => (
                 <div
                   key={item.id}
-                  className="p-4 bg-white border border-[#D6E3F5] rounded-xl shadow-xs space-y-2"
+                  className="p-4 bg-white border border-[#DCD8CE] rounded-xl shadow-xs space-y-2"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -1555,19 +1555,19 @@ export default function VisitsPage() {
 
                   <div className="text-xs text-gray-700 grid grid-cols-1 sm:grid-cols-3 gap-2 bg-gray-50 p-2.5 rounded-lg">
                     <div>
-                      <span className="font-semibold text-[#5871A5]">Officer Met:</span> {item.person_met || 'N/A'}
+                      <span className="font-semibold text-[#4A5568]">Officer Met:</span> {item.person_met || 'N/A'}
                     </div>
                     <div>
-                      <span className="font-semibold text-[#5871A5]">Field Staff:</span> {item.employee_name || 'Staff'}
+                      <span className="font-semibold text-[#4A5568]">Field Staff:</span> {item.employee_name || 'Staff'}
                     </div>
                     <div>
-                      <span className="font-semibold text-[#5871A5]">Outcome:</span> {item.post_visit_outcome || item.expected_outcome || 'N/A'}
+                      <span className="font-semibold text-[#4A5568]">Outcome:</span> {item.post_visit_outcome || item.expected_outcome || 'N/A'}
                     </div>
                   </div>
 
                   {item.discussion && (
                     <p className="text-xs text-gray-700 pt-1">
-                      <span className="font-bold text-[#5871A5]">Discussion Notes:</span> {item.discussion}
+                      <span className="font-bold text-[#4A5568]">Discussion Notes:</span> {item.discussion}
                     </p>
                   )}
 
@@ -1588,27 +1588,27 @@ export default function VisitsPage() {
       {/* TAB CONTENT: EMPLOYEE ACTIVITY DOSSIER */}
       {activeTab === 'employee_activity' && (
         <div className="space-y-4">
-          <div className="p-4 bg-white border border-[#D6E3F5] rounded-xl shadow-xs">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-[#223FA7]">Field Performance & Activity Log</h3>
+          <div className="p-4 bg-white border border-[#DCD8CE] rounded-xl shadow-xs">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#0F5E63]">Field Performance & Activity Log</h3>
             <p className="text-xs text-gray-500 mt-0.5">Chronological record of verified customer engagements and milestone follow-ups.</p>
           </div>
 
           <div className="space-y-3">
             {employeeActivities.length === 0 ? (
-              <div className="p-8 text-center text-xs text-[#5871A5] bg-white border border-[#D6E3F5] rounded-xl">
+              <div className="p-8 text-center text-xs text-[#4A5568] bg-white border border-[#DCD8CE] rounded-xl">
                 No activity records logged yet. Completing field visits will automatically populate this dossier.
               </div>
             ) : (
               employeeActivities.map((act) => (
-                <div key={act.id} className="p-4 bg-white border border-[#D6E3F5] rounded-xl shadow-xs space-y-2">
+                <div key={act.id} className="p-4 bg-white border border-[#DCD8CE] rounded-xl shadow-xs space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-sm text-[#1A1A1A]">{act.title}</span>
+                    <span className="font-bold text-sm text-[#14213D]">{act.title}</span>
                     <Badge variant={act.status === 'completed' ? 'success' : 'default'} size="sm">
                       {act.status?.toUpperCase()}
                     </Badge>
                   </div>
 
-                  <div className="text-xs text-[#5871A5] flex items-center gap-3">
+                  <div className="text-xs text-[#4A5568] flex items-center gap-3">
                     <span className="flex items-center gap-1">
                       <Calendar className="h-3.5 w-3.5" />
                       {new Date(act.activity_date).toLocaleDateString('en-IN')}
@@ -1656,8 +1656,8 @@ export default function VisitsPage() {
           </div>
 
           {/* Section 1: Customer Agency & Location */}
-          <div className="space-y-3 p-3.5 bg-gray-50/70 rounded-xl border border-[#D6E3F5]">
-            <span className="text-[11px] font-bold text-[#223FA7] uppercase tracking-wider block">
+          <div className="space-y-3 p-3.5 bg-gray-50/70 rounded-xl border border-[#DCD8CE]">
+            <span className="text-[11px] font-bold text-[#0F5E63] uppercase tracking-wider block">
               1. Customer Agency & Location
             </span>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -1706,14 +1706,14 @@ export default function VisitsPage() {
           </div>
 
           {/* Section 2: Date & Purpose */}
-          <div className="space-y-3 p-3.5 bg-gray-50/70 rounded-xl border border-[#D6E3F5]">
-            <span className="text-[11px] font-bold text-[#223FA7] uppercase tracking-wider block">
+          <div className="space-y-3 p-3.5 bg-gray-50/70 rounded-xl border border-[#DCD8CE]">
+            <span className="text-[11px] font-bold text-[#0F5E63] uppercase tracking-wider block">
               2. Date, Time & Meeting Purpose
             </span>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="text-xs font-semibold text-[#1A1A1A]">Planned Date <span className="text-red-500">*</span></label>
+                  <label className="text-xs font-semibold text-[#14213D]">Planned Date <span className="text-red-500">*</span></label>
                   <button
                     type="button"
                     onClick={() => {
@@ -1721,7 +1721,7 @@ export default function VisitsPage() {
                       d.setDate(d.getDate() + 7);
                       setNewVisit({ ...newVisit, planned_date: d.toISOString().split('T')[0] });
                     }}
-                    className="text-[10px] text-[#223FA7] hover:underline font-bold"
+                    className="text-[10px] text-[#0F5E63] hover:underline font-bold"
                   >
                     +7 Days (1-Wk Cycle)
                   </button>
@@ -1731,7 +1731,7 @@ export default function VisitsPage() {
                   required
                   value={newVisit.planned_date}
                   onChange={(e) => setNewVisit({ ...newVisit, planned_date: e.target.value })}
-                  className="flex h-9 w-full rounded-lg border border-[#D6E3F5] bg-white px-3 py-1 text-xs text-[#1A1A1A] transition-colors focus:border-[#3770E3] focus:outline-none focus:ring-2 focus:ring-[#3770E3]/15"
+                  className="flex h-9 w-full rounded-lg border border-[#DCD8CE] bg-white px-3 py-1 text-xs text-[#14213D] transition-colors focus:border-[#3770E3] focus:outline-none focus:ring-2 focus:ring-[#3770E3]/15"
                 />
               </div>
 
@@ -1760,8 +1760,8 @@ export default function VisitsPage() {
           </div>
 
           {/* Section 3: Product Focus & Expected Outcome */}
-          <div className="space-y-3 p-3.5 bg-gray-50/70 rounded-xl border border-[#D6E3F5]">
-            <span className="text-[11px] font-bold text-[#223FA7] uppercase tracking-wider block">
+          <div className="space-y-3 p-3.5 bg-gray-50/70 rounded-xl border border-[#DCD8CE]">
+            <span className="text-[11px] font-bold text-[#0F5E63] uppercase tracking-wider block">
               3. Product Focus & Strategic Outcome
             </span>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -1785,11 +1785,11 @@ export default function VisitsPage() {
           </div>
 
           {/* Section 4: Travel, Demo Requirements & Remarks */}
-          <div className="space-y-3 p-3.5 bg-gray-50/70 rounded-xl border border-[#D6E3F5]">
-            <span className="text-[11px] font-bold text-[#223FA7] uppercase tracking-wider block">
+          <div className="space-y-3 p-3.5 bg-gray-50/70 rounded-xl border border-[#DCD8CE]">
+            <span className="text-[11px] font-bold text-[#0F5E63] uppercase tracking-wider block">
               4. Travel, Demo & Remarks
             </span>
-            <div className="flex flex-wrap items-center gap-6 p-3 bg-white rounded-lg border border-[#D6E3F5] text-xs font-semibold text-gray-700">
+            <div className="flex flex-wrap items-center gap-6 p-3 bg-white rounded-lg border border-[#DCD8CE] text-xs font-semibold text-gray-700">
               <Checkbox
                 checked={newVisit.travel_required}
                 onChange={(e) => setNewVisit({ ...newVisit, travel_required: e.target.checked })}
@@ -1804,7 +1804,7 @@ export default function VisitsPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-[#1A1A1A] mb-1.5">
+              <label className="block text-xs font-semibold text-[#14213D] mb-1.5">
                 Remarks & Operational Notes
               </label>
               <textarea
@@ -1812,7 +1812,7 @@ export default function VisitsPage() {
                 onChange={(e) => setNewVisit({ ...newVisit, remarks: e.target.value })}
                 placeholder="e.g. Officer requested technical compliance sheets; gate pass required for vehicle."
                 rows={2}
-                className="flex w-full rounded-lg border border-[#D6E3F5] bg-white px-3.5 py-2 text-xs font-normal text-[#1A1A1A] placeholder:text-gray-400 transition-colors focus:border-[#3770E3] focus:outline-none focus:ring-2 focus:ring-[#3770E3]/15"
+                className="flex w-full rounded-lg border border-[#DCD8CE] bg-white px-3.5 py-2 text-xs font-normal text-[#14213D] placeholder:text-gray-400 transition-colors focus:border-[#3770E3] focus:outline-none focus:ring-2 focus:ring-[#3770E3]/15"
               />
             </div>
 
@@ -2015,7 +2015,7 @@ export default function VisitsPage() {
           {/* Current Target Context */}
           {selectedVisit && (
             <div className="p-3 rounded-lg bg-blue-50/70 border border-blue-200 text-xs space-y-1">
-              <div className="font-bold text-[#223FA7] flex items-center justify-between">
+              <div className="font-bold text-[#0F5E63] flex items-center justify-between">
                 <span>Active Field Visit Target</span>
                 <span className="font-mono text-gray-500">Visit #{selectedVisit.id.slice(0, 8)}</span>
               </div>
@@ -2040,16 +2040,16 @@ export default function VisitsPage() {
               value={alsoMeetData.instructions}
               onChange={(e) => setAlsoMeetData({ ...alsoMeetData, instructions: e.target.value })}
               placeholder="e.g. While visiting Delhi Police HQ, also meet SP Provisioning in same complex regarding pending GeM tender."
-              className="w-full text-xs p-2.5 rounded-lg border border-[#D6E3F5] focus:ring-1 focus:ring-[#3770E3] focus:border-[#3770E3]"
+              className="w-full text-xs p-2.5 rounded-lg border border-[#DCD8CE] focus:ring-1 focus:ring-[#3770E3] focus:border-[#3770E3]"
             />
           </div>
 
           {/* Piggyback Itinerary Addition */}
-          <div className="p-3.5 bg-gray-50/80 rounded-xl border border-[#D6E3F5] space-y-3">
+          <div className="p-3.5 bg-gray-50/80 rounded-xl border border-[#DCD8CE] space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Route className="h-4 w-4 text-[#223FA7]" />
-                <span className="text-xs font-bold text-[#1A1A1A]">
+                <Route className="h-4 w-4 text-[#0F5E63]" />
+                <span className="text-xs font-bold text-[#14213D]">
                   Piggyback Another Meeting in Same Area (Trip Plan Itinerary)
                 </span>
               </div>
@@ -2193,7 +2193,7 @@ export default function VisitsPage() {
               value={rescheduleData.reason}
               onChange={(e) => setRescheduleData({ ...rescheduleData, reason: e.target.value })}
               placeholder="e.g. Customer requested postponement due to VIP convoy duty."
-              className="w-full text-xs p-2.5 rounded-lg border border-[#D6E3F5] focus:ring-1 focus:ring-[#3770E3] focus:border-[#3770E3]"
+              className="w-full text-xs p-2.5 rounded-lg border border-[#DCD8CE] focus:ring-1 focus:ring-[#3770E3] focus:border-[#3770E3]"
             />
           </div>
 
@@ -2235,7 +2235,7 @@ export default function VisitsPage() {
               value={cancelReason}
               onChange={(e) => setCancelReason(e.target.value)}
               placeholder="e.g. Field trial cancelled by Ministry due to weather."
-              className="w-full text-xs p-2.5 rounded-lg border border-[#D6E3F5] focus:ring-1 focus:ring-[#3770E3] focus:border-[#3770E3]"
+              className="w-full text-xs p-2.5 rounded-lg border border-[#DCD8CE] focus:ring-1 focus:ring-[#3770E3] focus:border-[#3770E3]"
             />
           </div>
 
@@ -2285,7 +2285,7 @@ export default function VisitsPage() {
               value={newDestination.reason}
               onChange={(e) => setNewDestination({ ...newDestination, reason: e.target.value })}
               placeholder="e.g. Demonstrations moved to outdoor proving range by DIG technical."
-              className="w-full text-xs p-2.5 rounded-lg border border-[#D6E3F5] focus:ring-1 focus:ring-[#3770E3] focus:border-[#3770E3]"
+              className="w-full text-xs p-2.5 rounded-lg border border-[#DCD8CE] focus:ring-1 focus:ring-[#3770E3] focus:border-[#3770E3]"
             />
           </div>
 
@@ -2372,7 +2372,7 @@ export default function VisitsPage() {
                   value={reportData.discussion}
                   onChange={(e) => setReportData({ ...reportData, discussion: e.target.value })}
                   placeholder="Points discussed, customer reactions, technical clarifications requested..."
-                  className="w-full text-xs p-2.5 rounded-lg border border-[#D6E3F5] focus:ring-1 focus:ring-[#3770E3] focus:border-[#3770E3]"
+                  className="w-full text-xs p-2.5 rounded-lg border border-[#DCD8CE] focus:ring-1 focus:ring-[#3770E3] focus:border-[#3770E3]"
                 />
               </div>
 
@@ -2435,7 +2435,7 @@ export default function VisitsPage() {
                   value={reportData.remarks}
                   onChange={(e) => setReportData({ ...reportData, remarks: e.target.value })}
                   placeholder="Additional field intelligence, competitive products observed, technical feedback..."
-                  className="w-full text-xs p-2.5 rounded-lg border border-[#D6E3F5] focus:ring-1 focus:ring-[#3770E3] focus:border-[#3770E3]"
+                  className="w-full text-xs p-2.5 rounded-lg border border-[#DCD8CE] focus:ring-1 focus:ring-[#3770E3] focus:border-[#3770E3]"
                 />
               </div>
             </>
@@ -2450,7 +2450,7 @@ export default function VisitsPage() {
                 value={reportData.remarks}
                 onChange={(e) => setReportData({ ...reportData, remarks: e.target.value })}
                 placeholder="e.g. Officer was summoned urgently for VIP convoy movement."
-                className="w-full text-xs p-2.5 rounded-lg border border-[#D6E3F5] focus:ring-1 focus:ring-[#3770E3] focus:border-[#3770E3]"
+                className="w-full text-xs p-2.5 rounded-lg border border-[#DCD8CE] focus:ring-1 focus:ring-[#3770E3] focus:border-[#3770E3]"
               />
             </div>
           )}
@@ -2483,7 +2483,7 @@ export default function VisitsPage() {
             auditLogs.map((log) => (
               <div key={log.id} className="p-3 bg-gray-50 border border-gray-200 rounded-lg text-xs space-y-1">
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-[#223FA7]">{log.action}</span>
+                  <span className="font-bold text-[#0F5E63]">{log.action}</span>
                   <span className="text-[10px] text-gray-500">
                     {new Date(log.created_at).toLocaleString('en-IN')}
                   </span>

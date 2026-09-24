@@ -60,18 +60,18 @@ export const Modal: React.FC<ModalProps> = ({
       {/* Light Executive Modal Container */}
       <div
         className={twMerge(
-          'relative w-full rounded-xl bg-white border border-[#D6E3F5] shadow-2xl overflow-hidden z-10 animate-in zoom-in-95 duration-150 text-[#1A1A1A]',
+          'relative w-full rounded-[14px] bg-white border border-[#DCD8CE] shadow-2xl overflow-hidden z-10 animate-in zoom-in-95 duration-150 text-[#14213D]',
           maxWidths[maxWidth],
         )}
       >
         {/* Dialog Header */}
-        <div className="px-5 py-4 border-b border-[#F0F5FC] bg-white flex items-center justify-between shrink-0">
+        <div className="px-5 py-4 border-b border-[#ECE9E2] bg-[#FBFAF7] flex items-center justify-between shrink-0">
           <div>
-            <h3 className="text-[15px] font-extrabold text-[#1A1A1A] tracking-tight">
+            <h3 className="font-serif text-[16px] font-bold text-[#14213D] tracking-tight">
               {title}
             </h3>
             {description && (
-              <p className="text-xs text-[#5871A5] font-normal mt-0.5 leading-relaxed">
+              <p className="text-xs text-[#4A5568] font-normal mt-0.5 leading-relaxed">
                 {description}
               </p>
             )}

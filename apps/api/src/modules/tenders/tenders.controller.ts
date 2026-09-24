@@ -7,6 +7,7 @@ import {
   Body,
   Query,
   UseGuards,
+  BadRequestException,
 } from '@nestjs/common';
 import { TendersService } from './tenders.service.js';
 import {
@@ -78,6 +79,12 @@ export class TendersController {
     return this.tendersService.getSalespersonReport(user);
   }
 
+  @Get('reports/by-organisation')
+  @Roles('management', 'regional_manager', 'admin')
+  async getOrganisationReport(@CurrentUser() user: AuthUser) {
+    return this.tendersService.getOrganisationReport(user);
+  }
+
   @Get('categories')
   @Roles('management', 'regional_manager', 'sales', 'tender_team', 'admin')
   async getCategories() {
@@ -88,6 +95,18 @@ export class TendersController {
   @Roles('management', 'regional_manager', 'sales', 'tender_team', 'admin')
   async getAllPortalIssues(@CurrentUser() user: AuthUser) {
     return this.tendersService.getAllPortalIssues(user);
+  }
+
+  @Post('portal-issues')
+  @Roles('management', 'regional_manager', 'sales', 'tender_team', 'admin')
+  async createGlobalPortalIssue(
+    @Body() dto: CreateTenderPortalIssueDto,
+    @CurrentUser() user: AuthUser,
+  ) {
+    if (!dto.tender_id) {
+      throw new BadRequestException('tender_id is required to record a portal issue');
+    }
+    return this.tendersService.createPortalIssue(dto.tender_id, dto, user);
   }
 
   @Get(':id')

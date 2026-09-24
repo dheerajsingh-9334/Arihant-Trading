@@ -5,7 +5,7 @@ export const Table = React.forwardRef<
   HTMLTableElement,
   React.HTMLAttributes<HTMLTableElement>
 >(({ className, ...props }, ref) => (
-  <div className="relative w-full overflow-x-auto overflow-y-visible rounded-xl border border-[#D6E3F5] bg-white shadow-xs custom-scrollbar">
+  <div className="relative w-full overflow-x-auto overflow-y-visible rounded-[14px] border border-[#DCD8CE] bg-white shadow-2xs custom-scrollbar">
     <table
       ref={ref}
       className={twMerge('w-full caption-bottom text-xs text-left', className)}
@@ -22,7 +22,7 @@ export const TableHeader = React.forwardRef<
   <thead
     ref={ref}
     className={twMerge(
-      'bg-[#F7FBFF] border-b border-[#D6E3F5] text-[11px] font-semibold text-[#5871A5] uppercase tracking-wider sticky top-0 z-10',
+      'bg-[#FBFAF7] border-b border-[#DCD8CE] text-[11px] font-semibold text-[#4A5568] uppercase tracking-wider sticky top-0 z-10',
       className,
     )}
     {...props}
@@ -36,7 +36,7 @@ export const TableBody = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <tbody
     ref={ref}
-    className={twMerge('divide-y divide-[#D6E3F5]/60 bg-white', className)}
+    className={twMerge('divide-y divide-[#ECE9E2] bg-white', className)}
     {...props}
   />
 ));
@@ -49,7 +49,7 @@ export const TableRow = React.forwardRef<
   <tr
     ref={ref}
     className={twMerge(
-      'transition-colors hover:bg-[#F7FBFF] data-[state=selected]:bg-[#EAF2FF]',
+      'transition-colors hover:bg-[#FBFAF7] data-[state=selected]:bg-[#E3EFEE] data-[selected=true]:bg-[#E3EFEE]',
       className,
     )}
     {...props}
@@ -63,7 +63,7 @@ export const TableHead = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <th
     ref={ref}
-    className={twMerge('h-10 px-4 text-left align-middle font-semibold text-[#5871A5]', className)}
+    className={twMerge('h-10 px-4 text-left align-middle font-semibold text-[#4A5568]', className)}
     {...props}
   />
 ));
@@ -75,7 +75,7 @@ export const TableCell = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <td
     ref={ref}
-    className={twMerge('p-3.5 align-middle text-[#1A1A1A] text-xs', className)}
+    className={twMerge('p-3.5 align-middle text-[#14213D] text-xs', className)}
     {...props}
   />
 ));

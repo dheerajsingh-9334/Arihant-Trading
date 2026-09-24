@@ -4,27 +4,37 @@ This document establishes the architecture, code rules, UI design system convent
 
 ---
 
-## 1. UI Design System & Component Library
+## 1. UI Design System & Component Library (Client UI-Kit Aligned)
 
 ### Core Aesthetic Principles
-- **Strictly Light Executive Aesthetic**: Canvas background is `#F7FBFF`, card surfaces are `#FFFFFF`, borders are `#D6E3F5`.
-- **Absolute Ban on Dark/Black Themes**: Dark mode, black backgrounds (`bg-slate-900`, `bg-gray-900`, `bg-black`, `border-slate-800`), or dark cards are strictly prohibited anywhere across the application.
+- **Client Design System Aesthetic**: Canvas background is warm linen `#F6F5F1`, card surfaces are `#FFFFFF` (subtle `#FBFAF7`), borders are `#DCD8CE` (dividers `#ECE9E2`).
+- **Brand & Accent Palette**:
+  - Primary: Deep Teal `#0F5E63` (hover `#0B4A4E`, soft `#E3EFEE`, text `#FFFFFF`).
+  - Accent / Urgent / Live: Terracotta `#9A3412` (strong `#7C2D12`, soft `#FBEBDD`, bright `#F2B872` on dark panels).
+  - Navigation / Hero Dark Panels: Dark Navy `#14213D`, role card `#1F2E52`.
+- **Typography Standard**:
+  - Display & Page Headings: `'Source Serif 4'`, serif font for titles and card headers.
+  - Body & Form Controls: `'IBM Plex Sans'`, sans font for UI controls, inputs, and labels.
+  - Codes, Monospace, Currency, Deadlines, Timers: `'IBM Plex Mono'`, monospace font for IDs, currency amounts, timers, and badges.
 - **Component-Driven Standard**: Never implement custom buttons, raw unstandardized cards, or ad-hoc div wrappers when a standardized design system component exists. Always import UI primitives from `@/components/ui`.
 
 ### Design Tokens & Variables
 
 | Category | Token | Value | Tailwind Class | Notes |
 | :--- | :--- | :--- | :--- | :--- |
-| **Canvas** | Background | `#F7FBFF` | `bg-[#F7FBFF]` | Global page background |
+| **Canvas** | Background | `#F6F5F1` | `bg-[#F6F5F1]` | Global page background (warm linen) |
 | **Surface** | Card / Panel | `#FFFFFF` | `bg-white` | Primary content card surface |
-| **Surface** | Subtle Alt | `#F8FAFC` | `bg-slate-50` / `bg-gray-50/70` | Secondary wells, headers, strips |
-| **Border** | Base Border | `#D6E3F5` | `border-[#D6E3F5]` | All cards, dividers, input borders |
-| **Border** | Border Hover | `#9FC0F5` | `hover:border-[#9FC0F5]` | Interactive cards, inputs |
-| **Brand** | Primary Blue | `#223FA7` | `text-[#223FA7]`, `bg-[#223FA7]` | Buttons, active tabs, primary accents |
-| **Brand** | Secondary Blue | `#EAF2FF` | `bg-[#EAF2FF]` | Soft button backgrounds, badge tints |
-| **Text** | Primary Text | `#1A1A1A` | `text-[#1A1A1A]` | Titles, headings, main content |
-| **Text** | Muted / Secondary | `#5871A5` | `text-[#5871A5]` | Subtitles, helper text, labels |
-| **Radius** | Standard Card | `12px` | `rounded-xl` | Standard for all cards, containers |
+| **Surface** | Subtle Alt | `#FBFAF7` | `bg-[#FBFAF7]` | Secondary wells, headers, table strips |
+| **Border** | Base Line | `#DCD8CE` | `border-[#DCD8CE]` | All cards, outer borders |
+| **Border** | Divider Line | `#ECE9E2` | `border-[#ECE9E2]` | Interior dividers, table row lines |
+| **Border** | Control Line | `#C9C4B8` | `border-[#C9C4B8]` | Form inputs, select dropdowns |
+| **Brand** | Primary Teal | `#0F5E63` | `text-[#0F5E63]`, `bg-[#0F5E63]` | Primary buttons, active tabs, main accents |
+| **Brand** | Secondary Teal | `#E3EFEE` | `bg-[#E3EFEE]` | Soft button backgrounds, badge tints |
+| **Accent** | Terracotta | `#9A3412` | `text-[#9A3412]`, `bg-[#9A3412]` | Urgent deadlines, live auction chips |
+| **Dark Panel** | Dark Navy | `#14213D` | `bg-[#14213D]`, `text-[#14213D]` | Sidebar navigation, `.card--dark` monitor |
+| **Text** | Primary Ink | `#14213D` | `text-[#14213D]` | Titles, headings, main content |
+| **Text** | Muted / Secondary | `#4A5568` | `text-[#4A5568]` | Subtitles, helper text, labels |
+| **Radius** | Standard Card | `14px` | `rounded-[14px]` | Standard for all cards, containers |
 | **Radius** | Small Controls | `8px` | `rounded-lg` | Buttons, inputs, chips |
 | **Radius** | Badges / Pills | Full | `rounded-full` | Status badges, avatar circles |
 
@@ -34,29 +44,29 @@ This document establishes the architecture, code rules, UI design system convent
 
 #### 1. Layout & Structure (`@/components/ui/Layout`, `PageContainer`)
 - **`PageContainer`**: Standard page layout wrapper (`space-y-6 pb-12 animate-in fade-in duration-200`). Supports `maxWidth` ('default' | 'narrow' | 'wide' | 'full').
-- **`PageHeader`**: Top hero banner with title, description, module badge, icon, and action button slots.
+- **`PageHeader`**: Top hero banner with serif title, description, module badge, icon, and action button slots.
 - **`SectionHeader`**: Subheading divider for logical page divisions, supporting actions and right-aligned badges.
 - **`Container`**: Horizontal centered container with responsive paddings and `maxWidth` options.
 - **`Stack` / `VStack` / `HStack`**: Flex layout wrappers with standardized `gap` presets (`none`, `xs`, `sm`, `md`, `lg`, `xl`, `2xl`), alignment, and direction.
-- **`Grid`**: CSS grid container with standardized column presets (`1` through `6`, responsive) and gap controls.
+- **`Grid`**: CSS grid container with standardized column presets (`1` through `8`, responsive) and gap controls.
 - **`Spacer`**: Semantic spacing block (`size="xs" | "sm" | "md" | "lg" | "xl" | "2xl"`).
-- **`Divider`**: Semantic horizontal or vertical separator (`border-[#D6E3F5]`) with optional centered label.
+- **`Divider`**: Semantic horizontal or vertical separator (`border-[#ECE9E2]`) with optional centered label.
 
 #### 2. Surfaces & Cards (`@/components/ui/Card`, `Surface`)
-- **`Card`**: Standard surface with border `#D6E3F5`, rounded corners `rounded-xl`, interactive hover states, selection states, and variant tints (`default`, `flat`, `tinted`, `interactive`, `danger`, `warning`, `success`).
+- **`Card`**: Standard surface with border `#DCD8CE`, rounded corners `rounded-[14px]`, interactive hover states, selection states, and variant tints (`default`, `flat`, `tinted`, `interactive`, `dark` `#14213D`, `danger`, `warning`, `success`).
   - Subcomponents: `CardHeader`, `CardTitle`, `CardDescription`, `CardContent`, `CardFooter`, `CardAction`.
 - **`Surface`**: Universal container box with standard background (`canvas`, `card`, `subtle`, `primary`, `danger`, etc.), border, and radius tokens.
 - **`Box`**: Lightweight polymorphic element with spacing, padding, and layout props.
 
 #### 3. Typography (`@/components/ui/Typography`)
-- **`Heading`**: Standard headings `h1` through `h6` with strict light executive colors (`text-[#1A1A1A]`) and sizing scales.
-- **`Text`**: Body text supporting sizes (`xs`, `sm`, `base`, `lg`), weights, and colors (`default`, `muted` `#5871A5`, `primary` `#223FA7`, `success`, `danger`, `warning`).
+- **`Heading`**: Standard headings `h1` through `h6` in `'Source Serif 4'` (`font-serif`) with strict client ink color (`text-[#14213D]`) and sizing scales.
+- **`Text`**: Body text in `'IBM Plex Sans'` supporting sizes (`xs`, `sm`, `base`, `lg`), weights, and colors (`default`, `muted` `#4A5568`, `primary` `#0F5E63`, `success`, `danger`, `warning`).
 - **`Label`**: Form field label with optional `required` asterisk indicator.
-- **`Kbd`**: Keyboard shortcut pill badge (`border-[#D6E3F5]`, `bg-[#F8FAFC]`).
+- **`Kbd`**: Keyboard shortcut pill badge (`border-[#DCD8CE]`, `bg-[#FBFAF7]`, `font-mono`).
 
 #### 4. Buttons & Actions (`@/components/ui/Button`)
 - **`Button`**: Primary interactive element.
-  - Variants: `primary` (`#223FA7`), `secondary` (`#EAF2FF`), `outline`, `ghost`, `danger`, `success`, `cyber`.
+  - Variants: `primary` (`#0F5E63`), `secondary` (`#FFFFFF` with `#C9C4B8` border), `outline`, `ghost`, `danger`, `success`, `cyber`, `on-dark`.
   - Sizes: `xs`, `sm`, `md`, `lg`, `icon`.
   - Props: `isLoading`, `leftIcon`, `rightIcon`, `fullWidth`, `disabled`.
 - **`IconButton`**: Standardized square or circular icon action button with hover effects and tooltip label accessibility.

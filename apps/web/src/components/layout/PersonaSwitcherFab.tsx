@@ -6,7 +6,6 @@ import { ROLE_PROFILES, type UserRole } from '@arihant/shared';
 import {
   Shield,
   ShieldCheck,
-  MapPin,
   CheckCircle2,
   UserCheck,
   X,
@@ -105,26 +104,26 @@ export const PersonaSwitcherFab: React.FC = () => {
       {/* Floating Modal / Panel */}
       {isOpen && (
         <div
-          className="mb-3 w-[360px] sm:w-[440px] max-h-[85vh] flex flex-col rounded-2xl bg-white border border-[#D6E3F5] shadow-2xl p-4 text-xs text-[#1A1A1A] animate-in fade-in slide-in-from-bottom-3 duration-200"
+          className="mb-3 w-[360px] sm:w-[440px] max-h-[85vh] flex flex-col rounded-[14px] bg-white border border-[#DCD8CE] shadow-2xl p-4 text-xs text-[#14213D] animate-in fade-in slide-in-from-bottom-3 duration-200"
           style={{
             boxShadow:
-              '0 20px 45px -10px rgba(34, 63, 167, 0.18), 0 0 0 1px rgba(214, 227, 245, 0.9)',
+              '0 20px 45px -10px rgba(15, 94, 99, 0.18), 0 0 0 1px rgba(220, 216, 206, 0.9)',
           }}
         >
           {/* Header */}
-          <div className="flex items-center justify-between pb-3 border-b border-[#D6E3F5] shrink-0">
+          <div className="flex items-center justify-between pb-3 border-b border-[#ECE9E2] shrink-0">
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-[#EAF2FF] border border-[#D6E3F5] flex items-center justify-center text-[#223FA7]">
+              <div className="w-7 h-7 rounded-[8px] bg-[#E3EFEE] border border-[#0F5E63]/30 flex items-center justify-center text-[#0F5E63]">
                 <ShieldCheck className="w-4 h-4" />
               </div>
               <div>
-                <div className="text-xs font-bold text-[#1A1A1A] flex items-center gap-1.5">
-                  <span>Fast Role Access</span>
-                  <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-[#EAF2FF] text-[#223FA7] border border-[#D6E3F5]">
-                    8 Roles
+                <div className="text-xs font-bold text-[#14213D] flex items-center gap-1.5">
+                  <span className="font-serif">Fast Role Access</span>
+                  <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-[#E3EFEE] text-[#0F5E63] border border-[#0F5E63]/30">
+                    8 Clearances
                   </span>
                 </div>
-                <div className="text-[10px] text-[#5871A5]">
+                <div className="text-[10px] text-[#4A5568]">
                   {user ? '1-Click Persona Switcher' : '1-Click Role Sign-In'}
                 </div>
               </div>
@@ -132,7 +131,7 @@ export const PersonaSwitcherFab: React.FC = () => {
 
             <button
               onClick={() => setIsOpen(false)}
-              className="p-1 rounded-lg hover:bg-slate-100 text-[#5871A5] hover:text-[#1A1A1A] transition-colors"
+              className="p-1 rounded-[6px] hover:bg-slate-100 text-[#4A5568] hover:text-[#14213D] transition-colors"
               aria-label="Close"
             >
               <X className="w-4 h-4" />
@@ -141,32 +140,30 @@ export const PersonaSwitcherFab: React.FC = () => {
 
           {/* Error Notice */}
           {error && (
-            <div className="mt-2.5 p-2 rounded-lg bg-red-50 border border-red-200 text-[11px] text-red-700 flex items-center gap-2 shrink-0">
-              <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
+            <div className="mt-2.5 p-2 rounded-[8px] bg-[#FCE8EC] border border-red-200 text-[11px] text-[#881337] flex items-center gap-2 shrink-0">
+              <AlertCircle className="w-4 h-4 shrink-0 text-[#881337]" />
               <span className="truncate">{error}</span>
             </div>
           )}
 
           {/* Current Active User Banner (if authenticated) */}
           {user && activePreset && (
-            <div className="mt-3 p-2.5 rounded-xl bg-[#F7FBFF] border border-[#D6E3F5] shrink-0 space-y-2">
+            <div className="mt-3 p-2.5 rounded-[10px] bg-[#FBFAF7] border border-[#DCD8CE] shrink-0 space-y-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 min-w-0">
-                  <div className="w-7 h-7 rounded-full bg-[#223FA7] text-white flex items-center justify-center font-bold text-[11px] shrink-0">
+                  <div className="w-7 h-7 rounded-full bg-[#0F5E63] text-white flex items-center justify-center font-bold text-[11px] shrink-0">
                     {activePreset.name.charAt(0)}
                   </div>
                   <div className="min-w-0">
-                    <div className="font-bold text-[#1A1A1A] text-xs truncate flex items-center gap-1.5">
+                    <div className="font-bold text-[#14213D] text-xs truncate flex items-center gap-1.5">
                       <span>{user.full_name}</span>
                       <span
-                        className={`text-[9px] font-extrabold px-1.5 py-0.2 rounded border uppercase tracking-wider ${
-                          activePreset.color || 'bg-[#EAF2FF] text-[#223FA7] border-[#D6E3F5]'
-                        }`}
+                        className="text-[9px] font-extrabold px-1.5 py-0.2 rounded border uppercase tracking-wider bg-[#E3EFEE] text-[#0F5E63] border-[#0F5E63]/30"
                       >
                         {ROLE_SHORT_LABELS[user.role] || user.role}
                       </span>
                     </div>
-                    <div className="text-[10px] text-[#5871A5] truncate">
+                    <div className="text-[10px] text-[#4A5568] truncate">
                       {activePreset.title} &bull; {activePreset.zone}
                     </div>
                   </div>
@@ -178,7 +175,7 @@ export const PersonaSwitcherFab: React.FC = () => {
                     logout();
                   }}
                   title="Sign Out"
-                  className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-semibold text-gray-600 hover:text-red-700 hover:bg-red-50 border border-[#D6E3F5] transition-colors shrink-0"
+                  className="flex items-center gap-1 px-2 py-1 rounded-[6px] text-[10px] font-semibold text-gray-600 hover:text-[#881337] hover:bg-[#FCE8EC] border border-[#DCD8CE] transition-colors shrink-0"
                 >
                   <LogOut className="w-3 h-3" />
                   <span>Sign Out</span>
@@ -187,7 +184,7 @@ export const PersonaSwitcherFab: React.FC = () => {
 
               {/* Scope Summary Quote */}
               {activeProfile && (
-                <div className="text-[10px] text-gray-700 bg-white border border-[#D6E3F5] rounded-lg px-2 py-1 leading-snug italic truncate">
+                <div className="text-[10px] text-gray-700 bg-white border border-[#DCD8CE] rounded-[6px] px-2 py-1 leading-snug italic truncate">
                   &ldquo;{activeProfile.scopeSummary}&rdquo;
                 </div>
               )}
@@ -196,11 +193,11 @@ export const PersonaSwitcherFab: React.FC = () => {
 
           {/* Section Header */}
           <div className="mt-3 mb-1.5 flex items-center justify-between px-0.5 shrink-0">
-            <span className="text-[10px] font-bold text-[#5871A5] uppercase tracking-wider flex items-center gap-1">
-              <UserCheck className="w-3 h-3 text-[#223FA7]" />
+            <span className="text-[10px] font-bold text-[#4A5568] uppercase tracking-wider flex items-center gap-1">
+              <UserCheck className="w-3 h-3 text-[#0F5E63]" />
               Select Profile to Authenticate
             </span>
-            <span className="text-[10px] text-[#5871A5]">
+            <span className="text-[10px] text-[#4A5568]">
               Instant &bull; No password entry
             </span>
           </div>
@@ -218,18 +215,18 @@ export const PersonaSwitcherFab: React.FC = () => {
                   key={roleKey}
                   onClick={() => handleRoleSelect(roleKey)}
                   disabled={switchingRole !== null}
-                  className={`w-full text-left p-2 rounded-xl border transition-all flex items-center justify-between group cursor-pointer ${
+                  className={`w-full text-left p-2 rounded-[8px] border transition-all flex items-center justify-between group cursor-pointer ${
                     isCurrent
-                      ? 'bg-[#EAF2FF] border-[#223FA7] shadow-xs'
-                      : 'bg-white hover:bg-[#F7FBFF] border-[#D6E3F5] hover:border-[#9FC0F5]'
+                      ? 'bg-[#E3EFEE] border-[#0F5E63] shadow-xs'
+                      : 'bg-white hover:bg-[#FBFAF7] border-[#DCD8CE] hover:border-[#0F5E63]'
                   } ${switchingRole !== null && !isSwitchingThis ? 'opacity-50' : ''}`}
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
                     <div
-                      className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-[10px] shrink-0 transition-transform group-hover:scale-105 ${
+                      className={`w-7 h-7 rounded-[6px] flex items-center justify-center font-bold text-[10px] shrink-0 transition-transform group-hover:scale-105 ${
                         isCurrent
-                          ? 'bg-[#223FA7] text-white'
-                          : 'bg-[#F7FBFF] text-[#223FA7] border border-[#D6E3F5]'
+                          ? 'bg-[#0F5E63] text-white'
+                          : 'bg-[#FBFAF7] text-[#0F5E63] border border-[#DCD8CE]'
                       }`}
                     >
                       {isSwitchingThis ? (
@@ -241,37 +238,35 @@ export const PersonaSwitcherFab: React.FC = () => {
 
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5">
-                        <span className="font-bold text-xs text-[#1A1A1A] truncate">
+                        <span className="font-bold text-xs text-[#14213D] truncate">
                           {info.name}
                         </span>
                         <span
-                          className={`text-[9px] font-extrabold px-1.5 py-0.2 rounded border uppercase tracking-wider shrink-0 ${
-                            info.color
-                          }`}
+                          className="text-[9px] font-extrabold px-1.5 py-0.2 rounded border uppercase tracking-wider shrink-0 bg-[#FBFAF7] text-[#4A5568] border-[#DCD8CE]"
                         >
                           {shortLabel}
                         </span>
                       </div>
-                      <div className="text-[10px] text-[#5871A5] truncate">
+                      <div className="text-[10px] text-[#4A5568] truncate">
                         {info.title} &bull;{' '}
-                        <span className="font-medium text-[#223FA7]">{info.zone}</span>
+                        <span className="font-medium text-[#0F5E63]">{info.zone}</span>
                       </div>
                     </div>
                   </div>
 
                   <div className="shrink-0 ml-2">
                     {isSwitchingThis ? (
-                      <span className="text-[10px] text-[#223FA7] font-semibold flex items-center gap-1">
+                      <span className="text-[10px] text-[#0F5E63] font-semibold flex items-center gap-1">
                         <Loader2 className="w-3 h-3 animate-spin" />
                         <span>Signing In...</span>
                       </span>
                     ) : isCurrent ? (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#223FA7] bg-white px-2 py-0.5 rounded-full border border-[#D6E3F5]">
-                        <CheckCircle2 className="w-3 h-3 text-[#223FA7]" />
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#0F5E63] bg-white px-2 py-0.5 rounded-full border border-[#DCD8CE]">
+                        <CheckCircle2 className="w-3 h-3 text-[#0F5E63]" />
                         <span>Active</span>
                       </span>
                     ) : (
-                      <span className="text-[10px] font-semibold text-[#5871A5] group-hover:text-[#223FA7] group-hover:translate-x-0.5 transition-all">
+                      <span className="text-[10px] font-semibold text-[#4A5568] group-hover:text-[#0F5E63] group-hover:translate-x-0.5 transition-all">
                         Sign In &rarr;
                       </span>
                     )}
@@ -282,7 +277,7 @@ export const PersonaSwitcherFab: React.FC = () => {
           </div>
 
           {/* Footer Note */}
-          <div className="mt-3 pt-2 border-t border-[#D6E3F5] text-center text-[10px] text-[#5871A5] shrink-0 font-medium">
+          <div className="mt-3 pt-2 border-t border-[#ECE9E2] text-center text-[10px] text-[#4A5568] shrink-0 font-medium">
             Arihant BOS &bull; Seamless RBAC Persona Switcher
           </div>
         </div>
@@ -293,11 +288,11 @@ export const PersonaSwitcherFab: React.FC = () => {
         onClick={() => setIsOpen(!isOpen)}
         aria-expanded={isOpen}
         title="Quick Role Sign-In & Persona Clearance Switcher"
-        className="flex items-center gap-2.5 px-3.5 py-2 rounded-full bg-white/95 backdrop-blur-md border border-[#D6E3F5] shadow-lg hover:shadow-xl hover:border-[#223FA7]/50 transition-all duration-200 group text-left cursor-pointer active:scale-98"
-        style={{ boxShadow: '0 8px 24px -6px rgba(34, 63, 167, 0.18)' }}
+        className="flex items-center gap-2.5 px-3.5 py-2 rounded-full bg-white/95 backdrop-blur-md border border-[#DCD8CE] shadow-lg hover:shadow-xl hover:border-[#0F5E63]/50 transition-all duration-200 group text-left cursor-pointer active:scale-98"
+        style={{ boxShadow: '0 8px 24px -6px rgba(15, 94, 99, 0.18)' }}
       >
         <div className="relative shrink-0">
-          <div className="w-7 h-7 rounded-full bg-[#223FA7] text-white flex items-center justify-center font-bold text-xs shadow-xs group-hover:scale-105 transition-transform">
+          <div className="w-7 h-7 rounded-full bg-[#0F5E63] text-white flex items-center justify-center font-bold text-xs shadow-xs group-hover:scale-105 transition-transform">
             <Shield className="w-3.5 h-3.5" />
           </div>
           <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white animate-pulse" />
@@ -307,40 +302,38 @@ export const PersonaSwitcherFab: React.FC = () => {
           {user ? (
             <>
               <div className="flex items-center gap-1.5">
-                <span className="text-[9px] font-bold text-[#5871A5] uppercase tracking-wider leading-none">
+                <span className="text-[9px] font-bold text-[#4A5568] uppercase tracking-wider leading-none">
                   Role
                 </span>
                 <span
-                  className={`text-[9px] font-extrabold px-1.5 py-0.2 rounded border leading-none ${
-                    activePreset?.color || 'bg-[#EAF2FF] text-[#223FA7] border-[#D6E3F5]'
-                  }`}
+                  className="text-[9px] font-extrabold px-1.5 py-0.2 rounded border leading-none bg-[#E3EFEE] text-[#0F5E63] border-[#0F5E63]/30"
                 >
                   {ROLE_SHORT_LABELS[user.role] || user.role.toUpperCase().replace('_', ' ')}
                 </span>
               </div>
-              <span className="text-xs font-bold text-[#1A1A1A] truncate max-w-[140px] mt-0.5 leading-tight">
+              <span className="text-xs font-bold text-[#14213D] truncate max-w-[140px] mt-0.5 leading-tight">
                 {activePreset?.name || user.full_name}
               </span>
             </>
           ) : (
             <>
               <div className="flex items-center gap-1">
-                <Sparkles className="w-2.5 h-2.5 text-[#223FA7]" />
-                <span className="text-[9px] font-extrabold text-[#223FA7] uppercase tracking-wider leading-none">
+                <Sparkles className="w-2.5 h-2.5 text-[#0F5E63]" />
+                <span className="text-[9px] font-extrabold text-[#0F5E63] uppercase tracking-wider leading-none">
                   Role Sign-In
                 </span>
               </div>
-              <span className="text-xs font-bold text-[#1A1A1A] mt-0.5 leading-tight">
+              <span className="text-xs font-bold text-[#14213D] mt-0.5 leading-tight">
                 8 Demo Profiles
               </span>
             </>
           )}
         </div>
 
-        <div className="pl-1 border-l border-[#D6E3F5]/60 text-[#5871A5] group-hover:text-[#223FA7] transition-colors">
+        <div className="pl-1 border-l border-[#DCD8CE]/60 text-[#4A5568] group-hover:text-[#0F5E63] transition-colors">
           <ChevronUp
             className={`w-4 h-4 transition-transform duration-200 ${
-              isOpen ? 'rotate-180 text-[#223FA7]' : ''
+              isOpen ? 'rotate-180 text-[#0F5E63]' : ''
             }`}
           />
         </div>

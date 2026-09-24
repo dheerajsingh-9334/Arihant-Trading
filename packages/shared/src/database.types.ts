@@ -502,6 +502,12 @@ export interface TenderOutcomesTable {
   competitor: string | null;
   value_lakh: number | null;
   result_date: string | null;
+  technical_issue: string | null;
+  pricing_issue: string | null;
+  eligibility_issue: string | null;
+  documentation_issue: string | null;
+  other_reason: string | null;
+  notes: string | null;
   created_at: Generated<Date>;
 }
 

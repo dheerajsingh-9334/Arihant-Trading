@@ -899,7 +899,7 @@ export default function LeadsPage() {
       <PageHeader
         title="Lead & Customer Management"
         description="Enterprise sales pipeline, customer account directory, proactive follow-up schedule, and 360° interaction timeline."
-        icon={<Target className="h-7 w-7 text-[#223FA7]" />}
+        icon={<Target className="h-7 w-7 text-[#0F5E63]" />}
         actions={
           <div className="flex items-center gap-2">
             <Button
@@ -938,7 +938,7 @@ export default function LeadsPage() {
           value={leadStats?.active_leads ?? '—'}
           subtext={`Total Leads: ${leadStats?.total_leads ?? 0}`}
           variant="primary"
-          icon={<Compass className="h-4 w-4 text-[#223FA7]" />}
+          icon={<Compass className="h-4 w-4 text-[#0F5E63]" />}
         />
         <StatCard
           label="Fresh Prospects"
@@ -971,7 +971,7 @@ export default function LeadsPage() {
       </div>
 
       {/* 3. Primary Workspace Tabs */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#D6E3F5] pb-2">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#DCD8CE] pb-2">
         <Tabs
           variant="segmented"
           activeTab={activeTab}
@@ -991,23 +991,23 @@ export default function LeadsPage() {
       {activeTab === 'leads' && (
         <div className="space-y-4">
           {/* Filters Strip */}
-          <div className="p-3 bg-white border border-[#D6E3F5] rounded-xl shadow-2xs flex flex-wrap items-center justify-between gap-3">
+          <div className="p-3 bg-white border border-[#DCD8CE] rounded-xl shadow-2xs flex flex-wrap items-center justify-between gap-3">
             <div className="flex flex-wrap items-center gap-2.5 flex-1 min-w-[280px]">
               <div className="relative w-full sm:w-64">
-                <Search className="absolute left-3 top-2.5 h-4 w-4 text-[#5871A5]" />
+                <Search className="absolute left-3 top-2.5 h-4 w-4 text-[#4A5568]" />
                 <input
                   type="text"
                   placeholder="Search lead, client, salesperson..."
                   value={leadFilters.search}
                   onChange={(e) => setLeadFilters({ ...leadFilters, search: e.target.value })}
-                  className="w-full pl-9 pr-3 py-1.5 text-xs bg-[#F7FBFF] border border-[#D6E3F5] rounded-lg text-[#1A1A1A] placeholder-[#5871A5] focus:outline-none focus:border-[#223FA7]"
+                  className="w-full pl-9 pr-3 py-1.5 text-xs bg-[#FBFAF7] border border-[#DCD8CE] rounded-lg text-[#14213D] placeholder-[#4A5568] focus:outline-none focus:border-[#0F5E63]"
                 />
               </div>
 
               <select
                 value={leadFilters.lead_status}
                 onChange={(e) => setLeadFilters({ ...leadFilters, lead_status: e.target.value })}
-                className="px-2.5 py-1.5 text-xs bg-[#F7FBFF] border border-[#D6E3F5] rounded-lg text-[#1A1A1A] focus:outline-none focus:border-[#223FA7]"
+                className="px-2.5 py-1.5 text-xs bg-[#FBFAF7] border border-[#DCD8CE] rounded-lg text-[#14213D] focus:outline-none focus:border-[#0F5E63]"
               >
                 <option value="">All Lifecycle Stages</option>
                 <option value="new">New</option>
@@ -1026,7 +1026,7 @@ export default function LeadsPage() {
               <select
                 value={leadFilters.lead_type}
                 onChange={(e) => setLeadFilters({ ...leadFilters, lead_type: e.target.value })}
-                className="px-2.5 py-1.5 text-xs bg-[#F7FBFF] border border-[#D6E3F5] rounded-lg text-[#1A1A1A] focus:outline-none focus:border-[#223FA7]"
+                className="px-2.5 py-1.5 text-xs bg-[#FBFAF7] border border-[#DCD8CE] rounded-lg text-[#14213D] focus:outline-none focus:border-[#0F5E63]"
               >
                 <option value="">All Lead Types</option>
                 <option value="fresh">Fresh Accounts</option>
@@ -1036,7 +1036,7 @@ export default function LeadsPage() {
               <select
                 value={leadFilters.lead_source}
                 onChange={(e) => setLeadFilters({ ...leadFilters, lead_source: e.target.value })}
-                className="px-2.5 py-1.5 text-xs bg-[#F7FBFF] border border-[#D6E3F5] rounded-lg text-[#1A1A1A] focus:outline-none focus:border-[#223FA7]"
+                className="px-2.5 py-1.5 text-xs bg-[#FBFAF7] border border-[#DCD8CE] rounded-lg text-[#14213D] focus:outline-none focus:border-[#0F5E63]"
               >
                 <option value="">All Sources</option>
                 <option value="field_visit">Field Visit</option>
@@ -1048,14 +1048,14 @@ export default function LeadsPage() {
               </select>
             </div>
 
-            <div className="text-xs text-[#5871A5] font-medium">
+            <div className="text-xs text-[#4A5568] font-medium">
               Showing {leads.length} of {leadsTotal} opportunities
             </div>
           </div>
 
           {/* Leads Table */}
           {leadsLoading ? (
-            <div className="p-12 text-center text-xs text-[#5871A5] bg-white border border-[#D6E3F5] rounded-xl">
+            <div className="p-12 text-center text-xs text-[#4A5568] bg-white border border-[#DCD8CE] rounded-xl">
               Loading pipeline opportunities...
             </div>
           ) : leads.length === 0 ? (
@@ -1096,20 +1096,20 @@ export default function LeadsPage() {
                 {leads.map((lead) => (
                   <TableRow key={lead.id} className="group cursor-pointer" onClick={() => handleOpenLead(lead.id)}>
                     <TableCell>
-                      <div className="font-bold text-[#1A1A1A] group-hover:text-[#223FA7] transition-colors line-clamp-1">
+                      <div className="font-bold text-[#14213D] group-hover:text-[#0F5E63] transition-colors line-clamp-1">
                         {lead.product_name || lead.organisation_name || 'Procurement Opportunity'}
                       </div>
-                      <div className="text-[10px] text-[#5871A5]">
+                      <div className="text-[10px] text-[#4A5568]">
                         <span className="font-mono">#{lead.id.slice(0, 8)}</span> • Source: {lead.source || 'Direct'}
                       </div>
                     </TableCell>
 
                     <TableCell>
-                      <div className="font-semibold text-[#1A1A1A] flex items-center gap-1.5">
-                        <Building className="h-3.5 w-3.5 text-[#5871A5] shrink-0" />
+                      <div className="font-semibold text-[#14213D] flex items-center gap-1.5">
+                        <Building className="h-3.5 w-3.5 text-[#4A5568] shrink-0" />
                         <span className="truncate">{lead.organisation_name || '—'}</span>
                       </div>
-                      <div className="text-[10px] text-[#5871A5] flex items-center gap-1">
+                      <div className="text-[10px] text-[#4A5568] flex items-center gap-1">
                         <span>{lead.sector || 'Defence / Security'}</span>
                         {(lead.city || lead.state) && (
                           <span>• {lead.city ? `${lead.city}, ` : ''}{lead.state || ''}</span>
@@ -1120,16 +1120,16 @@ export default function LeadsPage() {
                     <TableCell>
                       {lead.contact_name ? (
                         <div>
-                          <div className="font-medium text-[#1A1A1A] flex items-center gap-1">
-                            <User className="h-3 w-3 text-[#5871A5]" />
+                          <div className="font-medium text-[#14213D] flex items-center gap-1">
+                            <User className="h-3 w-3 text-[#4A5568]" />
                             <span>{lead.contact_name}</span>
                           </div>
-                          <div className="text-[10px] text-[#5871A5]">
+                          <div className="text-[10px] text-[#4A5568]">
                             {lead.contact_designation || lead.contact_mobile || lead.contact_phone || '—'}
                           </div>
                         </div>
                       ) : (
-                        <span className="text-[#5871A5] italic text-[11px]">Unspecified</span>
+                        <span className="text-[#4A5568] italic text-[11px]">Unspecified</span>
                       )}
                     </TableCell>
 
@@ -1150,7 +1150,7 @@ export default function LeadsPage() {
                         {lead.assignee_name || lead.assigned_salesperson_name || 'Unassigned'}
                       </div>
                       {lead.regional_manager_name && (
-                        <div className="text-[10px] text-[#5871A5]">
+                        <div className="text-[10px] text-[#4A5568]">
                           RM: {lead.regional_manager_name}
                         </div>
                       )}
@@ -1162,19 +1162,19 @@ export default function LeadsPage() {
                           {lead.product_interests.slice(0, 2).map((p: any) => (
                             <span
                               key={p.id}
-                              className="px-1.5 py-0.5 rounded bg-[#EAF2FF] text-[#223FA7] text-[10px] font-medium truncate"
+                              className="px-1.5 py-0.5 rounded bg-[#E3EFEE] text-[#0F5E63] text-[10px] font-medium truncate"
                             >
                               {p.name}
                             </span>
                           ))}
                           {lead.product_interests.length > 2 && (
-                            <span className="text-[10px] text-[#5871A5]">
+                            <span className="text-[10px] text-[#4A5568]">
                               +{lead.product_interests.length - 2}
                             </span>
                           )}
                         </div>
                       ) : (
-                        <span className="text-[#5871A5] italic text-[10px]">None tagged</span>
+                        <span className="text-[#4A5568] italic text-[10px]">None tagged</span>
                       )}
                     </TableCell>
 
@@ -1183,7 +1183,7 @@ export default function LeadsPage() {
                     </TableCell>
 
                     <TableCell>
-                      <span className="font-extrabold text-[#223FA7]">
+                      <span className="font-extrabold text-[#0F5E63]">
                         {formatLakh(lead.value_lakh || lead.estimated_value_lakh || 0)}
                       </span>
                     </TableCell>
@@ -1191,13 +1191,13 @@ export default function LeadsPage() {
                     <TableCell>
                       {lead.next_followup_at || lead.next_followup_date ? (
                         <div className="flex items-center gap-1 text-[11px] font-mono text-gray-700">
-                          <Calendar className="h-3 w-3 text-[#5871A5]" />
+                          <Calendar className="h-3 w-3 text-[#4A5568]" />
                           <span>
                             {new Date(lead.next_followup_at || lead.next_followup_date).toLocaleDateString('en-IN')}
                           </span>
                         </div>
                       ) : (
-                        <span className="text-[#5871A5] italic text-[10px]">None set</span>
+                        <span className="text-[#4A5568] italic text-[10px]">None set</span>
                       )}
                     </TableCell>
 
@@ -1238,7 +1238,7 @@ export default function LeadsPage() {
           {/* Pagination */}
           {leadsTotalPages > 1 && (
             <div className="flex items-center justify-between pt-2">
-              <span className="text-xs text-[#5871A5]">
+              <span className="text-xs text-[#4A5568]">
                 Page {leadsPage} of {leadsTotalPages}
               </span>
               <div className="flex items-center gap-2">
@@ -1269,24 +1269,24 @@ export default function LeadsPage() {
       {/* ========================================================================= */}
       {activeTab === 'customers' && (
         <div className="space-y-4">
-          <div className="p-3 bg-white border border-[#D6E3F5] rounded-xl shadow-2xs flex items-center justify-between gap-3">
+          <div className="p-3 bg-white border border-[#DCD8CE] rounded-xl shadow-2xs flex items-center justify-between gap-3">
             <div className="relative w-full sm:w-80">
-              <Search className="absolute left-3 top-2.5 h-4 w-4 text-[#5871A5]" />
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-[#4A5568]" />
               <input
                 type="text"
                 placeholder="Search organisations by name, city, sector..."
                 value={customerSearch}
                 onChange={(e) => setCustomerSearch(e.target.value)}
-                className="w-full pl-9 pr-3 py-1.5 text-xs bg-[#F7FBFF] border border-[#D6E3F5] rounded-lg text-[#1A1A1A] placeholder-[#5871A5] focus:outline-none focus:border-[#223FA7]"
+                className="w-full pl-9 pr-3 py-1.5 text-xs bg-[#FBFAF7] border border-[#DCD8CE] rounded-lg text-[#14213D] placeholder-[#4A5568] focus:outline-none focus:border-[#0F5E63]"
               />
             </div>
-            <div className="text-xs text-[#5871A5] font-medium">
+            <div className="text-xs text-[#4A5568] font-medium">
               Total {customersTotal} accounts in system
             </div>
           </div>
 
           {customersLoading ? (
-            <div className="p-12 text-center text-xs text-[#5871A5] bg-white border border-[#D6E3F5] rounded-xl">
+            <div className="p-12 text-center text-xs text-[#4A5568] bg-white border border-[#DCD8CE] rounded-xl">
               Loading customer accounts...
             </div>
           ) : customers.length === 0 ? (
@@ -1317,27 +1317,27 @@ export default function LeadsPage() {
                     onClick={() => handleOpenCustomer360(org.id)}
                   >
                     <TableCell>
-                      <div className="font-bold text-[#1A1A1A] group-hover:text-[#223FA7] transition-colors flex items-center gap-1.5">
-                        <Building className="h-4 w-4 text-[#223FA7] shrink-0" />
+                      <div className="font-bold text-[#14213D] group-hover:text-[#0F5E63] transition-colors flex items-center gap-1.5">
+                        <Building className="h-4 w-4 text-[#0F5E63] shrink-0" />
                         <span>{org.name}</span>
                       </div>
                       {org.department && (
-                        <div className="text-[10px] text-[#5871A5]">{org.department}</div>
+                        <div className="text-[10px] text-[#4A5568]">{org.department}</div>
                       )}
                     </TableCell>
 
                     <TableCell>
                       <div className="text-xs text-gray-800 flex items-center gap-1">
-                        <MapPin className="h-3 w-3 text-[#5871A5]" />
+                        <MapPin className="h-3 w-3 text-[#4A5568]" />
                         <span>{org.city || '—'}, {org.state || '—'}</span>
                       </div>
                       {org.zone_name && (
-                        <div className="text-[10px] text-[#5871A5]">{org.zone_name} Zone</div>
+                        <div className="text-[10px] text-[#4A5568]">{org.zone_name} Zone</div>
                       )}
                     </TableCell>
 
                     <TableCell>
-                      <span className="px-2 py-0.5 rounded bg-[#F8FAFC] border border-[#D6E3F5] text-[11px] font-medium text-gray-700">
+                      <span className="px-2 py-0.5 rounded bg-[#F8FAFC] border border-[#DCD8CE] text-[11px] font-medium text-gray-700">
                         {org.sector || 'Government / PSU'}
                       </span>
                     </TableCell>
@@ -1345,15 +1345,15 @@ export default function LeadsPage() {
                     <TableCell>
                       {org.primary_contact ? (
                         <div>
-                          <div className="font-medium text-[#1A1A1A]">
+                          <div className="font-medium text-[#14213D]">
                             {org.primary_contact.name}
                           </div>
-                          <div className="text-[10px] text-[#5871A5]">
+                          <div className="text-[10px] text-[#4A5568]">
                             {org.primary_contact.phone || org.primary_contact.email || org.primary_contact.designation || '—'}
                           </div>
                         </div>
                       ) : (
-                        <span className="text-[#5871A5] italic text-[11px]">No contact set</span>
+                        <span className="text-[#4A5568] italic text-[11px]">No contact set</span>
                       )}
                     </TableCell>
 
@@ -1365,7 +1365,7 @@ export default function LeadsPage() {
 
                     <TableCell>
                       {org.lead_status ? getStatusBadge(org.lead_status) : (
-                        <span className="text-[#5871A5] text-[10px] italic">No active lead</span>
+                        <span className="text-[#4A5568] text-[10px] italic">No active lead</span>
                       )}
                     </TableCell>
 
@@ -1375,7 +1375,7 @@ export default function LeadsPage() {
                           {new Date(org.last_interaction_at).toLocaleDateString('en-IN')}
                         </div>
                       ) : (
-                        <span className="text-[#5871A5] italic text-[10px]">No interactions</span>
+                        <span className="text-[#4A5568] italic text-[10px]">No interactions</span>
                       )}
                     </TableCell>
 
@@ -1400,7 +1400,7 @@ export default function LeadsPage() {
 
           {customersTotalPages > 1 && (
             <div className="flex items-center justify-between pt-2">
-              <span className="text-xs text-[#5871A5]">
+              <span className="text-xs text-[#4A5568]">
                 Page {customersPage} of {customersTotalPages}
               </span>
               <div className="flex items-center gap-2">
@@ -1431,7 +1431,7 @@ export default function LeadsPage() {
       {/* ========================================================================= */}
       {activeTab === 'followups' && (
         <div className="space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-white border border-[#D6E3F5] rounded-xl shadow-2xs">
+          <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-white border border-[#DCD8CE] rounded-xl shadow-2xs">
             <div className="flex items-center gap-1.5">
               {[
                 { id: 'all', label: 'All Follow-ups' },
@@ -1445,8 +1445,8 @@ export default function LeadsPage() {
                   onClick={() => setFollowupTimeframe(chip.id)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                     followupTimeframe === chip.id
-                      ? 'bg-[#223FA7] text-white shadow-xs'
-                      : 'bg-[#F7FBFF] text-[#5871A5] hover:bg-[#EAF2FF] hover:text-[#223FA7] border border-[#D6E3F5]'
+                      ? 'bg-[#0F5E63] text-white shadow-xs'
+                      : 'bg-[#FBFAF7] text-[#4A5568] hover:bg-[#E3EFEE] hover:text-[#0F5E63] border border-[#DCD8CE]'
                   }`}
                 >
                   {chip.label}
@@ -1454,13 +1454,13 @@ export default function LeadsPage() {
               ))}
             </div>
 
-            <span className="text-xs text-[#5871A5]">
+            <span className="text-xs text-[#4A5568]">
               Total {followups.length} follow-ups displayed
             </span>
           </div>
 
           {followupsLoading ? (
-            <div className="p-12 text-center text-xs text-[#5871A5] bg-white border border-[#D6E3F5] rounded-xl">
+            <div className="p-12 text-center text-xs text-[#4A5568] bg-white border border-[#DCD8CE] rounded-xl">
               Loading follow-ups desk...
             </div>
           ) : followups.length === 0 ? (
@@ -1495,8 +1495,8 @@ export default function LeadsPage() {
                     <TableRow key={fu.id}>
                       <TableCell>
                         <div className="flex items-center gap-1.5">
-                          <Clock className={`h-4 w-4 ${isOverdue ? 'text-red-600' : isToday ? 'text-amber-600' : 'text-[#223FA7]'}`} />
-                          <span className="font-mono font-bold text-xs text-[#1A1A1A]">
+                          <Clock className={`h-4 w-4 ${isOverdue ? 'text-red-600' : isToday ? 'text-amber-600' : 'text-[#0F5E63]'}`} />
+                          <span className="font-mono font-bold text-xs text-[#14213D]">
                             {new Date(fu.due_date).toLocaleDateString('en-IN')}
                           </span>
                         </div>
@@ -1513,11 +1513,11 @@ export default function LeadsPage() {
                       </TableCell>
 
                       <TableCell>
-                        <div className="font-bold text-[#1A1A1A] line-clamp-1">
+                        <div className="font-bold text-[#14213D] line-clamp-1">
                           {fu.organisation_name || 'Organisation'}
                         </div>
                         {fu.lead_title && (
-                          <div className="text-[10px] text-[#223FA7] font-medium line-clamp-1">
+                          <div className="text-[10px] text-[#0F5E63] font-medium line-clamp-1">
                             Deal: {fu.lead_title}
                           </div>
                         )}
@@ -1526,11 +1526,11 @@ export default function LeadsPage() {
                       <TableCell>
                         {fu.contact_name ? (
                           <div>
-                            <div className="font-medium text-[#1A1A1A]">{fu.contact_name}</div>
-                            <div className="text-[10px] text-[#5871A5]">{fu.contact_phone || '—'}</div>
+                            <div className="font-medium text-[#14213D]">{fu.contact_name}</div>
+                            <div className="text-[10px] text-[#4A5568]">{fu.contact_phone || '—'}</div>
                           </div>
                         ) : (
-                          <span className="text-[#5871A5] italic text-[11px]">—</span>
+                          <span className="text-[#4A5568] italic text-[11px]">—</span>
                         )}
                       </TableCell>
 
@@ -1608,7 +1608,7 @@ export default function LeadsPage() {
       {/* ========================================================================= */}
       {activeTab === 'reports' && (
         <div className="space-y-4">
-          <div className="flex items-center gap-2 p-1.5 bg-[#EEF5FF] border border-[#D6E3F5] rounded-xl w-fit">
+          <div className="flex items-center gap-2 p-1.5 bg-[#E3EFEE] border border-[#DCD8CE] rounded-xl w-fit">
             {[
               { id: 'salesperson', label: 'Salesperson Performance', icon: <Users className="h-3.5 w-3.5" /> },
               { id: 'zones', label: 'Territorial Zone Breakdown', icon: <Compass className="h-3.5 w-3.5" /> },
@@ -1620,8 +1620,8 @@ export default function LeadsPage() {
                 onClick={() => setReportSubTab(sub.id)}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                   reportSubTab === sub.id
-                    ? 'bg-white text-[#223FA7] shadow-xs border border-[#D6E3F5]'
-                    : 'text-[#5871A5] hover:text-[#1A1A1A]'
+                    ? 'bg-white text-[#0F5E63] shadow-xs border border-[#DCD8CE]'
+                    : 'text-[#4A5568] hover:text-[#14213D]'
                 }`}
               >
                 {sub.icon}
@@ -1654,13 +1654,13 @@ export default function LeadsPage() {
                   <TableBody>
                     {salespersonReport.map((sp) => (
                       <TableRow key={sp.salesperson_id}>
-                        <TableCell className="font-bold text-[#1A1A1A]">
+                        <TableCell className="font-bold text-[#14213D]">
                           {sp.salesperson_name}
                         </TableCell>
                         <TableCell className="font-semibold text-center">{sp.total_leads}</TableCell>
                         <TableCell className="text-center font-medium text-emerald-700">{sp.fresh_leads}</TableCell>
                         <TableCell className="text-center font-medium text-amber-700">{sp.reapproached_leads}</TableCell>
-                        <TableCell className="text-center font-bold text-[#223FA7]">{sp.active_leads}</TableCell>
+                        <TableCell className="text-center font-bold text-[#0F5E63]">{sp.active_leads}</TableCell>
                         <TableCell className="text-center font-extrabold text-emerald-700">{sp.converted_leads}</TableCell>
                         <TableCell className="text-center text-red-700 font-medium">{sp.lost_leads}</TableCell>
                         <TableCell className="text-center font-mono">{sp.pending_followups}</TableCell>
@@ -1670,7 +1670,7 @@ export default function LeadsPage() {
                               {sp.overdue_followups}
                             </span>
                           ) : (
-                            <span className="text-[#5871A5] font-mono">0</span>
+                            <span className="text-[#4A5568] font-mono">0</span>
                           )}
                         </TableCell>
                       </TableRow>
@@ -1703,9 +1703,9 @@ export default function LeadsPage() {
                   <TableBody>
                     {zoneReport.map((z, idx) => (
                       <TableRow key={idx}>
-                        <TableCell className="font-bold text-[#1A1A1A]">{z.zone_name}</TableCell>
+                        <TableCell className="font-bold text-[#14213D]">{z.zone_name}</TableCell>
                         <TableCell className="font-medium text-gray-700">{z.region_name}</TableCell>
-                        <TableCell className="text-center font-bold text-[#223FA7]">{z.total_leads}</TableCell>
+                        <TableCell className="text-center font-bold text-[#0F5E63]">{z.total_leads}</TableCell>
                         <TableCell className="text-center font-semibold text-emerald-700">{z.fresh_leads}</TableCell>
                         <TableCell className="text-center font-semibold text-amber-700">{z.reapproached_leads}</TableCell>
                         <TableCell className="text-center font-bold text-emerald-700">{z.converted_leads}</TableCell>
@@ -1738,11 +1738,11 @@ export default function LeadsPage() {
                   <TableBody>
                     {productReport.map((p) => (
                       <TableRow key={p.product_id}>
-                        <TableCell className="font-bold text-[#1A1A1A]">{p.product_name}</TableCell>
+                        <TableCell className="font-bold text-[#14213D]">{p.product_name}</TableCell>
                         <TableCell>
                           <Badge variant="outline" size="sm">{p.category?.toUpperCase() || 'DEFENCE'}</Badge>
                         </TableCell>
-                        <TableCell className="text-center font-bold text-[#223FA7]">{p.total_leads}</TableCell>
+                        <TableCell className="text-center font-bold text-[#0F5E63]">{p.total_leads}</TableCell>
                         <TableCell className="text-center font-semibold text-amber-700">{p.active_leads}</TableCell>
                         <TableCell className="text-center font-extrabold text-emerald-700">{p.converted_leads}</TableCell>
                       </TableRow>
@@ -1759,19 +1759,19 @@ export default function LeadsPage() {
               {interactionReport.map((ir, idx) => (
                 <div
                   key={idx}
-                  className="p-4 bg-white border border-[#D6E3F5] rounded-xl shadow-2xs hover:border-[#9FC0F5] transition-all flex flex-col justify-between"
+                  className="p-4 bg-white border border-[#DCD8CE] rounded-xl shadow-2xs hover:border-[#0F5E63] transition-all flex flex-col justify-between"
                 >
                   <div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#5871A5] block mb-1">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#4A5568] block mb-1">
                       Channel
                     </span>
                     <Badge variant="outline" size="sm" className="font-bold uppercase">
                       {ir.interaction_type}
                     </Badge>
                   </div>
-                  <div className="mt-4 pt-2 border-t border-[#D6E3F5] flex items-baseline justify-between">
-                    <span className="text-[10px] text-[#5871A5] font-semibold">Total Logged</span>
-                    <span className="text-xl font-extrabold text-[#223FA7]">
+                  <div className="mt-4 pt-2 border-t border-[#DCD8CE] flex items-baseline justify-between">
+                    <span className="text-[10px] text-[#4A5568] font-semibold">Total Logged</span>
+                    <span className="text-xl font-extrabold text-[#0F5E63]">
                       {ir.total_interactions}
                     </span>
                   </div>
@@ -1801,11 +1801,11 @@ export default function LeadsPage() {
           )}
 
           {/* 1. Organisation & Geography */}
-          <div className="p-4 rounded-xl bg-[#F7FBFF] border border-[#D6E3F5] space-y-3">
-            <div className="flex items-center justify-between border-b border-[#D6E3F5] pb-2">
+          <div className="p-4 rounded-xl bg-[#FBFAF7] border border-[#DCD8CE] space-y-3">
+            <div className="flex items-center justify-between border-b border-[#DCD8CE] pb-2">
               <div className="flex items-center gap-2">
-                <Building className="h-4 w-4 text-[#223FA7]" />
-                <span className="text-xs font-bold text-[#1A1A1A] uppercase tracking-wider">
+                <Building className="h-4 w-4 text-[#0F5E63]" />
+                <span className="text-xs font-bold text-[#14213D] uppercase tracking-wider">
                   1. Organisation & Jurisdiction
                 </span>
               </div>
@@ -1815,8 +1815,8 @@ export default function LeadsPage() {
                   onClick={() => setLeadForm({ ...leadForm, organisation_mode: 'new' })}
                   className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
                     leadForm.organisation_mode === 'new'
-                      ? 'bg-[#223FA7] text-white shadow-sm'
-                      : 'bg-white text-[#5871A5] border border-[#D6E3F5] hover:border-[#9FC0F5]'
+                      ? 'bg-[#0F5E63] text-white shadow-sm'
+                      : 'bg-white text-[#4A5568] border border-[#DCD8CE] hover:border-[#0F5E63]'
                   }`}
                 >
                   Create New Account
@@ -1826,8 +1826,8 @@ export default function LeadsPage() {
                   onClick={() => setLeadForm({ ...leadForm, organisation_mode: 'existing' })}
                   className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
                     leadForm.organisation_mode === 'existing'
-                      ? 'bg-[#223FA7] text-white shadow-sm'
-                      : 'bg-white text-[#5871A5] border border-[#D6E3F5] hover:border-[#9FC0F5]'
+                      ? 'bg-[#0F5E63] text-white shadow-sm'
+                      : 'bg-white text-[#4A5568] border border-[#DCD8CE] hover:border-[#0F5E63]'
                   }`}
                 >
                   Select Existing Account
@@ -1855,8 +1855,8 @@ export default function LeadsPage() {
 
                 {/* Duplicate Detection Alert Banner */}
                 {isCheckingDuplicate && (
-                  <div className="text-[11px] text-[#5871A5] italic flex items-center gap-1.5">
-                    <RefreshCw className="h-3 w-3 animate-spin text-[#223FA7]" />
+                  <div className="text-[11px] text-[#4A5568] italic flex items-center gap-1.5">
+                    <RefreshCw className="h-3 w-3 animate-spin text-[#0F5E63]" />
                     <span>Checking account database for duplicate records...</span>
                   </div>
                 )}
@@ -1876,8 +1876,8 @@ export default function LeadsPage() {
                           className="flex items-center justify-between p-2 rounded-lg bg-white border border-amber-200"
                         >
                           <div>
-                            <span className="font-bold text-[#1A1A1A] block">{m.name}</span>
-                            <span className="text-[10px] text-[#5871A5]">
+                            <span className="font-bold text-[#14213D] block">{m.name}</span>
+                            <span className="text-[10px] text-[#4A5568]">
                               {m.city || ''}, {m.state || ''} • Match: {m.matchReason}
                             </span>
                           </div>
@@ -1973,10 +1973,10 @@ export default function LeadsPage() {
           </div>
 
           {/* 2. Key Contact Person */}
-          <div className="p-4 rounded-xl bg-[#F7FBFF] border border-[#D6E3F5] space-y-3">
-            <div className="flex items-center gap-2 border-b border-[#D6E3F5] pb-2">
-              <User className="h-4 w-4 text-[#223FA7]" />
-              <span className="text-xs font-bold text-[#1A1A1A] uppercase tracking-wider">
+          <div className="p-4 rounded-xl bg-[#FBFAF7] border border-[#DCD8CE] space-y-3">
+            <div className="flex items-center gap-2 border-b border-[#DCD8CE] pb-2">
+              <User className="h-4 w-4 text-[#0F5E63]" />
+              <span className="text-xs font-bold text-[#14213D] uppercase tracking-wider">
                 2. Contact Person Details
               </span>
             </div>
@@ -2015,10 +2015,10 @@ export default function LeadsPage() {
           </div>
 
           {/* 3. Product Interest, Source & Lead Status */}
-          <div className="p-4 rounded-xl bg-[#F7FBFF] border border-[#D6E3F5] space-y-3">
-            <div className="flex items-center gap-2 border-b border-[#D6E3F5] pb-2">
-              <Target className="h-4 w-4 text-[#223FA7]" />
-              <span className="text-xs font-bold text-[#1A1A1A] uppercase tracking-wider">
+          <div className="p-4 rounded-xl bg-[#FBFAF7] border border-[#DCD8CE] space-y-3">
+            <div className="flex items-center gap-2 border-b border-[#DCD8CE] pb-2">
+              <Target className="h-4 w-4 text-[#0F5E63]" />
+              <span className="text-xs font-bold text-[#14213D] uppercase tracking-wider">
                 3. Product Interest, Source & Status
               </span>
             </div>
@@ -2058,7 +2058,7 @@ export default function LeadsPage() {
                 placeholder="e.g. 45.0"
               />
               <div className="sm:col-span-2 flex items-center pt-5">
-                <span className="text-[11px] text-[#5871A5] italic">
+                <span className="text-[11px] text-[#4A5568] italic">
                   💡 Arihant Lead Engine automatically dedupes against account history and tags Fresh vs Re-Approached pipeline cycle.
                 </span>
               </div>
@@ -2066,10 +2066,10 @@ export default function LeadsPage() {
           </div>
 
           {/* 4. Salesperson & Regional Manager */}
-          <div className="p-4 rounded-xl bg-[#F7FBFF] border border-[#D6E3F5] space-y-3">
-            <div className="flex items-center gap-2 border-b border-[#D6E3F5] pb-2">
-              <Users className="h-4 w-4 text-[#223FA7]" />
-              <span className="text-xs font-bold text-[#1A1A1A] uppercase tracking-wider">
+          <div className="p-4 rounded-xl bg-[#FBFAF7] border border-[#DCD8CE] space-y-3">
+            <div className="flex items-center gap-2 border-b border-[#DCD8CE] pb-2">
+              <Users className="h-4 w-4 text-[#0F5E63]" />
+              <span className="text-xs font-bold text-[#14213D] uppercase tracking-wider">
                 4. Ownership & Jurisdiction
               </span>
             </div>
@@ -2097,10 +2097,10 @@ export default function LeadsPage() {
           </div>
 
           {/* 5. Last Interaction, Next Follow-Up & Remarks */}
-          <div className="p-4 rounded-xl bg-[#F7FBFF] border border-[#D6E3F5] space-y-3">
-            <div className="flex items-center gap-2 border-b border-[#D6E3F5] pb-2">
-              <Clock className="h-4 w-4 text-[#223FA7]" />
-              <span className="text-xs font-bold text-[#1A1A1A] uppercase tracking-wider">
+          <div className="p-4 rounded-xl bg-[#FBFAF7] border border-[#DCD8CE] space-y-3">
+            <div className="flex items-center gap-2 border-b border-[#DCD8CE] pb-2">
+              <Clock className="h-4 w-4 text-[#0F5E63]" />
+              <span className="text-xs font-bold text-[#14213D] uppercase tracking-wider">
                 5. Interactions, Follow-Up & Remarks
               </span>
             </div>
@@ -2134,8 +2134,8 @@ export default function LeadsPage() {
             />
           </div>
 
-          <div className="flex items-center justify-between pt-3 border-t border-[#D6E3F5]">
-            <span className="text-[11px] text-[#5871A5]">
+          <div className="flex items-center justify-between pt-3 border-t border-[#DCD8CE]">
+            <span className="text-[11px] text-[#4A5568]">
               * Required fields. All 18 parameters will be synced into the live pipeline.
             </span>
             <div className="flex items-center gap-2">
@@ -2163,13 +2163,13 @@ export default function LeadsPage() {
         {selectedLead && (
           <div className="space-y-6 text-xs">
             {/* Meta Row */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 rounded-xl bg-[#F7FBFF] border border-[#D6E3F5]">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 rounded-xl bg-[#FBFAF7] border border-[#DCD8CE]">
               <div>
-                <span className="text-[10px] uppercase text-[#5871A5] font-bold block">Current Stage</span>
+                <span className="text-[10px] uppercase text-[#4A5568] font-bold block">Current Stage</span>
                 <div className="mt-1">{getStatusBadge(selectedLead.lead_status || selectedLead.status)}</div>
               </div>
               <div>
-                <span className="text-[10px] uppercase text-[#5871A5] font-bold block">Classification</span>
+                <span className="text-[10px] uppercase text-[#4A5568] font-bold block">Classification</span>
                 <div className="mt-1">
                   {selectedLead.lead_type === 're_approached' ? (
                     <Badge variant="warning" size="sm">RE-APPROACHED</Badge>
@@ -2179,13 +2179,13 @@ export default function LeadsPage() {
                 </div>
               </div>
               <div>
-                <span className="text-[10px] uppercase text-[#5871A5] font-bold block">Estimated Deal</span>
-                <span className="font-extrabold text-[#223FA7] mt-1 block text-sm">
+                <span className="text-[10px] uppercase text-[#4A5568] font-bold block">Estimated Deal</span>
+                <span className="font-extrabold text-[#0F5E63] mt-1 block text-sm">
                   {formatLakh(selectedLead.value_lakh || selectedLead.estimated_value_lakh || 0)}
                 </span>
               </div>
               <div>
-                <span className="text-[10px] uppercase text-[#5871A5] font-bold block">Current Sales Owner</span>
+                <span className="text-[10px] uppercase text-[#4A5568] font-bold block">Current Sales Owner</span>
                 <span className="font-bold text-gray-800 mt-1 block">
                   {selectedLead.assigned_salesperson_name || 'Unassigned'}
                 </span>
@@ -2193,13 +2193,13 @@ export default function LeadsPage() {
             </div>
 
             {/* Allowed Lifecycle Transitions Stepper */}
-            <div className="p-4 rounded-xl bg-white border border-[#D6E3F5] space-y-3">
+            <div className="p-4 rounded-xl bg-white border border-[#DCD8CE] space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-[#1A1A1A] uppercase tracking-wider flex items-center gap-1.5">
-                  <ArrowRight className="h-4 w-4 text-[#223FA7]" />
+                <span className="text-xs font-bold text-[#14213D] uppercase tracking-wider flex items-center gap-1.5">
+                  <ArrowRight className="h-4 w-4 text-[#0F5E63]" />
                   <span>Lifecycle Stage Transitions</span>
                 </span>
-                <span className="text-[10px] text-[#5871A5]">
+                <span className="text-[10px] text-[#4A5568]">
                   Validated by LeadWorkflowService state machine
                 </span>
               </div>
@@ -2221,17 +2221,17 @@ export default function LeadsPage() {
                   ))}
                 </div>
               ) : (
-                <div className="text-[11px] text-[#5871A5] italic">
+                <div className="text-[11px] text-[#4A5568] italic">
                   This lead is in terminal stage ({selectedLead.lead_status?.toUpperCase()}). No further transitions allowed.
                 </div>
               )}
             </div>
 
             {/* Product Interests Section */}
-            <div className="p-4 rounded-xl bg-[#F7FBFF] border border-[#D6E3F5] space-y-3">
+            <div className="p-4 rounded-xl bg-[#FBFAF7] border border-[#DCD8CE] space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-[#1A1A1A] uppercase tracking-wider flex items-center gap-1.5">
-                  <Briefcase className="h-4 w-4 text-[#223FA7]" />
+                <span className="text-xs font-bold text-[#14213D] uppercase tracking-wider flex items-center gap-1.5">
+                  <Briefcase className="h-4 w-4 text-[#0F5E63]" />
                   <span>Product Interests</span>
                 </span>
                 {productsList.length > 0 && (
@@ -2240,7 +2240,7 @@ export default function LeadsPage() {
                       if (e.target.value) handleAddProductInterest(e.target.value);
                       e.target.value = '';
                     }}
-                    className="px-2 py-1 text-[11px] bg-white border border-[#D6E3F5] rounded-lg text-[#1A1A1A]"
+                    className="px-2 py-1 text-[11px] bg-white border border-[#DCD8CE] rounded-lg text-[#14213D]"
                   >
                     <option value="">+ Add Product Interest</option>
                     {productsList.map((p) => (
@@ -2255,7 +2255,7 @@ export default function LeadsPage() {
                   {selectedLead.product_interests.map((p: any) => (
                     <span
                       key={p.id}
-                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white border border-[#D6E3F5] text-xs font-medium text-[#1A1A1A]"
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white border border-[#DCD8CE] text-xs font-medium text-[#14213D]"
                     >
                       <span>{p.name}</span>
                       <button
@@ -2269,20 +2269,20 @@ export default function LeadsPage() {
                   ))}
                 </div>
               ) : (
-                <span className="text-[11px] text-[#5871A5] italic">No products attached yet.</span>
+                <span className="text-[11px] text-[#4A5568] italic">No products attached yet.</span>
               )}
             </div>
 
             {/* Salesperson Assignment History Audit */}
-            <div className="p-4 rounded-xl bg-white border border-[#D6E3F5] space-y-3">
+            <div className="p-4 rounded-xl bg-white border border-[#DCD8CE] space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-[#1A1A1A] uppercase tracking-wider flex items-center gap-1.5">
-                  <ShieldCheck className="h-4 w-4 text-[#223FA7]" />
+                <span className="text-xs font-bold text-[#14213D] uppercase tracking-wider flex items-center gap-1.5">
+                  <ShieldCheck className="h-4 w-4 text-[#0F5E63]" />
                   <span>Salesperson Ownership Audit History</span>
                 </span>
                 <div className="flex items-center gap-2">
                   {!canReassign && (
-                    <span className="text-[10px] font-medium text-[#5871A5] bg-[#EAF2FF] px-2 py-0.5 rounded-full border border-[#D6E3F5]">
+                    <span className="text-[10px] font-medium text-[#4A5568] bg-[#E3EFEE] px-2 py-0.5 rounded-full border border-[#DCD8CE]">
                       Managerial Action
                     </span>
                   )}
@@ -2306,31 +2306,31 @@ export default function LeadsPage() {
                   {selectedLead.assignment_history.map((h: any) => (
                     <div
                       key={h.id}
-                      className="p-2.5 rounded-lg bg-[#F8FAFC] border border-[#D6E3F5] flex items-center justify-between text-[11px]"
+                      className="p-2.5 rounded-lg bg-[#F8FAFC] border border-[#DCD8CE] flex items-center justify-between text-[11px]"
                     >
                       <div>
-                        <span className="font-semibold text-[#1A1A1A]">
+                        <span className="font-semibold text-[#14213D]">
                           {h.previous_salesperson_name || 'Unassigned'} → {h.new_salesperson_name}
                         </span>
                         {h.reason && (
-                          <span className="text-[#5871A5] block mt-0.5">Reason: {h.reason}</span>
+                          <span className="text-[#4A5568] block mt-0.5">Reason: {h.reason}</span>
                         )}
                       </div>
-                      <div className="text-right text-[#5871A5] font-mono text-[10px]">
+                      <div className="text-right text-[#4A5568] font-mono text-[10px]">
                         By {h.changed_by_name || 'Admin'} • {new Date(h.changed_at).toLocaleDateString('en-IN')}
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <span className="text-[11px] text-[#5871A5] italic">
+                <span className="text-[11px] text-[#4A5568] italic">
                   Initial assignment active. No salesperson reassignments recorded.
                 </span>
               )}
             </div>
 
             {/* Action Bar */}
-            <div className="flex items-center justify-between pt-2 border-t border-[#D6E3F5]">
+            <div className="flex items-center justify-between pt-2 border-t border-[#DCD8CE]">
               <Button
                 variant="outline"
                 size="sm"
@@ -2416,11 +2416,11 @@ export default function LeadsPage() {
 
           <p className="text-gray-600">
             Confirm advancing this opportunity from{' '}
-            <strong className="text-[#1A1A1A]">{selectedLead?.lead_status?.toUpperCase()}</strong> to{' '}
-            <strong className="text-[#223FA7]">{targetStatus.toUpperCase()}</strong>.
+            <strong className="text-[#14213D]">{selectedLead?.lead_status?.toUpperCase()}</strong> to{' '}
+            <strong className="text-[#0F5E63]">{targetStatus.toUpperCase()}</strong>.
           </p>
 
-          <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#D6E3F5]">
+          <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#DCD8CE]">
             <Button type="button" variant="ghost" size="sm" onClick={() => setIsStatusModalOpen(false)}>
               Cancel
             </Button>
@@ -2504,13 +2504,13 @@ export default function LeadsPage() {
             placeholder="e.g. Territory reorganization / officer transferred to Delhi HQ"
           />
 
-          <div className="flex items-center justify-between pt-2 border-t border-[#D6E3F5]">
+          <div className="flex items-center justify-between pt-2 border-t border-[#DCD8CE]">
             {!canReassign ? (
               <span className="text-[11px] text-amber-700 font-medium">
                 Switch role above to enable transfer.
               </span>
             ) : (
-              <span className="text-[11px] text-[#5871A5]">
+              <span className="text-[11px] text-[#4A5568]">
                 Authorized as {user?.role.replace('_', ' ')}
               </span>
             )}
@@ -2614,7 +2614,7 @@ export default function LeadsPage() {
           </div>
 
           {/* Follow-up scheduler */}
-          <div className="p-3 rounded-xl bg-[#F7FBFF] border border-[#D6E3F5]">
+          <div className="p-3 rounded-xl bg-[#FBFAF7] border border-[#DCD8CE]">
             <Input
               label="Schedule Next Touchpoint Due Date (Auto-creates Follow-up)"
               type="date"
@@ -2624,9 +2624,9 @@ export default function LeadsPage() {
           </div>
 
           {/* Supporting Document Attachment */}
-          <div className="p-3 rounded-xl bg-[#F7FBFF] border border-[#D6E3F5] space-y-2">
-            <span className="font-bold text-[#1A1A1A] block text-[11px] flex items-center gap-1.5">
-              <Paperclip className="h-3.5 w-3.5 text-[#5871A5]" />
+          <div className="p-3 rounded-xl bg-[#FBFAF7] border border-[#DCD8CE] space-y-2">
+            <span className="font-bold text-[#14213D] block text-[11px] flex items-center gap-1.5">
+              <Paperclip className="h-3.5 w-3.5 text-[#4A5568]" />
               <span>Attach Supporting Document (Proposal / MOM)</span>
             </span>
             <div className="grid grid-cols-2 gap-2">
@@ -2645,7 +2645,7 @@ export default function LeadsPage() {
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#D6E3F5]">
+          <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#DCD8CE]">
             <Button type="button" variant="ghost" size="sm" onClick={() => setIsLogInteractionOpen(false)}>
               Cancel
             </Button>
@@ -2669,52 +2669,52 @@ export default function LeadsPage() {
         {selectedCustomer && (
           <div className="space-y-5 text-xs">
             {/* Account Quick Intelligence Bar */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3.5 rounded-xl bg-[#F7FBFF] border border-[#D6E3F5]">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3.5 rounded-xl bg-[#FBFAF7] border border-[#DCD8CE]">
               <div>
-                <span className="text-[10px] uppercase text-[#5871A5] font-bold block">Account Sector</span>
-                <span className="font-semibold text-[#1A1A1A] mt-0.5 block">
+                <span className="text-[10px] uppercase text-[#4A5568] font-bold block">Account Sector</span>
+                <span className="font-semibold text-[#14213D] mt-0.5 block">
                   {selectedCustomer.sector || 'Government / PSU'}
                 </span>
                 {selectedCustomer.department && (
-                  <span className="text-[10px] text-[#5871A5] block truncate">{selectedCustomer.department}</span>
+                  <span className="text-[10px] text-[#4A5568] block truncate">{selectedCustomer.department}</span>
                 )}
               </div>
               <div>
-                <span className="text-[10px] uppercase text-[#5871A5] font-bold block">Territory & Zone</span>
-                <span className="font-semibold text-[#1A1A1A] mt-0.5 block">
+                <span className="text-[10px] uppercase text-[#4A5568] font-bold block">Territory & Zone</span>
+                <span className="font-semibold text-[#14213D] mt-0.5 block">
                   {selectedCustomer.zone_name || 'North'} ({selectedCustomer.region_name || selectedCustomer.city || 'HQ'})
                 </span>
-                <span className="text-[10px] text-[#5871A5] block">
+                <span className="text-[10px] text-[#4A5568] block">
                   {selectedCustomer.city || '—'}, {selectedCustomer.state || '—'}
                 </span>
               </div>
               <div>
-                <span className="text-[10px] uppercase text-[#5871A5] font-bold block">Current Sales Lead</span>
-                <span className="font-bold text-[#223FA7] mt-0.5 block">
+                <span className="text-[10px] uppercase text-[#4A5568] font-bold block">Current Sales Lead</span>
+                <span className="font-bold text-[#0F5E63] mt-0.5 block">
                   {customerManagementSummary?.current_salesperson || selectedCustomer.current_salesperson || 'Assigned Rep'}
                 </span>
                 <span className="text-[10px] text-emerald-600 font-semibold block">Active Territory Owner</span>
               </div>
               <div>
-                <span className="text-[10px] uppercase text-[#5871A5] font-bold block">Pipeline Volume</span>
-                <span className="font-extrabold text-[#1A1A1A] mt-0.5 block">
+                <span className="text-[10px] uppercase text-[#4A5568] font-bold block">Pipeline Volume</span>
+                <span className="font-extrabold text-[#14213D] mt-0.5 block">
                   {customerLeads.length} Leads • {customerTimeline.length} Touchpoints
                 </span>
-                <span className="text-[10px] text-[#5871A5] block">
+                <span className="text-[10px] text-[#4A5568] block">
                   {customerContacts.length} Registered Contacts
                 </span>
               </div>
             </div>
 
             {/* Sub-Navigation Tabs */}
-            <div className="flex items-center gap-1.5 border-b border-[#D6E3F5] pb-2">
+            <div className="flex items-center gap-1.5 border-b border-[#DCD8CE] pb-2">
               <button
                 type="button"
                 onClick={() => setC360Tab('management')}
                 className={`px-3 py-1.5 rounded-lg font-semibold text-xs transition-all flex items-center gap-1.5 ${
                   c360Tab === 'management'
-                    ? 'bg-[#223FA7] text-white shadow-xs'
-                    : 'bg-[#F8FAFC] text-[#5871A5] hover:bg-[#EAF2FF] hover:text-[#223FA7] border border-[#D6E3F5]'
+                    ? 'bg-[#0F5E63] text-white shadow-xs'
+                    : 'bg-[#F8FAFC] text-[#4A5568] hover:bg-[#E3EFEE] hover:text-[#0F5E63] border border-[#DCD8CE]'
                 }`}
               >
                 <ShieldCheck className="h-3.5 w-3.5" />
@@ -2726,8 +2726,8 @@ export default function LeadsPage() {
                 onClick={() => setC360Tab('timeline')}
                 className={`px-3 py-1.5 rounded-lg font-semibold text-xs transition-all flex items-center gap-1.5 ${
                   c360Tab === 'timeline'
-                    ? 'bg-[#223FA7] text-white shadow-xs'
-                    : 'bg-[#F8FAFC] text-[#5871A5] hover:bg-[#EAF2FF] hover:text-[#223FA7] border border-[#D6E3F5]'
+                    ? 'bg-[#0F5E63] text-white shadow-xs'
+                    : 'bg-[#F8FAFC] text-[#4A5568] hover:bg-[#E3EFEE] hover:text-[#0F5E63] border border-[#DCD8CE]'
                 }`}
               >
                 <History className="h-3.5 w-3.5" />
@@ -2742,8 +2742,8 @@ export default function LeadsPage() {
                 onClick={() => setC360Tab('contacts')}
                 className={`px-3 py-1.5 rounded-lg font-semibold text-xs transition-all flex items-center gap-1.5 ${
                   c360Tab === 'contacts'
-                    ? 'bg-[#223FA7] text-white shadow-xs'
-                    : 'bg-[#F8FAFC] text-[#5871A5] hover:bg-[#EAF2FF] hover:text-[#223FA7] border border-[#D6E3F5]'
+                    ? 'bg-[#0F5E63] text-white shadow-xs'
+                    : 'bg-[#F8FAFC] text-[#4A5568] hover:bg-[#E3EFEE] hover:text-[#0F5E63] border border-[#DCD8CE]'
                 }`}
               >
                 <Users className="h-3.5 w-3.5" />
@@ -2758,8 +2758,8 @@ export default function LeadsPage() {
                 onClick={() => setC360Tab('deals')}
                 className={`px-3 py-1.5 rounded-lg font-semibold text-xs transition-all flex items-center gap-1.5 ${
                   c360Tab === 'deals'
-                    ? 'bg-[#223FA7] text-white shadow-xs'
-                    : 'bg-[#F8FAFC] text-[#5871A5] hover:bg-[#EAF2FF] hover:text-[#223FA7] border border-[#D6E3F5]'
+                    ? 'bg-[#0F5E63] text-white shadow-xs'
+                    : 'bg-[#F8FAFC] text-[#4A5568] hover:bg-[#E3EFEE] hover:text-[#0F5E63] border border-[#DCD8CE]'
                 }`}
               >
                 <Briefcase className="h-3.5 w-3.5" />
@@ -2776,10 +2776,10 @@ export default function LeadsPage() {
                 {/* 1. Touchpoint Horizons: First vs Latest Interaction */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {/* First Interaction Card */}
-                  <div className="p-3.5 rounded-xl bg-white border border-[#D6E3F5] space-y-2 shadow-2xs">
+                  <div className="p-3.5 rounded-xl bg-white border border-[#DCD8CE] space-y-2 shadow-2xs">
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-[#1A1A1A] text-xs uppercase tracking-wide flex items-center gap-1.5">
-                        <Activity className="h-3.5 w-3.5 text-[#223FA7]" />
+                      <span className="font-bold text-[#14213D] text-xs uppercase tracking-wide flex items-center gap-1.5">
+                        <Activity className="h-3.5 w-3.5 text-[#0F5E63]" />
                         <span>First Interaction (Prospect Onboarding)</span>
                       </span>
                       {customerManagementSummary?.first_interaction?.occurred_on && (
@@ -2794,16 +2794,16 @@ export default function LeadsPage() {
                           <Badge variant="outline" size="sm" className="uppercase font-bold text-[9px]">
                             {customerManagementSummary.first_interaction.type}
                           </Badge>
-                          <span className="text-[#5871A5]">
-                            Conducted by: <strong className="text-[#1A1A1A]">{customerManagementSummary.first_interaction.employee_name || 'Executive'}</strong>
+                          <span className="text-[#4A5568]">
+                            Conducted by: <strong className="text-[#14213D]">{customerManagementSummary.first_interaction.employee_name || 'Executive'}</strong>
                           </span>
                         </div>
                         {customerManagementSummary.first_interaction.contact_name && (
-                          <div className="text-[#5871A5]">
-                            Client Contact: <span className="font-medium text-[#1A1A1A]">{customerManagementSummary.first_interaction.contact_name}</span>
+                          <div className="text-[#4A5568]">
+                            Client Contact: <span className="font-medium text-[#14213D]">{customerManagementSummary.first_interaction.contact_name}</span>
                           </div>
                         )}
-                        <p className="text-gray-700 italic bg-[#F8FAFC] p-2 rounded-lg border border-[#D6E3F5]">
+                        <p className="text-gray-700 italic bg-[#F8FAFC] p-2 rounded-lg border border-[#DCD8CE]">
                           "{customerManagementSummary.first_interaction.remarks || customerManagementSummary.first_interaction.notes || 'Initial prospect connection established.'}"
                         </p>
                         {customerManagementSummary.first_interaction.outcome && (
@@ -2813,15 +2813,15 @@ export default function LeadsPage() {
                         )}
                       </div>
                     ) : (
-                      <div className="p-3 text-center text-[#5871A5] italic">No first interaction on record.</div>
+                      <div className="p-3 text-center text-[#4A5568] italic">No first interaction on record.</div>
                     )}
                   </div>
 
                   {/* Latest Interaction Card */}
-                  <div className="p-3.5 rounded-xl bg-white border border-[#D6E3F5] space-y-2 shadow-2xs">
+                  <div className="p-3.5 rounded-xl bg-white border border-[#DCD8CE] space-y-2 shadow-2xs">
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-[#1A1A1A] text-xs uppercase tracking-wide flex items-center gap-1.5">
-                        <Clock className="h-3.5 w-3.5 text-[#223FA7]" />
+                      <span className="font-bold text-[#14213D] text-xs uppercase tracking-wide flex items-center gap-1.5">
+                        <Clock className="h-3.5 w-3.5 text-[#0F5E63]" />
                         <span>Latest Interaction (Recent Touchpoint)</span>
                       </span>
                       {customerManagementSummary?.latest_interaction?.occurred_on && (
@@ -2836,16 +2836,16 @@ export default function LeadsPage() {
                           <Badge variant="outline" size="sm" className="uppercase font-bold text-[9px]">
                             {customerManagementSummary.latest_interaction.type}
                           </Badge>
-                          <span className="text-[#5871A5]">
-                            Conducted by: <strong className="text-[#1A1A1A]">{customerManagementSummary.latest_interaction.employee_name || 'Executive'}</strong>
+                          <span className="text-[#4A5568]">
+                            Conducted by: <strong className="text-[#14213D]">{customerManagementSummary.latest_interaction.employee_name || 'Executive'}</strong>
                           </span>
                         </div>
                         {customerManagementSummary.latest_interaction.contact_name && (
-                          <div className="text-[#5871A5]">
-                            Client Contact: <span className="font-medium text-[#1A1A1A]">{customerManagementSummary.latest_interaction.contact_name}</span>
+                          <div className="text-[#4A5568]">
+                            Client Contact: <span className="font-medium text-[#14213D]">{customerManagementSummary.latest_interaction.contact_name}</span>
                           </div>
                         )}
-                        <p className="text-gray-700 italic bg-[#F8FAFC] p-2 rounded-lg border border-[#D6E3F5]">
+                        <p className="text-gray-700 italic bg-[#F8FAFC] p-2 rounded-lg border border-[#DCD8CE]">
                           "{customerManagementSummary.latest_interaction.remarks || customerManagementSummary.latest_interaction.notes || 'Interaction discussion recorded.'}"
                         </p>
                         {customerManagementSummary.latest_interaction.outcome && (
@@ -2854,14 +2854,14 @@ export default function LeadsPage() {
                           </div>
                         )}
                         {customerManagementSummary.latest_interaction.next_action && (
-                          <div className="text-[10px] text-[#223FA7] font-semibold flex items-center gap-1">
+                          <div className="text-[10px] text-[#0F5E63] font-semibold flex items-center gap-1">
                             <ArrowRight className="h-3 w-3" />
                             <span>Next Action: {customerManagementSummary.latest_interaction.next_action}</span>
                           </div>
                         )}
                       </div>
                     ) : (
-                      <div className="p-3 text-center text-[#5871A5] italic">No touchpoints recorded yet.</div>
+                      <div className="p-3 text-center text-[#4A5568] italic">No touchpoints recorded yet.</div>
                     )}
                   </div>
                 </div>
@@ -2869,18 +2869,18 @@ export default function LeadsPage() {
                 {/* 2. Salesperson Continuity & Product Interests */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {/* Salesperson Continuity Audit */}
-                  <div className="p-3.5 rounded-xl bg-white border border-[#D6E3F5] space-y-2 shadow-2xs">
+                  <div className="p-3.5 rounded-xl bg-white border border-[#DCD8CE] space-y-2 shadow-2xs">
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-[#1A1A1A] text-xs uppercase tracking-wide flex items-center gap-1.5">
-                        <UserCheck className="h-3.5 w-3.5 text-[#223FA7]" />
+                      <span className="font-bold text-[#14213D] text-xs uppercase tracking-wide flex items-center gap-1.5">
+                        <UserCheck className="h-3.5 w-3.5 text-[#0F5E63]" />
                         <span>Salesperson Ownership Continuity</span>
                       </span>
                     </div>
 
-                    <div className="p-2.5 rounded-lg bg-[#EAF2FF]/50 border border-[#D6E3F5] flex items-center justify-between">
+                    <div className="p-2.5 rounded-lg bg-[#E3EFEE]/50 border border-[#DCD8CE] flex items-center justify-between">
                       <div>
-                        <span className="text-[10px] uppercase text-[#5871A5] font-bold block">Current Active Salesperson</span>
-                        <span className="font-bold text-[#223FA7] text-xs">
+                        <span className="text-[10px] uppercase text-[#4A5568] font-bold block">Current Active Salesperson</span>
+                        <span className="font-bold text-[#0F5E63] text-xs">
                           {customerManagementSummary?.current_salesperson || 'Unassigned'}
                         </span>
                       </div>
@@ -2889,36 +2889,36 @@ export default function LeadsPage() {
 
                     {customerManagementSummary?.previous_salespersons && customerManagementSummary.previous_salespersons.length > 0 ? (
                       <div className="space-y-1.5 pt-1">
-                        <span className="text-[10px] uppercase font-bold text-[#5871A5] block">Previous Reassignment History:</span>
+                        <span className="text-[10px] uppercase font-bold text-[#4A5568] block">Previous Reassignment History:</span>
                         {customerManagementSummary.previous_salespersons.map((h: any, idx: number) => (
                           <div
                             key={idx}
-                            className="p-2 rounded-lg bg-[#F8FAFC] border border-[#D6E3F5] flex items-center justify-between text-[10px]"
+                            className="p-2 rounded-lg bg-[#F8FAFC] border border-[#DCD8CE] flex items-center justify-between text-[10px]"
                           >
                             <div>
                               <span className="font-semibold text-gray-800">
                                 {h.previous_salesperson_name || 'Unassigned'} → {h.new_salesperson_name}
                               </span>
-                              {h.reason && <span className="text-[#5871A5] block">Reason: {h.reason}</span>}
+                              {h.reason && <span className="text-[#4A5568] block">Reason: {h.reason}</span>}
                             </div>
-                            <span className="text-[#5871A5] font-mono text-[9px]">
+                            <span className="text-[#4A5568] font-mono text-[9px]">
                               {new Date(h.changed_at).toLocaleDateString('en-IN')}
                             </span>
                           </div>
                         ))}
                       </div>
                     ) : (
-                      <div className="text-[10px] text-[#5871A5] italic pt-1">
+                      <div className="text-[10px] text-[#4A5568] italic pt-1">
                         Initial salesperson assignment active. No previous transfers on record.
                       </div>
                     )}
                   </div>
 
                   {/* Product Interest Landscape */}
-                  <div className="p-3.5 rounded-xl bg-white border border-[#D6E3F5] space-y-2 shadow-2xs">
+                  <div className="p-3.5 rounded-xl bg-white border border-[#DCD8CE] space-y-2 shadow-2xs">
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-[#1A1A1A] text-xs uppercase tracking-wide flex items-center gap-1.5">
-                        <Tag className="h-3.5 w-3.5 text-[#223FA7]" />
+                      <span className="font-bold text-[#14213D] text-xs uppercase tracking-wide flex items-center gap-1.5">
+                        <Tag className="h-3.5 w-3.5 text-[#0F5E63]" />
                         <span>Product Interest Landscape</span>
                       </span>
                       <Badge variant="outline" size="sm">
@@ -2931,15 +2931,15 @@ export default function LeadsPage() {
                         {customerManagementSummary.product_interests.map((pName: string, idx: number) => (
                           <span
                             key={idx}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#F7FBFF] border border-[#D6E3F5] text-[11px] font-semibold text-[#223FA7]"
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#FBFAF7] border border-[#DCD8CE] text-[11px] font-semibold text-[#0F5E63]"
                           >
-                            <Check className="h-3 w-3 text-[#223FA7]" />
+                            <Check className="h-3 w-3 text-[#0F5E63]" />
                             <span>{pName}</span>
                           </span>
                         ))}
                       </div>
                     ) : (
-                      <div className="text-[10px] text-[#5871A5] italic pt-2">
+                      <div className="text-[10px] text-[#4A5568] italic pt-2">
                         No product interests linked to opportunities yet.
                       </div>
                     )}
@@ -2947,10 +2947,10 @@ export default function LeadsPage() {
                 </div>
 
                 {/* 3. Previous Meetings & Field Demonstrations */}
-                <div className="p-3.5 rounded-xl bg-white border border-[#D6E3F5] space-y-2 shadow-2xs">
+                <div className="p-3.5 rounded-xl bg-white border border-[#DCD8CE] space-y-2 shadow-2xs">
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-[#1A1A1A] text-xs uppercase tracking-wide flex items-center gap-1.5">
-                      <Building className="h-3.5 w-3.5 text-[#223FA7]" />
+                    <span className="font-bold text-[#14213D] text-xs uppercase tracking-wide flex items-center gap-1.5">
+                      <Building className="h-3.5 w-3.5 text-[#0F5E63]" />
                       <span>Previous In-Person Meetings & Demonstrations (Face-to-Face Field Touchpoints)</span>
                     </span>
                     <Badge variant="info" size="sm">
@@ -2963,19 +2963,19 @@ export default function LeadsPage() {
                       {customerManagementSummary.previous_meetings.map((m: any) => (
                         <div
                           key={m.id}
-                          className="p-2.5 rounded-lg bg-[#F8FAFC] border border-[#D6E3F5] space-y-1 text-[11px]"
+                          className="p-2.5 rounded-lg bg-[#F8FAFC] border border-[#DCD8CE] space-y-1 text-[11px]"
                         >
                           <div className="flex items-center justify-between">
                             <Badge variant="outline" size="sm" className="uppercase font-bold text-[9px]">
                               {m.type === 'physical_visit' ? 'Face-to-Face Visit' : m.type === 'demo' ? 'Demonstration' : m.type}
                             </Badge>
-                            <span className="text-[#5871A5] font-mono text-[10px]">
+                            <span className="text-[#4A5568] font-mono text-[10px]">
                               {new Date(m.occurred_on || m.interaction_date).toLocaleDateString('en-IN')}
                             </span>
                           </div>
-                          <div className="text-[#5871A5] text-[10px]">
-                            Conducted by: <strong className="text-[#1A1A1A]">{m.employee_name || 'Executive'}</strong>
-                            {m.contact_name && <span> • Contact: <strong className="text-[#1A1A1A]">{m.contact_name}</strong></span>}
+                          <div className="text-[#4A5568] text-[10px]">
+                            Conducted by: <strong className="text-[#14213D]">{m.employee_name || 'Executive'}</strong>
+                            {m.contact_name && <span> • Contact: <strong className="text-[#14213D]">{m.contact_name}</strong></span>}
                           </div>
                           <p className="text-gray-700 line-clamp-2">
                             {m.remarks || m.notes || 'Meeting concluded.'}
@@ -2989,25 +2989,25 @@ export default function LeadsPage() {
                       ))}
                     </div>
                   ) : (
-                    <div className="text-[11px] text-[#5871A5] italic p-2 bg-[#F8FAFC] rounded-lg border border-[#D6E3F5] text-center">
+                    <div className="text-[11px] text-[#4A5568] italic p-2 bg-[#F8FAFC] rounded-lg border border-[#DCD8CE] text-center">
                       No physical visits or product demonstrations recorded yet.
                     </div>
                   )}
                 </div>
 
                 {/* 4. Follow-Up History & Compliance */}
-                <div className="p-3.5 rounded-xl bg-white border border-[#D6E3F5] space-y-3 shadow-2xs">
+                <div className="p-3.5 rounded-xl bg-white border border-[#DCD8CE] space-y-3 shadow-2xs">
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-[#1A1A1A] text-xs uppercase tracking-wide flex items-center gap-1.5">
-                      <CalendarDays className="h-3.5 w-3.5 text-[#223FA7]" />
+                    <span className="font-bold text-[#14213D] text-xs uppercase tracking-wide flex items-center gap-1.5">
+                      <CalendarDays className="h-3.5 w-3.5 text-[#0F5E63]" />
                       <span>Follow-up History & Compliance Status</span>
                     </span>
                   </div>
 
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                    <div className="p-2.5 rounded-lg bg-[#F8FAFC] border border-[#D6E3F5] text-center">
-                      <span className="text-[10px] text-[#5871A5] uppercase font-bold block">Total Scheduled</span>
-                      <span className="text-sm font-extrabold text-[#1A1A1A] mt-0.5 block">
+                    <div className="p-2.5 rounded-lg bg-[#F8FAFC] border border-[#DCD8CE] text-center">
+                      <span className="text-[10px] text-[#4A5568] uppercase font-bold block">Total Scheduled</span>
+                      <span className="text-sm font-extrabold text-[#14213D] mt-0.5 block">
                         {customerManagementSummary?.follow_up_history?.total || 0}
                       </span>
                     </div>
@@ -3033,10 +3033,10 @@ export default function LeadsPage() {
                 </div>
 
                 {/* 5. Current Opportunity Status */}
-                <div className="p-3.5 rounded-xl bg-white border border-[#D6E3F5] space-y-2 shadow-2xs">
+                <div className="p-3.5 rounded-xl bg-white border border-[#DCD8CE] space-y-2 shadow-2xs">
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-[#1A1A1A] text-xs uppercase tracking-wide flex items-center gap-1.5">
-                      <Target className="h-3.5 w-3.5 text-[#223FA7]" />
+                    <span className="font-bold text-[#14213D] text-xs uppercase tracking-wide flex items-center gap-1.5">
+                      <Target className="h-3.5 w-3.5 text-[#0F5E63]" />
                       <span>Current Opportunity Status Across Account</span>
                     </span>
                     <Badge variant="info" size="sm">
@@ -3045,11 +3045,11 @@ export default function LeadsPage() {
                   </div>
 
                   {customerManagementSummary?.current_opportunity_status && customerManagementSummary.current_opportunity_status.length > 0 ? (
-                    <div className="divide-y divide-[#D6E3F5] border border-[#D6E3F5] rounded-lg overflow-hidden">
+                    <div className="divide-y divide-[#DCD8CE] border border-[#DCD8CE] rounded-lg overflow-hidden">
                       {customerManagementSummary.current_opportunity_status.map((opp: any) => (
                         <div key={opp.id} className="p-2.5 bg-white flex items-center justify-between text-[11px] hover:bg-[#F8FAFC]">
                           <div>
-                            <div className="font-bold text-[#1A1A1A] flex items-center gap-2">
+                            <div className="font-bold text-[#14213D] flex items-center gap-2">
                               <span>{opp.product_name}</span>
                               {opp.lead_type === 're_approached' ? (
                                 <Badge variant="warning" size="sm" className="font-bold text-[9px]">
@@ -3061,10 +3061,10 @@ export default function LeadsPage() {
                                 </Badge>
                               )}
                             </div>
-                            <div className="text-[10px] text-[#5871A5] mt-0.5">
-                              Assigned: <strong className="text-[#1A1A1A]">{opp.assigned_salesperson || 'Unassigned'}</strong>
+                            <div className="text-[10px] text-[#4A5568] mt-0.5">
+                              Assigned: <strong className="text-[#14213D]">{opp.assigned_salesperson || 'Unassigned'}</strong>
                               {opp.next_followup_date && (
-                                <span> • Next Due: <strong className="text-[#223FA7]">{new Date(opp.next_followup_date).toLocaleDateString('en-IN')}</strong></span>
+                                <span> • Next Due: <strong className="text-[#0F5E63]">{new Date(opp.next_followup_date).toLocaleDateString('en-IN')}</strong></span>
                               )}
                             </div>
                           </div>
@@ -3078,7 +3078,7 @@ export default function LeadsPage() {
                       ))}
                     </div>
                   ) : (
-                    <div className="text-[11px] text-[#5871A5] italic p-3 text-center bg-[#F8FAFC] rounded-lg border border-[#D6E3F5]">
+                    <div className="text-[11px] text-[#4A5568] italic p-3 text-center bg-[#F8FAFC] rounded-lg border border-[#DCD8CE]">
                       No opportunities registered for this organization.
                     </div>
                   )}
@@ -3088,14 +3088,14 @@ export default function LeadsPage() {
 
             {/* TAB 2: CHRONOLOGICAL CUSTOMER INTERACTION TIMELINE */}
             {c360Tab === 'timeline' && (
-              <div className="p-4 rounded-xl bg-[#F7FBFF] border border-[#D6E3F5] space-y-3">
+              <div className="p-4 rounded-xl bg-[#FBFAF7] border border-[#DCD8CE] space-y-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <span className="text-xs font-bold text-[#1A1A1A] uppercase tracking-wider flex items-center gap-1.5">
-                      <History className="h-4 w-4 text-[#223FA7]" />
+                    <span className="text-xs font-bold text-[#14213D] uppercase tracking-wider flex items-center gap-1.5">
+                      <History className="h-4 w-4 text-[#0F5E63]" />
                       <span>Chronological Customer Interaction Timeline</span>
                     </span>
-                    <span className="text-[10px] text-[#5871A5] block mt-0.5">
+                    <span className="text-[10px] text-[#4A5568] block mt-0.5">
                       Tracks all calls, visits, demos, WhatsApp, emails, tenders, proposals, and service discussions in one continuous customer record.
                     </span>
                   </div>
@@ -3118,9 +3118,9 @@ export default function LeadsPage() {
                 </div>
 
                 {customerTimelineLoading ? (
-                  <div className="p-8 text-center text-[#5871A5]">Loading chronological customer history...</div>
+                  <div className="p-8 text-center text-[#4A5568]">Loading chronological customer history...</div>
                 ) : customerTimeline.length === 0 ? (
-                  <div className="p-8 rounded-lg bg-white border border-[#D6E3F5] text-center text-[#5871A5] space-y-2">
+                  <div className="p-8 rounded-lg bg-white border border-[#DCD8CE] text-center text-[#4A5568] space-y-2">
                     <p>No interactions recorded yet for this organisation.</p>
                     <Button
                       size="xs"
@@ -3158,7 +3158,7 @@ export default function LeadsPage() {
                       return (
                         <div
                           key={it.id}
-                          className="p-3.5 rounded-xl bg-white border border-[#D6E3F5] space-y-2 shadow-2xs hover:border-[#9FC0F5] transition-colors"
+                          className="p-3.5 rounded-xl bg-white border border-[#DCD8CE] space-y-2 shadow-2xs hover:border-[#0F5E63] transition-colors"
                         >
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
@@ -3166,24 +3166,24 @@ export default function LeadsPage() {
                               <Badge variant="outline" size="sm" className="uppercase font-bold text-[10px]">
                                 {it.type?.replace('_', ' ')}
                               </Badge>
-                              <span className="text-[11px] text-[#5871A5] font-medium font-mono">
+                              <span className="text-[11px] text-[#4A5568] font-medium font-mono">
                                 {new Date(it.occurred_on || it.interaction_date || it.created_at).toLocaleDateString('en-IN')}
                               </span>
                             </div>
-                            <div className="text-right text-[10px] text-[#5871A5]">
-                              Employee: <strong className="text-[#1A1A1A]">{it.employee_name || it.created_by_name || 'Executive'}</strong>
+                            <div className="text-right text-[10px] text-[#4A5568]">
+                              Employee: <strong className="text-[#14213D]">{it.employee_name || it.created_by_name || 'Executive'}</strong>
                             </div>
                           </div>
 
                           {it.contact_name && (
-                            <div className="text-[10px] text-[#5871A5] flex items-center gap-1">
-                              <User className="h-3 w-3 text-[#5871A5]" />
-                              <span>Contact Person: <strong className="text-[#1A1A1A]">{it.contact_name}</strong></span>
+                            <div className="text-[10px] text-[#4A5568] flex items-center gap-1">
+                              <User className="h-3 w-3 text-[#4A5568]" />
+                              <span>Contact Person: <strong className="text-[#14213D]">{it.contact_name}</strong></span>
                               {it.contact_mobile && <span className="font-mono">({it.contact_mobile})</span>}
                             </div>
                           )}
 
-                          <p className="text-gray-800 text-xs leading-relaxed font-sans bg-[#F8FAFC] p-2.5 rounded-lg border border-[#D6E3F5]">
+                          <p className="text-gray-800 text-xs leading-relaxed font-sans bg-[#F8FAFC] p-2.5 rounded-lg border border-[#DCD8CE]">
                             {it.remarks || it.notes || 'No discussion notes provided.'}
                           </p>
 
@@ -3194,7 +3194,7 @@ export default function LeadsPage() {
                           )}
 
                           {(it.next_action || it.followup_date || it.next_action_date) && (
-                            <div className="flex flex-wrap items-center gap-3 text-[11px] text-[#223FA7] font-medium pt-0.5">
+                            <div className="flex flex-wrap items-center gap-3 text-[11px] text-[#0F5E63] font-medium pt-0.5">
                               {it.next_action && (
                                 <div className="flex items-center gap-1.5">
                                   <ArrowRight className="h-3.5 w-3.5" />
@@ -3202,7 +3202,7 @@ export default function LeadsPage() {
                                 </div>
                               )}
                               {(it.followup_date || it.next_action_date) && (
-                                <div className="flex items-center gap-1 text-[#5871A5] font-mono text-[10px]">
+                                <div className="flex items-center gap-1 text-[#4A5568] font-mono text-[10px]">
                                   <Clock className="h-3 w-3" />
                                   <span>Target Due: {new Date(it.followup_date || it.next_action_date).toLocaleDateString('en-IN')}</span>
                                 </div>
@@ -3218,7 +3218,7 @@ export default function LeadsPage() {
                                   href={att.file_url}
                                   target="_blank"
                                   rel="noreferrer"
-                                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-[#F8FAFC] border border-[#D6E3F5] text-[10px] text-[#223FA7] hover:underline"
+                                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-[#F8FAFC] border border-[#DCD8CE] text-[10px] text-[#0F5E63] hover:underline"
                                 >
                                   <Paperclip className="h-3 w-3" />
                                   <span>{att.file_name}</span>
@@ -3236,35 +3236,35 @@ export default function LeadsPage() {
 
             {/* TAB 3: CONTACTS ROSTER */}
             {c360Tab === 'contacts' && (
-              <div className="p-4 rounded-xl bg-white border border-[#D6E3F5] space-y-3">
+              <div className="p-4 rounded-xl bg-white border border-[#DCD8CE] space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-[#1A1A1A] uppercase tracking-wider flex items-center gap-1.5">
-                    <Users className="h-4 w-4 text-[#223FA7]" />
+                  <span className="text-xs font-bold text-[#14213D] uppercase tracking-wider flex items-center gap-1.5">
+                    <Users className="h-4 w-4 text-[#0F5E63]" />
                     <span>Account Contacts Roster</span>
                   </span>
                 </div>
 
                 {customerContacts.length === 0 ? (
-                  <span className="text-[11px] text-[#5871A5] italic">No contacts registered for this organization.</span>
+                  <span className="text-[11px] text-[#4A5568] italic">No contacts registered for this organization.</span>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     {customerContacts.map((c) => (
                       <div
                         key={c.id}
-                        className="p-3 rounded-lg bg-[#F8FAFC] border border-[#D6E3F5] space-y-1.5"
+                        className="p-3 rounded-lg bg-[#F8FAFC] border border-[#DCD8CE] space-y-1.5"
                       >
                         <div className="flex items-center justify-between">
-                          <span className="font-bold text-[#1A1A1A]">{c.name || c.full_name}</span>
+                          <span className="font-bold text-[#14213D]">{c.name || c.full_name}</span>
                           {c.is_primary && (
                             <Badge variant="info" size="sm" className="text-[9px]">PRIMARY</Badge>
                           )}
                         </div>
-                        <div className="text-[11px] text-[#5871A5]">{c.designation || 'Officer'}</div>
+                        <div className="text-[11px] text-[#4A5568]">{c.designation || 'Officer'}</div>
                         <div className="flex flex-col gap-1 text-[10px] text-gray-600 font-mono">
                           {(c.phone || c.mobile) && <span>📞 {c.phone || c.mobile}</span>}
                           {c.email && <span>✉️ {c.email}</span>}
                         </div>
-                        <div className="pt-1 border-t border-[#D6E3F5]">
+                        <div className="pt-1 border-t border-[#DCD8CE]">
                           <Button
                             size="xs"
                             variant="secondary"
@@ -3290,16 +3290,16 @@ export default function LeadsPage() {
 
             {/* TAB 4: ACTIVE OPPORTUNITIES */}
             {c360Tab === 'deals' && (
-              <div className="p-4 rounded-xl bg-white border border-[#D6E3F5] space-y-3">
+              <div className="p-4 rounded-xl bg-white border border-[#DCD8CE] space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-[#1A1A1A] uppercase tracking-wider flex items-center gap-1.5">
-                    <Briefcase className="h-4 w-4 text-[#223FA7]" />
+                  <span className="text-xs font-bold text-[#14213D] uppercase tracking-wider flex items-center gap-1.5">
+                    <Briefcase className="h-4 w-4 text-[#0F5E63]" />
                     <span>Active Pipeline & Opportunities</span>
                   </span>
                 </div>
 
                 {customerLeads.length === 0 ? (
-                  <div className="p-6 text-center text-[#5871A5] italic bg-[#F8FAFC] rounded-lg border border-[#D6E3F5]">
+                  <div className="p-6 text-center text-[#4A5568] italic bg-[#F8FAFC] rounded-lg border border-[#DCD8CE]">
                     No deals or opportunities registered under this organisation.
                   </div>
                 ) : (
@@ -3307,14 +3307,14 @@ export default function LeadsPage() {
                     {customerLeads.map((ld) => (
                       <div
                         key={ld.id}
-                        className="p-3 rounded-xl bg-[#F8FAFC] border border-[#D6E3F5] flex items-center justify-between hover:border-[#9FC0F5] transition-colors cursor-pointer"
+                        className="p-3 rounded-xl bg-[#F8FAFC] border border-[#DCD8CE] flex items-center justify-between hover:border-[#0F5E63] transition-colors cursor-pointer"
                         onClick={() => {
                           setIsCustomer360Open(false);
                           handleOpenLead(ld.id);
                         }}
                       >
                         <div className="space-y-1">
-                          <div className="font-bold text-[#1A1A1A] flex items-center gap-2">
+                          <div className="font-bold text-[#14213D] flex items-center gap-2">
                             <span>{ld.title || ld.product_name || 'Procurement Opportunity'}</span>
                             {ld.lead_type === 're_approached' ? (
                               <Badge variant="warning" size="sm" className="font-bold text-[9px]">
@@ -3326,10 +3326,10 @@ export default function LeadsPage() {
                               </Badge>
                             )}
                           </div>
-                          <div className="text-[10px] text-[#5871A5]">
-                            Assigned to: <strong className="text-[#1A1A1A]">{ld.assignee_name || ld.assigned_salesperson_name || 'Unassigned'}</strong>
+                          <div className="text-[10px] text-[#4A5568]">
+                            Assigned to: <strong className="text-[#14213D]">{ld.assignee_name || ld.assigned_salesperson_name || 'Unassigned'}</strong>
                             {ld.next_followup_date && (
-                              <span> • Follow-up Due: <strong className="text-[#223FA7]">{new Date(ld.next_followup_date).toLocaleDateString('en-IN')}</strong></span>
+                              <span> • Follow-up Due: <strong className="text-[#0F5E63]">{new Date(ld.next_followup_date).toLocaleDateString('en-IN')}</strong></span>
                             )}
                           </div>
                         </div>
@@ -3351,7 +3351,7 @@ export default function LeadsPage() {
             )}
 
             {/* Modal Footer */}
-            <div className="flex items-center justify-between pt-3 border-t border-[#D6E3F5]">
+            <div className="flex items-center justify-between pt-3 border-t border-[#DCD8CE]">
               <Button
                 variant="secondary"
                 size="sm"
@@ -3407,13 +3407,13 @@ export default function LeadsPage() {
             placeholder="Details of client discussion..."
           />
 
-          <div className="p-3 rounded-xl bg-[#F7FBFF] border border-[#D6E3F5] space-y-2">
+          <div className="p-3 rounded-xl bg-[#FBFAF7] border border-[#DCD8CE] space-y-2">
             <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"
                 checked={scheduleNextFollowup}
                 onChange={(e) => setScheduleNextFollowup(e.target.checked)}
-                className="rounded border-[#D6E3F5] text-[#223FA7] focus:ring-[#223FA7]"
+                className="rounded border-[#DCD8CE] text-[#0F5E63] focus:ring-[#0F5E63]"
               />
               <span className="font-semibold text-gray-800 text-xs">
                 Schedule next follow-up touchpoint
@@ -3431,7 +3431,7 @@ export default function LeadsPage() {
             )}
           </div>
 
-          <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#D6E3F5]">
+          <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#DCD8CE]">
             <Button type="button" variant="ghost" size="sm" onClick={() => setIsCompleteFollowupOpen(false)}>
               Cancel
             </Button>
@@ -3474,7 +3474,7 @@ export default function LeadsPage() {
             placeholder="e.g. Officer on leave until next Monday"
           />
 
-          <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#D6E3F5]">
+          <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#DCD8CE]">
             <Button type="button" variant="ghost" size="sm" onClick={() => setIsRescheduleFollowupOpen(false)}>
               Cancel
             </Button>

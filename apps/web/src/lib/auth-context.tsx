@@ -15,7 +15,7 @@ export const PRESET_ROLE_USERS: Record<
     email: 'mgmt@arihant.com',
     title: 'Managing Director & CEO',
     zone: 'HQ / All India',
-    color: 'bg-[#EAF2FF] text-[#223FA7] border-[#D6E3F5]',
+    color: 'bg-[#E3EFEE] text-[#0F5E63] border-[#DCD8CE]',
   },
   regional_manager: {
     name: 'Vikram Sharma',
@@ -64,7 +64,7 @@ export const PRESET_ROLE_USERS: Record<
     email: 'admin@arihant.com',
     title: 'System Administrator',
     zone: 'Infrastructure',
-    color: 'bg-gray-100 text-gray-700 border-[#D6E3F5]',
+    color: 'bg-gray-100 text-gray-700 border-[#DCD8CE]',
   },
 };
 

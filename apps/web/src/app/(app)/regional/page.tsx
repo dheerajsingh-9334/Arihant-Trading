@@ -122,9 +122,9 @@ export default function RegionalPage() {
 
   if (!hasRole(['regional_manager', 'management', 'admin'])) {
     return (
-      <div className="p-12 text-center text-[#5871A5] bg-white border border-[#D6E3F5] rounded-xl space-y-3 shadow-xs">
+      <div className="p-12 text-center text-[#4A5568] bg-white border border-[#DCD8CE] rounded-xl space-y-3 shadow-xs">
         <ShieldAlert className="h-12 w-12 text-red-500 mx-auto" />
-        <h2 className="text-lg font-bold text-[#1A1A1A]">Access Restricted</h2>
+        <h2 className="text-lg font-bold text-[#14213D]">Access Restricted</h2>
         <p className="text-xs">
           Only Regional Managers, Executive Management, and System Administrators have permission to access the Regional Command Hub.
         </p>
@@ -138,17 +138,17 @@ export default function RegionalPage() {
   return (
     <PageContainer>
       {/* ── TOP HERO BANNER (CoachAssist Modern Header) ── */}
-      <div className="relative overflow-hidden rounded-2xl bg-white border border-[#D6E3F5] p-6 lg:p-8 shadow-xs">
+      <div className="relative overflow-hidden rounded-2xl bg-white border border-[#DCD8CE] p-6 lg:p-8 shadow-xs">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
-            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-[#EAF2FF] border border-[#D6E3F5] text-[11px] font-bold text-[#223FA7] uppercase tracking-wider">
+            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-[#E3EFEE] border border-[#DCD8CE] text-[11px] font-bold text-[#0F5E63] uppercase tracking-wider">
               <Compass className="h-3.5 w-3.5" />
               <span>{zoneName.toUpperCase()} ZONE COMMAND &bull; CODE {zoneCode}</span>
             </div>
-            <h1 className="text-2xl lg:text-3xl font-extrabold text-[#1A1A1A] tracking-tight flex items-center gap-2.5">
+            <h1 className="text-2xl lg:text-3xl font-extrabold text-[#14213D] tracking-tight flex items-center gap-2.5">
               <span>Regional Territory Performance Hub</span>
             </h1>
-            <p className="text-xs lg:text-sm text-[#5871A5] font-normal max-w-2xl leading-relaxed">
+            <p className="text-xs lg:text-sm text-[#4A5568] font-normal max-w-2xl leading-relaxed">
               Consolidated command of sales leads, field tour execution, live GeM defense tenders, and employee accountability across {zoneName} Zone.
             </p>
           </div>
@@ -156,12 +156,12 @@ export default function RegionalPage() {
           <div className="flex flex-wrap items-center gap-3">
             {/* Zone Switcher for Management / Admin */}
             {hasRole(['management', 'admin']) && data?.availableZones && (
-              <div className="flex items-center space-x-2 bg-[#F7FBFF] border border-[#D6E3F5] px-3 py-1 rounded-lg text-xs">
-                <span className="text-[10px] font-bold uppercase text-[#5871A5]">Territory:</span>
+              <div className="flex items-center space-x-2 bg-[#FBFAF7] border border-[#DCD8CE] px-3 py-1 rounded-lg text-xs">
+                <span className="text-[10px] font-bold uppercase text-[#4A5568]">Territory:</span>
                 <Select
                   value={selectedZoneId}
                   onChange={(e) => setSelectedZoneId(e.target.value)}
-                  className="h-8 border-0 bg-transparent text-xs font-bold text-[#223FA7] focus:ring-0 p-0"
+                  className="h-8 border-0 bg-transparent text-xs font-bold text-[#0F5E63] focus:ring-0 p-0"
                 >
                   {data.availableZones.map((z: any) => (
                     <option key={z.id} value={z.id}>
@@ -174,7 +174,7 @@ export default function RegionalPage() {
 
             <Link href="/visits">
               <Button variant="secondary" size="md" className="shadow-xs">
-                <Calendar className="mr-2 h-4 w-4 text-[#223FA7]" />
+                <Calendar className="mr-2 h-4 w-4 text-[#0F5E63]" />
                 <span>Tour Planner</span>
               </Button>
             </Link>
@@ -236,10 +236,10 @@ export default function RegionalPage() {
       {/* ── TAB 1: EMPLOYEE ACCOUNTABILITY & PERFORMANCE ── */}
       {activeTab === 'team' && (
         <div className="space-y-4">
-          <div className="p-4 rounded-xl bg-white border border-[#D6E3F5] flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+          <div className="p-4 rounded-xl bg-white border border-[#DCD8CE] flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
             <div className="flex items-center space-x-2">
-              <Users className="h-4 w-4 text-[#223FA7]" />
-              <span className="text-xs font-bold text-[#1A1A1A]">
+              <Users className="h-4 w-4 text-[#0F5E63]" />
+              <span className="text-xs font-bold text-[#14213D]">
                 Direct Reports & Regional Staff Scorecard
               </span>
             </div>
@@ -280,25 +280,25 @@ export default function RegionalPage() {
                   )
                   .map((emp: any) => (
                     <TableRow key={emp.id}>
-                      <TableCell className="font-bold text-[#1A1A1A] whitespace-nowrap">
+                      <TableCell className="font-bold text-[#14213D] whitespace-nowrap">
                         {emp.full_name}
-                        <div className="text-[10px] text-[#5871A5] font-mono font-normal">
+                        <div className="text-[10px] text-[#4A5568] font-mono font-normal">
                           {emp.email}
                         </div>
                       </TableCell>
                       <TableCell className="whitespace-nowrap">
-                        <span className="font-semibold text-[#1A1A1A] text-xs">
+                        <span className="font-semibold text-[#14213D] text-xs">
                           {emp.role.replace('_', ' ').toUpperCase()}
                         </span>
-                        <div className="text-[10px] text-[#5871A5]">
+                        <div className="text-[10px] text-[#4A5568]">
                           {emp.region_name}
                         </div>
                       </TableCell>
                       <TableCell className="text-center whitespace-nowrap">
-                        <span className="font-mono font-bold text-[#1A1A1A]">
+                        <span className="font-mono font-bold text-[#14213D]">
                           {emp.tasks.completed} / {emp.tasks.total}
                         </span>
-                        <div className="text-[10px] text-[#5871A5]">
+                        <div className="text-[10px] text-[#4A5568]">
                           {emp.tasks.completionRate}%
                         </div>
                       </TableCell>
@@ -311,10 +311,10 @@ export default function RegionalPage() {
                           <span className="text-[11px] text-emerald-700 font-medium">0</span>
                         )}
                       </TableCell>
-                      <TableCell className="text-center font-mono font-bold text-[#1A1A1A] whitespace-nowrap">
+                      <TableCell className="text-center font-mono font-bold text-[#14213D] whitespace-nowrap">
                         {emp.visits.completed} / {emp.visits.total}
                       </TableCell>
-                      <TableCell className="text-right font-mono font-bold text-[#223FA7] whitespace-nowrap">
+                      <TableCell className="text-right font-mono font-bold text-[#0F5E63] whitespace-nowrap">
                         {formatLakh(emp.leads.valueLakh || 0)}
                       </TableCell>
                       <TableCell className="text-center whitespace-nowrap">
@@ -323,7 +323,7 @@ export default function RegionalPage() {
                             {emp.activeBlockers.length} BLOCKED
                           </span>
                         ) : (
-                          <span className="text-[11px] text-[#5871A5]">None</span>
+                          <span className="text-[11px] text-[#4A5568]">None</span>
                         )}
                       </TableCell>
                       <TableCell className="text-center whitespace-nowrap">
@@ -350,7 +350,7 @@ export default function RegionalPage() {
                             setSelectedEmployee(emp);
                             setIsEvidenceModalOpen(true);
                           }}
-                          className="shadow-xs text-xs text-[#223FA7]"
+                          className="shadow-xs text-xs text-[#0F5E63]"
                         >
                           <span>Inspect</span>
                           <ChevronRight className="ml-1 h-3.5 w-3.5" />
@@ -362,11 +362,11 @@ export default function RegionalPage() {
             </Table>
           </Card>
 
-          <div className="p-3 rounded-lg bg-[#F7FBFF] border border-[#D6E3F5] text-[11px] text-[#5871A5] flex items-center justify-between">
+          <div className="p-3 rounded-lg bg-[#FBFAF7] border border-[#DCD8CE] text-[11px] text-[#4A5568] flex items-center justify-between">
             <span>
               <strong>Policy Notice:</strong> Performance reviews surface verified empirical metrics (task completion, deadline compliance, blocker resolution) for managerial review.
             </span>
-            <span className="text-[#223FA7] font-semibold text-xs">Audit Compliant</span>
+            <span className="text-[#0F5E63] font-semibold text-xs">Audit Compliant</span>
           </div>
         </div>
       )}
@@ -375,49 +375,49 @@ export default function RegionalPage() {
       {activeTab === 'leads' && (
         <div className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
-            <div className="p-4 rounded-xl bg-white border border-[#D6E3F5] shadow-xs">
-              <span className="text-[10px] text-[#5871A5] font-bold uppercase block">
+            <div className="p-4 rounded-xl bg-white border border-[#DCD8CE] shadow-xs">
+              <span className="text-[10px] text-[#4A5568] font-bold uppercase block">
                 High Probability Value
               </span>
               <span className="text-xl font-extrabold text-emerald-700">
                 {formatLakh(data?.sales?.highProbValueLakh || 0)}
               </span>
-              <span className="text-[11px] text-[#5871A5] block mt-1">Confirmed Procurement Stage</span>
+              <span className="text-[11px] text-[#4A5568] block mt-1">Confirmed Procurement Stage</span>
             </div>
 
-            <div className="p-4 rounded-xl bg-white border border-[#D6E3F5] shadow-xs">
-              <span className="text-[10px] text-[#5871A5] font-bold uppercase block">
+            <div className="p-4 rounded-xl bg-white border border-[#DCD8CE] shadow-xs">
+              <span className="text-[10px] text-[#4A5568] font-bold uppercase block">
                 Medium Probability Value
               </span>
-              <span className="text-xl font-extrabold text-[#223FA7]">
+              <span className="text-xl font-extrabold text-[#0F5E63]">
                 {formatLakh(data?.sales?.medProbValueLakh || 0)}
               </span>
-              <span className="text-[11px] text-[#5871A5] block mt-1">Technical Spec / QR Stage</span>
+              <span className="text-[11px] text-[#4A5568] block mt-1">Technical Spec / QR Stage</span>
             </div>
 
-            <div className="p-4 rounded-xl bg-white border border-[#D6E3F5] shadow-xs">
-              <span className="text-[10px] text-[#5871A5] font-bold uppercase block">
+            <div className="p-4 rounded-xl bg-white border border-[#DCD8CE] shadow-xs">
+              <span className="text-[10px] text-[#4A5568] font-bold uppercase block">
                 Expected / Follow-Up Pipeline
               </span>
               <span className="text-xl font-extrabold text-amber-700">
                 {formatLakh(data?.sales?.lowProbValueLakh || 0)}
               </span>
-              <span className="text-[11px] text-[#5871A5] block mt-1">Initial Engagement & Calls</span>
+              <span className="text-[11px] text-[#4A5568] block mt-1">Initial Engagement & Calls</span>
             </div>
           </div>
 
           <Card>
-            <div className="p-4 border-b border-[#D6E3F5] bg-[#F7FBFF] flex items-center justify-between">
+            <div className="p-4 border-b border-[#DCD8CE] bg-[#FBFAF7] flex items-center justify-between">
               <div>
-                <span className="text-xs font-bold text-[#1A1A1A]">
+                <span className="text-xs font-bold text-[#14213D]">
                   Active Territory Opportunities in {zoneName} Zone ({data?.sales?.total || 0})
                 </span>
-                <p className="text-[11px] text-[#5871A5]">
+                <p className="text-[11px] text-[#4A5568]">
                   Live sales pipeline value: <strong>{formatLakh(data?.sales?.pipelineValueLakh || 0)}</strong> across key security accounts.
                 </p>
               </div>
               <Link href="/leads">
-                <Button size="sm" variant="outline" className="text-xs text-[#223FA7]">
+                <Button size="sm" variant="outline" className="text-xs text-[#0F5E63]">
                   View All in CRM <ArrowUpRight className="ml-1 h-3.5 w-3.5" />
                 </Button>
               </Link>
@@ -438,11 +438,11 @@ export default function RegionalPage() {
               <TableBody>
                 {data?.sales?.recentLeads?.map((ld: any) => (
                   <TableRow key={ld.id}>
-                    <TableCell className="font-bold text-[#1A1A1A]">
+                    <TableCell className="font-bold text-[#14213D]">
                       {ld.organisation_name}
-                      <div className="text-[10px] text-[#5871A5] font-normal">{ld.city || 'North Zone'}</div>
+                      <div className="text-[10px] text-[#4A5568] font-normal">{ld.city || 'North Zone'}</div>
                     </TableCell>
-                    <TableCell className="text-[#1A1A1A]">{ld.product_name || 'Security Scanning Hardware'}</TableCell>
+                    <TableCell className="text-[#14213D]">{ld.product_name || 'Security Scanning Hardware'}</TableCell>
                     <TableCell>
                       <Badge variant="outline" size="sm" className="uppercase font-bold">
                         {ld.category}
@@ -463,11 +463,11 @@ export default function RegionalPage() {
                         {ld.probability}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right font-mono font-bold text-[#223FA7]">
+                    <TableCell className="text-right font-mono font-bold text-[#0F5E63]">
                       {formatLakh(ld.value_lakh || 0)}
                     </TableCell>
-                    <TableCell className="text-[#5871A5]">{ld.assigned_rep_name || 'Territory Rep'}</TableCell>
-                    <TableCell className="font-mono text-[#5871A5]">
+                    <TableCell className="text-[#4A5568]">{ld.assigned_rep_name || 'Territory Rep'}</TableCell>
+                    <TableCell className="font-mono text-[#4A5568]">
                       {ld.next_followup_date ? new Date(ld.next_followup_date).toLocaleDateString('en-IN') : '-'}
                     </TableCell>
                   </TableRow>
@@ -482,17 +482,17 @@ export default function RegionalPage() {
       {activeTab === 'visits' && (
         <div className="space-y-4">
           <Card>
-            <div className="p-4 border-b border-[#D6E3F5] bg-[#F7FBFF] flex items-center justify-between">
+            <div className="p-4 border-b border-[#DCD8CE] bg-[#FBFAF7] flex items-center justify-between">
               <div>
-                <span className="text-xs font-bold text-[#1A1A1A]">
+                <span className="text-xs font-bold text-[#14213D]">
                   Field Visit Logs & Customer Encounters ({data?.visits?.total || 0})
                 </span>
-                <p className="text-[11px] text-[#5871A5]">
+                <p className="text-[11px] text-[#4A5568]">
                   Field representatives deploying across state police lines, high-security prisons, and defence outposts.
                 </p>
               </div>
               <Link href="/visits">
-                <Button size="sm" variant="outline" className="text-xs text-[#223FA7]">
+                <Button size="sm" variant="outline" className="text-xs text-[#0F5E63]">
                   Full Tour Planner <ArrowUpRight className="ml-1 h-3.5 w-3.5" />
                 </Button>
               </Link>
@@ -513,18 +513,18 @@ export default function RegionalPage() {
               <TableBody>
                 {data?.visits?.recentVisits?.map((v: any) => (
                   <TableRow key={v.id}>
-                    <TableCell className="font-mono font-bold text-[#1A1A1A] whitespace-nowrap">
+                    <TableCell className="font-mono font-bold text-[#14213D] whitespace-nowrap">
                       {new Date(v.planned_date).toLocaleDateString('en-IN')}
                     </TableCell>
-                    <TableCell className="font-bold text-[#1A1A1A]">
+                    <TableCell className="font-bold text-[#14213D]">
                       {v.organisation_name}
-                      <div className="text-[10px] text-[#5871A5] font-normal flex items-center gap-1">
-                        <MapPin className="h-3 w-3 text-[#223FA7]" />
+                      <div className="text-[10px] text-[#4A5568] font-normal flex items-center gap-1">
+                        <MapPin className="h-3 w-3 text-[#0F5E63]" />
                         <span>{v.location || 'Client HQ'}</span>
                       </div>
                     </TableCell>
-                    <TableCell className="text-[#1A1A1A] max-w-[200px] truncate">{v.purpose || 'Technical brief'}</TableCell>
-                    <TableCell className="text-[#5871A5] whitespace-nowrap">{v.assigned_rep_name || 'Territory Rep'}</TableCell>
+                    <TableCell className="text-[#14213D] max-w-[200px] truncate">{v.purpose || 'Technical brief'}</TableCell>
+                    <TableCell className="text-[#4A5568] whitespace-nowrap">{v.assigned_rep_name || 'Territory Rep'}</TableCell>
                     <TableCell className="whitespace-nowrap">
                       <Badge
                         variant={v.status === 'completed' ? 'success' : v.status === 'planned' ? 'default' : 'warning'}
@@ -534,7 +534,7 @@ export default function RegionalPage() {
                         {v.status}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-[#5871A5] max-w-[180px] truncate font-italic">
+                    <TableCell className="text-[#4A5568] max-w-[180px] truncate font-italic">
                       {v.remarks ? (
                         <span className="text-purple-800 font-medium">{v.remarks}</span>
                       ) : (
@@ -546,7 +546,7 @@ export default function RegionalPage() {
                         size="sm"
                         variant="ghost"
                         onClick={() => handleOpenIntervention(v)}
-                        className="text-xs text-[#223FA7] hover:bg-[#EAF2FF]"
+                        className="text-xs text-[#0F5E63] hover:bg-[#E3EFEE]"
                       >
                         + Add Stop / Also Meet
                       </Button>
@@ -563,17 +563,17 @@ export default function RegionalPage() {
       {activeTab === 'tenders' && (
         <div className="space-y-4">
           <Card>
-            <div className="p-4 border-b border-[#D6E3F5] bg-[#F7FBFF] flex items-center justify-between">
+            <div className="p-4 border-b border-[#DCD8CE] bg-[#FBFAF7] flex items-center justify-between">
               <div>
-                <span className="text-xs font-bold text-[#1A1A1A]">
+                <span className="text-xs font-bold text-[#14213D]">
                   GeM Defense & Security Tenders in {zoneName} Zone ({data?.tenders?.total || 0})
                 </span>
-                <p className="text-[11px] text-[#5871A5]">
+                <p className="text-[11px] text-[#4A5568]">
                   Tender cell procurement opportunities tagged to defence bases, police HQs, and public security in your territory.
                 </p>
               </div>
               <Link href="/tenders">
-                <Button size="sm" variant="outline" className="text-xs text-[#223FA7]">
+                <Button size="sm" variant="outline" className="text-xs text-[#0F5E63]">
                   All GeM Bids <ArrowUpRight className="ml-1 h-3.5 w-3.5" />
                 </Button>
               </Link>
@@ -600,14 +600,14 @@ export default function RegionalPage() {
 
                   return (
                     <TableRow key={t.id}>
-                      <TableCell className="font-bold text-[#1A1A1A] whitespace-nowrap">
-                        <span className="font-mono text-[#223FA7]">{t.tender_no}</span>
+                      <TableCell className="font-bold text-[#14213D] whitespace-nowrap">
+                        <span className="font-mono text-[#0F5E63]">{t.tender_no}</span>
                       </TableCell>
-                      <TableCell className="text-[#1A1A1A]">
-                        <div className="font-semibold text-[#1A1A1A]">{t.department || 'Government Buyer'}</div>
-                        <div className="text-[10px] text-[#5871A5]">{t.city}, {t.state}</div>
+                      <TableCell className="text-[#14213D]">
+                        <div className="font-semibold text-[#14213D]">{t.department || 'Government Buyer'}</div>
+                        <div className="text-[10px] text-[#4A5568]">{t.city}, {t.state}</div>
                       </TableCell>
-                      <TableCell className="text-[#5871A5] max-w-[240px] truncate">{t.requirement_text}</TableCell>
+                      <TableCell className="text-[#4A5568] max-w-[240px] truncate">{t.requirement_text}</TableCell>
                       <TableCell className="whitespace-nowrap">
                         <Badge variant="outline" size="sm" className="uppercase font-bold">
                           {t.category}
@@ -664,10 +664,10 @@ export default function RegionalPage() {
       >
         {selectedEmployee && (
           <div className="space-y-4 text-xs">
-            <div className="p-3.5 rounded-xl bg-[#F7FBFF] border border-[#D6E3F5] flex items-center justify-between">
+            <div className="p-3.5 rounded-xl bg-[#FBFAF7] border border-[#DCD8CE] flex items-center justify-between">
               <div>
-                <span className="text-sm font-bold text-[#1A1A1A] block">{selectedEmployee.full_name}</span>
-                <span className="text-[11px] text-[#5871A5] font-mono">{selectedEmployee.email} &bull; {selectedEmployee.role}</span>
+                <span className="text-sm font-bold text-[#14213D] block">{selectedEmployee.full_name}</span>
+                <span className="text-[11px] text-[#4A5568] font-mono">{selectedEmployee.email} &bull; {selectedEmployee.role}</span>
               </div>
               <Badge
                 variant={
@@ -686,30 +686,30 @@ export default function RegionalPage() {
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-              <div className="p-3 rounded-lg bg-white border border-[#D6E3F5] text-center">
-                <span className="text-[10px] text-[#5871A5] uppercase font-bold block">Tasks Done</span>
-                <span className="text-base font-extrabold text-[#1A1A1A]">
+              <div className="p-3 rounded-lg bg-white border border-[#DCD8CE] text-center">
+                <span className="text-[10px] text-[#4A5568] uppercase font-bold block">Tasks Done</span>
+                <span className="text-base font-extrabold text-[#14213D]">
                   {selectedEmployee.tasks.completed}/{selectedEmployee.tasks.total}
                 </span>
               </div>
-              <div className="p-3 rounded-lg bg-white border border-[#D6E3F5] text-center">
-                <span className="text-[10px] text-[#5871A5] uppercase font-bold block">Overdue</span>
+              <div className="p-3 rounded-lg bg-white border border-[#DCD8CE] text-center">
+                <span className="text-[10px] text-[#4A5568] uppercase font-bold block">Overdue</span>
                 <span className="text-base font-extrabold text-red-600">{selectedEmployee.tasks.overdue}</span>
               </div>
-              <div className="p-3 rounded-lg bg-white border border-[#D6E3F5] text-center">
-                <span className="text-[10px] text-[#5871A5] uppercase font-bold block">Visits Completed</span>
+              <div className="p-3 rounded-lg bg-white border border-[#DCD8CE] text-center">
+                <span className="text-[10px] text-[#4A5568] uppercase font-bold block">Visits Completed</span>
                 <span className="text-base font-extrabold text-emerald-700">{selectedEmployee.visits.completed}</span>
               </div>
-              <div className="p-3 rounded-lg bg-white border border-[#D6E3F5] text-center">
-                <span className="text-[10px] text-[#5871A5] uppercase font-bold block">Pipeline (₹ L)</span>
-                <span className="text-base font-extrabold text-[#223FA7]">{formatLakh(selectedEmployee.leads.valueLakh || 0)}</span>
+              <div className="p-3 rounded-lg bg-white border border-[#DCD8CE] text-center">
+                <span className="text-[10px] text-[#4A5568] uppercase font-bold block">Pipeline (₹ L)</span>
+                <span className="text-base font-extrabold text-[#0F5E63]">{formatLakh(selectedEmployee.leads.valueLakh || 0)}</span>
               </div>
             </div>
 
             <div className="space-y-2">
-              <span className="font-bold text-[#1A1A1A] block">Active Blockers & Escalations</span>
+              <span className="font-bold text-[#14213D] block">Active Blockers & Escalations</span>
               {selectedEmployee.activeBlockers.length === 0 ? (
-                <div className="p-3 text-center text-[#5871A5] bg-[#F7FBFF] rounded-lg border border-[#D6E3F5]">
+                <div className="p-3 text-center text-[#4A5568] bg-[#FBFAF7] rounded-lg border border-[#DCD8CE]">
                   No active blockers currently logged for this employee.
                 </div>
               ) : (
@@ -759,16 +759,16 @@ export default function RegionalPage() {
           )}
 
           {selectedVisit && (
-            <div className="p-3 rounded-lg bg-[#F7FBFF] border border-[#D6E3F5] space-y-1">
-              <div className="font-bold text-[#1A1A1A]">{selectedVisit.organisation_name}</div>
-              <div className="text-[11px] text-[#5871A5]">
+            <div className="p-3 rounded-lg bg-[#FBFAF7] border border-[#DCD8CE] space-y-1">
+              <div className="font-bold text-[#14213D]">{selectedVisit.organisation_name}</div>
+              <div className="text-[11px] text-[#4A5568]">
                 Planned Date: {new Date(selectedVisit.planned_date).toLocaleDateString('en-IN')} &bull; Rep: {selectedVisit.assigned_rep_name}
               </div>
             </div>
           )}
 
           <div>
-            <label className="block text-xs font-bold text-[#1A1A1A] mb-1">
+            <label className="block text-xs font-bold text-[#14213D] mb-1">
               Manager Directive Instructions (e.g. &quot;Also meet Col. Bhatia in Procurement&quot;)
             </label>
             <textarea
@@ -777,7 +777,7 @@ export default function RegionalPage() {
               value={interventionInstructions}
               onChange={(e) => setInterventionInstructions(e.target.value)}
               placeholder="Specify the person to meet, additional enquiry, or critical quotation discussion..."
-              className="w-full rounded-lg border border-[#D6E3F5] bg-white p-2.5 text-xs text-[#1A1A1A] focus:border-[#3770E3] focus:outline-none shadow-xs"
+              className="w-full rounded-lg border border-[#DCD8CE] bg-white p-2.5 text-xs text-[#14213D] focus:border-[#3770E3] focus:outline-none shadow-xs"
             />
           </div>
 

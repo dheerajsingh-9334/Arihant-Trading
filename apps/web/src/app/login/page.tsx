@@ -8,9 +8,10 @@ import {
   UserCheck,
   CheckCircle2,
   AlertCircle,
+  Lock,
 } from 'lucide-react';
 import { useAuth, PRESET_ROLE_USERS } from '@/lib/auth-context';
-import { Button, Input, Card } from '@/components/ui';
+import { Button, Input } from '@/components/ui';
 import type { UserRole } from '@arihant/shared';
 
 export default function LoginPage() {
@@ -44,59 +45,109 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F7FBFF] flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 select-none text-[#1A1A1A]">
-      {/* Brand Header */}
-      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-        <div className="inline-flex items-center justify-center mb-3">
-          <div className="h-14 w-14 rounded-2xl bg-[#223FA7] flex items-center justify-center text-white shadow-md">
-            <Shield className="h-7 w-7" />
+    <div className="min-h-screen bg-[#F6F5F1] grid grid-cols-1 lg:grid-cols-12 select-none text-[#14213D]">
+      {/* Left Column: Brand Hero (matches ui-kit .auth__brand) */}
+      <section className="lg:col-span-5 bg-[#14213D] text-[#E8EAF0] p-8 lg:p-14 flex flex-col justify-between gap-8 border-r border-[#3A4A70]">
+        <div className="space-y-2">
+          <div className="flex items-center gap-2.5">
+            <div className="h-10 w-10 rounded-[8px] bg-[#0F5E63] flex items-center justify-center text-white shadow-xs">
+              <Shield className="h-5 w-5" />
+            </div>
+            <div>
+              <div className="font-serif text-2xl font-bold text-white tracking-tight flex items-center gap-1.5">
+                <span>Arihant</span>
+                <span className="font-sans font-bold text-xs px-1.5 py-0.2 rounded bg-[#0F5E63] text-white">
+                  BOS
+                </span>
+              </div>
+              <p className="text-xs text-[#B8BFCC] font-medium">
+                Defence &amp; Security GeM Enterprise ERP
+              </p>
+            </div>
           </div>
         </div>
 
-        <h2 className="text-2xl font-bold tracking-tight text-[#1A1A1A] flex items-center justify-center gap-2">
-          <span>Arihant</span>
-          <span className="text-[#223FA7] font-extrabold px-2 py-0.5 rounded-md bg-[#EAF2FF] border border-[#D6E3F5] text-xl">
-            BOS
-          </span>
-        </h2>
-        <p className="mt-1 text-xs text-[#5871A5] font-medium">
-          Defence & Security GeM Enterprise Operations
-        </p>
-      </div>
+        <div className="space-y-6 my-auto py-8">
+          <h1 className="font-serif text-3xl lg:text-4xl leading-tight font-bold text-white">
+            Every stage of defence procurement, on one audited record.
+          </h1>
+          <p className="text-sm text-[#B8BFCC] leading-relaxed">
+            From PQ qualification, dual-control internal reviews, and GeM external portal dispatch to live reverse auctions and L1 win/loss post-mortems.
+          </p>
+          <div className="flex flex-wrap gap-2 pt-2">
+            <span className="px-2.5 py-1 rounded-full border border-[#3A4A70] text-xs font-mono text-[#E8EAF0]">
+              PQ Qualification
+            </span>
+            <span className="px-2.5 py-1 rounded-full border border-[#3A4A70] text-xs font-mono text-[#E8EAF0]">
+              Internal Review
+            </span>
+            <span className="px-2.5 py-1 rounded-full border border-[#3A4A70] text-xs font-mono text-[#E8EAF0]">
+              GeM Submission
+            </span>
+            <span className="px-2.5 py-1 rounded-full border border-[#F2B872] text-[#F2B872] text-xs font-mono font-bold bg-[#F2B872]/10">
+              Live Reverse Auction
+            </span>
+            <span className="px-2.5 py-1 rounded-full border border-[#3A4A70] text-xs font-mono text-[#E8EAF0]">
+              L1 Post-Mortem
+            </span>
+          </div>
+        </div>
 
-      {/* Main Container */}
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-4xl">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-          {/* Credentials Card */}
-          <div className="lg:col-span-5 rounded-xl bg-white border border-[#D6E3F5] p-7 shadow-sm flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <h3 className="text-base font-semibold text-[#1A1A1A]">
-                  Sign In
-                </h3>
-                <span className="text-[10px] font-semibold text-[#223FA7] bg-[#EAF2FF] px-2 py-0.5 rounded border border-[#D6E3F5]">
-                  GeM v2.4
+        <div className="p-4 rounded-[10px] bg-[#1F2E52] border border-[#3A4A70] space-y-1">
+          <span className="text-[10px] tracking-wider text-[#B8BFCC] uppercase font-bold">
+            GeM Gateway Status
+          </span>
+          <p className="text-xs text-[#E8EAF0] leading-relaxed">
+            Official GeM Portal Bridge connected. All bids signed with registered DSC and territorial clearance.
+          </p>
+          <span className="text-[11px] text-[#F2B872] font-mono block pt-1">
+            Production Release v2.4 · Delhi HQ
+          </span>
+        </div>
+      </section>
+
+      {/* Right Column: Sign In & Role Picker (matches ui-kit .auth__form) */}
+      <main className="lg:col-span-7 p-6 sm:p-10 lg:p-14 flex items-center justify-center bg-[#F6F5F1]">
+        <div className="w-full max-w-2xl space-y-8">
+          <div>
+            <span className="text-xs font-semibold text-[#4A5568] uppercase tracking-wider">
+              Secure Access Portal
+            </span>
+            <h2 className="font-serif text-3xl font-bold text-[#14213D] mt-1">
+              Sign in to Arihant BOS
+            </h2>
+            <p className="text-xs text-[#4A5568] mt-1">
+              Authenticate with your enterprise credentials or choose one of the 8 RBAC profiles below.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+            {/* Credentials Card */}
+            <div className="md:col-span-6 bg-white border border-[#DCD8CE] rounded-[14px] p-6 shadow-2xs space-y-4">
+              <div className="flex items-center justify-between pb-2 border-b border-[#ECE9E2]">
+                <span className="text-xs font-bold text-[#14213D] uppercase tracking-wider">
+                  Credentials
+                </span>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[#E3EFEE] text-[#0F5E63] border border-[#0F5E63]/30">
+                  Dual-Control
                 </span>
               </div>
-              <p className="text-xs text-[#5871A5] mb-5">
-                Enter your official credentials or select a test role on the right.
-              </p>
 
               {error && (
-                <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-xs text-red-700 flex items-center space-x-2">
-                  <AlertCircle className="h-4 w-4 shrink-0 text-red-600" />
+                <div className="p-3 rounded-[8px] bg-[#FCE8EC] border border-red-200 text-xs text-[#881337] flex items-center space-x-2">
+                  <AlertCircle className="h-4 w-4 shrink-0 text-[#881337]" />
                   <span>{error}</span>
                 </div>
               )}
 
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-3.5">
                 <Input
                   label="Official Email"
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@arihant.com"
+                  placeholder="officer@arihant.com"
                 />
 
                 <Input
@@ -115,83 +166,76 @@ export default function LoginPage() {
                     className="w-full font-semibold text-xs"
                     isLoading={isLoading}
                   >
-                    <span>Log In to Dashboard</span>
+                    <span>Sign in to Dashboard</span>
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </div>
               </form>
+
+              <div className="pt-3 border-t border-[#ECE9E2] text-center">
+                <span className="text-[11px] text-[#4A5568]">
+                  Arihant Trading Corporation &bull; All Rights Reserved
+                </span>
+              </div>
             </div>
 
-            <div className="mt-6 pt-3 border-t border-[#D6E3F5] text-center">
-              <span className="text-[11px] text-[#5871A5]">
-                Arihant Trading Corporation &bull; All Rights Reserved
-              </span>
-            </div>
-          </div>
-
-          {/* Persona Switcher (8 Roles) */}
-          <div className="lg:col-span-7 rounded-xl bg-white border border-[#D6E3F5] p-6 shadow-sm flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center space-x-2">
-                  <UserCheck className="h-4 w-4 text-[#223FA7]" />
-                  <h4 className="text-xs font-bold text-[#1A1A1A] uppercase tracking-wider">
-                    Demo Access Profiles
-                  </h4>
+            {/* Persona Switcher (8 Roles) */}
+            <div className="md:col-span-6 bg-white border border-[#DCD8CE] rounded-[14px] p-5 shadow-2xs space-y-3">
+              <div className="flex items-center justify-between pb-2 border-b border-[#ECE9E2]">
+                <div className="flex items-center space-x-1.5">
+                  <UserCheck className="h-4 w-4 text-[#0F5E63]" />
+                  <span className="text-xs font-bold text-[#14213D] uppercase tracking-wider">
+                    Quick Role Profiles
+                  </span>
                 </div>
-                <span className="text-[11px] font-medium text-[#5871A5] bg-[#F7FBFF] px-2.5 py-0.5 rounded border border-[#D6E3F5]">
-                  Default Password: password123
+                <span className="text-[10px] font-mono text-[#4A5568] bg-[#FBFAF7] px-2 py-0.5 rounded border border-[#DCD8CE]">
+                  8 Clearances
                 </span>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-[400px] overflow-y-auto pr-1">
+              <div className="space-y-2 max-h-[360px] overflow-y-auto pr-1 custom-scrollbar">
                 {(Object.keys(PRESET_ROLE_USERS) as UserRole[]).map((roleKey) => {
                   const info = PRESET_ROLE_USERS[roleKey];
                   const isSelected = activeRoleKey === roleKey;
 
                   return (
-                    <Card
+                    <div
                       key={roleKey}
-                      variant="interactive"
-                      selected={isSelected}
-                      padding="xs"
                       onClick={() => handleQuickRoleSelect(roleKey)}
-                      className="text-left flex flex-col justify-between cursor-pointer"
+                      className={`p-2.5 rounded-[8px] border transition-all cursor-pointer text-left flex items-center justify-between ${
+                        isSelected
+                          ? 'border-[#0F5E63] bg-[#E3EFEE] text-[#0F5E63]'
+                          : 'border-[#DCD8CE] bg-white hover:border-[#0F5E63] hover:bg-[#FBFAF7] text-[#14213D]'
+                      }`}
                     >
-                      <div>
-                        <div className="flex items-center justify-between mb-0.5">
-                          <span className="text-xs font-bold text-[#1A1A1A]">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs font-bold truncate">
                             {info.name}
                           </span>
                           {isSelected && (
-                            <CheckCircle2 className="h-3.5 w-3.5 text-[#223FA7] shrink-0" />
+                            <CheckCircle2 className="h-3.5 w-3.5 text-[#0F5E63] shrink-0" />
                           )}
                         </div>
-                        <div className="text-[11px] text-[#5871A5] truncate">
-                          {info.title}
+                        <div className="text-[11px] text-[#4A5568] truncate">
+                          {info.title} · <span className="font-mono">{info.zone}</span>
                         </div>
                       </div>
-
-                      <div className="mt-2.5 pt-1.5 border-t border-[#D6E3F5]/60 flex items-center justify-between">
-                        <span className="text-[10px] text-[#5871A5] truncate">
-                          {info.zone}
-                        </span>
-                        <span className="text-[9px] font-bold px-1.5 py-0.2 rounded uppercase tracking-wider bg-white text-[#223FA7] border border-[#D6E3F5]">
-                          {roleKey.replace('_', ' ')}
-                        </span>
-                      </div>
-                    </Card>
+                      <span className="ml-2 px-1.5 py-0.2 rounded text-[9px] font-bold uppercase tracking-wider bg-[#FBFAF7] text-[#4A5568] border border-[#DCD8CE] shrink-0">
+                        {roleKey.replace('_', ' ')}
+                      </span>
+                    </div>
                   );
                 })}
               </div>
-            </div>
 
-            <div className="mt-4 p-2.5 rounded-lg bg-[#F7FBFF] border border-[#D6E3F5] text-[11px] text-[#5871A5] text-center font-medium">
-              Select a demo profile above to autofill credentials.
+              <div className="p-2 rounded-[6px] bg-[#FBFAF7] border border-[#DCD8CE] text-[10px] text-[#4A5568] text-center font-medium">
+                Click any clearance above to auto-fill credentials (pw: password123)
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
