@@ -595,6 +595,9 @@ export default function LeadsPage() {
       if (leadForm.organisation_mode === 'existing' && !leadForm.organisation_id) {
         throw new Error('Please select an existing organisation.');
       }
+      if (leadForm.product_ids.length === 0) {
+        throw new Error('Please select at least one Product Interest.');
+      }
 
       await api.post('/leads', {
         organisation_id: leadForm.organisation_mode === 'existing' ? leadForm.organisation_id : undefined,
@@ -727,6 +730,7 @@ export default function LeadsPage() {
       await api.post(`/leads/${selectedLead.id}/products`, { product_id: productId });
       const updated = await api.get(`/leads/${selectedLead.id}`);
       setSelectedLead(updated);
+      fetchLeads();
     } catch (err: any) {
       alert(err.message || 'Failed to attach product.');
     }
@@ -739,6 +743,7 @@ export default function LeadsPage() {
       await api.delete(`/leads/${selectedLead.id}/products/${productId}`);
       const updated = await api.get(`/leads/${selectedLead.id}`);
       setSelectedLead(updated);
+      fetchLeads();
     } catch (err: any) {
       alert(err.message || 'Failed to remove product.');
     }
@@ -1097,7 +1102,7 @@ export default function LeadsPage() {
                   <TableRow key={lead.id} className="group cursor-pointer" onClick={() => handleOpenLead(lead.id)}>
                     <TableCell>
                       <div className="font-bold text-[#14213D] group-hover:text-[#0F5E63] transition-colors line-clamp-1">
-                        {lead.product_name || lead.organisation_name || 'Procurement Opportunity'}
+                        {lead.product_name || (lead.product_interests && lead.product_interests[0]?.name) || lead.organisation_name || 'Procurement Opportunity'}
                       </div>
                       <div className="text-[10px] text-[#4A5568]">
                         <span className="font-mono">#{lead.id.slice(0, 8)}</span> • Source: {lead.source || 'Direct'}
@@ -1158,13 +1163,13 @@ export default function LeadsPage() {
 
                     <TableCell>
                       {lead.product_interests && lead.product_interests.length > 0 ? (
-                        <div className="flex flex-wrap gap-1 max-w-[160px]">
+                        <div className="flex flex-wrap gap-1 max-w-[180px]">
                           {lead.product_interests.slice(0, 2).map((p: any) => (
                             <span
-                              key={p.id}
+                              key={p.product_id || p.id}
                               className="px-1.5 py-0.5 rounded bg-[#E3EFEE] text-[#0F5E63] text-[10px] font-medium truncate"
                             >
-                              {p.name}
+                              {p.name || p.product_name}
                             </span>
                           ))}
                           {lead.product_interests.length > 2 && (
@@ -1173,6 +1178,10 @@ export default function LeadsPage() {
                             </span>
                           )}
                         </div>
+                      ) : lead.product_name ? (
+                        <span className="px-1.5 py-0.5 rounded bg-[#E3EFEE] text-[#0F5E63] text-[10px] font-medium truncate">
+                          {lead.product_name}
+                        </span>
                       ) : (
                         <span className="text-[#4A5568] italic text-[10px]">None tagged</span>
                       )}
@@ -2023,16 +2032,65 @@ export default function LeadsPage() {
               </span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <Select
-                label="Product Interest *"
-                required
-                value={leadForm.product_ids[0] || ''}
-                onChange={(e) => setLeadForm({ ...leadForm, product_ids: e.target.value ? [e.target.value] : [] })}
-                options={[
-                  { value: '', label: 'Select Product Interest...' },
-                  ...productsList.map((p) => ({ value: p.id, label: `${p.name} (${p.category || 'Security'})` })),
-                ]}
-              />
+              <div className="space-y-1.5">
+                <Select
+                  label="Product Interests *"
+                  required={leadForm.product_ids.length === 0}
+                  value=""
+                  onChange={(e) => {
+                    const pid = e.target.value;
+                    if (pid && !leadForm.product_ids.includes(pid)) {
+                      setLeadForm({
+                        ...leadForm,
+                        product_ids: [...leadForm.product_ids, pid],
+                      });
+                    }
+                  }}
+                  options={[
+                    {
+                      value: '',
+                      label:
+                        leadForm.product_ids.length === 0
+                          ? 'Select Product Interest...'
+                          : '+ Add another product interest...',
+                    },
+                    ...productsList
+                      .filter((p) => !leadForm.product_ids.includes(p.id))
+                      .map((p) => ({
+                        value: p.id,
+                        label: `${p.name} (${p.category || 'Security'})`,
+                      })),
+                  ]}
+                />
+                {leadForm.product_ids.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 pt-1">
+                    {leadForm.product_ids.map((pid) => {
+                      const prod = productsList.find((p) => p.id === pid);
+                      return (
+                        <span
+                          key={pid}
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#E3EFEE] text-[#0F5E63] text-xs font-semibold border border-[#0F5E63]/20"
+                        >
+                          <span className="truncate max-w-[200px]">{prod ? prod.name : pid}</span>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setLeadForm({
+                                ...leadForm,
+                                product_ids: leadForm.product_ids.filter((id) => id !== pid),
+                              })
+                            }
+                            className="text-[#0F5E63] hover:text-red-700 transition-colors"
+                            title="Remove product"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
               <Select
                 label="Lead Source *"
                 required
@@ -2254,19 +2312,26 @@ export default function LeadsPage() {
                 <div className="flex flex-wrap gap-2">
                   {selectedLead.product_interests.map((p: any) => (
                     <span
-                      key={p.id}
+                      key={p.product_id || p.id}
                       className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white border border-[#DCD8CE] text-xs font-medium text-[#14213D]"
                     >
-                      <span>{p.name}</span>
+                      <span>{p.name || p.product_name}</span>
                       <button
                         type="button"
-                        onClick={() => handleRemoveProductInterest(p.id)}
-                        className="text-gray-400 hover:text-red-600"
+                        onClick={() => handleRemoveProductInterest(p.product_id || p.id)}
+                        className="text-gray-400 hover:text-red-600 transition-colors"
+                        title="Remove product"
                       >
                         <X className="h-3.5 w-3.5" />
                       </button>
                     </span>
                   ))}
+                </div>
+              ) : selectedLead.product_name ? (
+                <div className="flex flex-wrap gap-2">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white border border-[#DCD8CE] text-xs font-medium text-[#14213D]">
+                    <span>{selectedLead.product_name}</span>
+                  </span>
                 </div>
               ) : (
                 <span className="text-[11px] text-[#4A5568] italic">No products attached yet.</span>

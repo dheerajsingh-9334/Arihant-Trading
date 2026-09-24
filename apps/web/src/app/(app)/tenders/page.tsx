@@ -1231,11 +1231,10 @@ export default function TendersPage() {
                     setActiveHudFilter(null);
                     setPage(1);
                   }}
-                  className={`p-2.5 rounded-lg border cursor-pointer transition-all ${
-                    st.active
+                  className={`p-2.5 rounded-lg border cursor-pointer transition-all ${st.active
                       ? 'bg-[#E3EFEE] border-[#0F5E63] shadow-xs ring-1 ring-[#0F5E63]'
                       : 'bg-[#FBFAF7] border-[#DCD8CE] hover:border-[#0F5E63] hover:bg-white'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center justify-between text-[10px] text-[#4A5568] font-semibold mb-1">
                     <span className="font-bold text-[#0F5E63]">Step {st.stageNum}</span>
@@ -1445,16 +1444,16 @@ export default function TendersPage() {
                                 tender.category?.toLowerCase() === 'pq'
                                   ? 'cyber'
                                   : tender.category?.toLowerCase() === 'general_mha'
-                                  ? 'info'
-                                  : 'default'
+                                    ? 'info'
+                                    : 'default'
                               }
                               size="sm"
                             >
                               {tender.category === 'pq'
                                 ? 'PQ'
                                 : tender.category === 'general_mha'
-                                ? 'General / MHA'
-                                : tender.category || 'Standard'}
+                                  ? 'General / MHA'
+                                  : tender.category || 'Standard'}
                             </Badge>
                           </td>
 
@@ -1478,10 +1477,10 @@ export default function TendersPage() {
                               {tender.estimated_value_lakh
                                 ? `₹ ${tender.estimated_value_lakh} Lakh`
                                 : tender.tender_value
-                                ? `₹ ${(tender.tender_value / 100000).toFixed(2)} Lakh`
-                                : tender.emd_fee
-                                ? `EMD: ${formatINR(tender.emd_fee)}`
-                                : 'EMD: Exempt'}
+                                  ? `₹ ${(tender.tender_value / 100000).toFixed(2)} Lakh`
+                                  : tender.emd_fee
+                                    ? `EMD: ${formatINR(tender.emd_fee)}`
+                                    : 'EMD: Exempt'}
                             </div>
                           </td>
 
@@ -2301,11 +2300,11 @@ export default function TendersPage() {
           />
 
           {/* Group 1: Urgent (≤ 48 Hours) */}
-          <div className="bg-white rounded-xl border border-amber-200 p-4 shadow-2xs space-y-3">
+          <div className="bg-white rounded-[10px] border border-[#E3E7ED] border-l-4 border-l-[#B42318] p-4 shadow-2xs space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-amber-600" />
-                <h4 className="text-sm font-bold text-amber-900">
+                <AlertTriangle className="h-5 w-5 text-[#B42318]" />
+                <h4 className="text-sm font-bold text-[#B42318]">
                   Imminent Closing Deadlines (≤ 48 Hours)
                 </h4>
               </div>
@@ -2315,21 +2314,21 @@ export default function TendersPage() {
             </div>
 
             {categorizedDeadlines.urgent.length === 0 ? (
-              <div className="p-4 rounded-lg bg-amber-50/50 border border-amber-100 text-xs text-amber-800 text-center">
+              <div className="p-4 rounded-[8px] bg-[#F9FAFB] border border-dashed border-[#E3E7ED] text-xs text-[#5E6A7C] text-center">
                 Zero tenders closing within the next 48 hours.
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {categorizedDeadlines.urgent.map((t) => (
-                  <div key={t.id} className="p-3.5 rounded-xl border border-amber-300 bg-amber-50/40 flex items-start justify-between">
+                  <div key={t.id} className="p-3.5 rounded-[10px] border border-[#F6CFC9] bg-[#FEF1EF]/40 flex items-start justify-between">
                     <div>
-                      <div className="font-bold text-xs text-[#14213D] flex items-center gap-1.5">
+                      <div className="font-bold text-xs text-[#152235] flex items-center gap-1.5">
                         <span>{t.tender_number || t.tender_no}</span>
                         <Badge variant="urgent" size="sm">CLOSING SOON</Badge>
                       </div>
-                      <p className="text-[11px] text-[#4A5568] mt-1 font-medium">{t.department}</p>
-                      <p className="text-[10px] text-gray-700 mt-0.5">Deadline: {new Date(t.submission_deadline || t.bid_closing_date).toLocaleString('en-IN')}</p>
-                      <p className="text-[10px] text-[#0F5E63] font-semibold mt-1">Owner: {t.owner_name || t.assigned_person_name || 'Unassigned'}</p>
+                      <p className="text-[11px] text-[#5E6A7C] mt-1 font-medium">{t.department}</p>
+                      <p className="text-[10px] text-[#5E6A7C] mt-0.5">Deadline: {new Date(t.submission_deadline || t.bid_closing_date).toLocaleString('en-IN')}</p>
+                      <p className="text-[10px] text-[#0F5E4E] font-semibold mt-1">Owner: {t.owner_name || t.assigned_person_name || 'Unassigned'}</p>
                     </div>
                     <Button size="xs" variant="primary" onClick={() => openTenderDetails(t)}>
                       Inspect & Act
@@ -2341,11 +2340,11 @@ export default function TendersPage() {
           </div>
 
           {/* Group 2: Upcoming Submissions (Next 3 to 7 Days) (§24) */}
-          <div className="bg-white rounded-xl border border-blue-200 p-4 shadow-2xs space-y-3">
+          <div className="bg-white rounded-[10px] border border-[#E3E7ED] p-4 shadow-2xs space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Calendar className="h-5 w-5 text-[#0F5E63]" />
-                <h4 className="text-sm font-bold text-[#14213D]">
+                <Calendar className="h-5 w-5 text-[#0F5E4E]" />
+                <h4 className="text-sm font-bold text-[#152235]">
                   Upcoming Submissions (Next 3 to 7 Days)
                 </h4>
               </div>
@@ -2355,27 +2354,27 @@ export default function TendersPage() {
             </div>
 
             {categorizedDeadlines.upcoming.length === 0 ? (
-              <div className="p-4 rounded-lg bg-blue-50/40 border border-blue-100 text-xs text-[#4A5568] text-center">
+              <div className="p-4 rounded-[8px] bg-[#F9FAFB] border border-dashed border-[#E3E7ED] text-xs text-[#5E6A7C] text-center">
                 Zero submissions scheduled between 3 to 7 days.
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 {categorizedDeadlines.upcoming.map((t) => (
-                  <div key={t.id} className="p-3.5 rounded-xl border border-[#DCD8CE] bg-white flex flex-col justify-between hover:border-[#0F5E63] transition-all">
+                  <div key={t.id} className="p-3.5 rounded-[10px] border border-[#E3E7ED] bg-white flex flex-col justify-between hover:border-[#16917A] transition-all">
                     <div>
-                      <div className="font-bold text-xs text-[#14213D] flex items-center justify-between">
+                      <div className="font-bold text-xs text-[#152235] flex items-center justify-between">
                         <span className="truncate">{t.tender_number || t.tender_no}</span>
                         <Badge variant="outline" size="sm">{t.tender_category || t.category || 'Tender'}</Badge>
                       </div>
-                      <p className="text-[11px] text-[#4A5568] mt-1 font-medium truncate">{t.department}</p>
-                      <p className="text-[10px] text-gray-700 mt-0.5">
+                      <p className="text-[11px] text-[#5E6A7C] mt-1 font-medium truncate">{t.department}</p>
+                      <p className="text-[10px] text-[#5E6A7C] mt-0.5">
                         Closing: {new Date(t.submission_deadline || t.bid_closing_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </p>
-                      <p className="text-[10px] text-[#0F5E63] font-semibold mt-0.5">
+                      <p className="text-[10px] text-[#0F5E4E] font-semibold mt-0.5">
                         Owner: {t.owner_name || t.assigned_person_name || 'Assigned Team'}
                       </p>
                     </div>
-                    <div className="pt-2 flex items-center justify-end gap-1.5 border-t border-[#DCD8CE]/60 mt-2">
+                    <div className="pt-2 flex items-center justify-end gap-1.5 border-t border-[#E3E7ED] mt-2">
                       <Button size="xs" variant="secondary" onClick={() => openTenderDetails(t)}>
                         Inspect & Draft
                       </Button>
@@ -2387,11 +2386,11 @@ export default function TendersPage() {
           </div>
 
           {/* Group 3: Pending Internal Approvals (§24) */}
-          <div className="bg-white rounded-xl border border-blue-200 p-4 shadow-2xs space-y-3">
+          <div className="bg-white rounded-[10px] border border-[#E3E7ED] p-4 shadow-2xs space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <ShieldCheck className="h-5 w-5 text-[#0F5E63]" />
-                <h4 className="text-sm font-bold text-[#14213D]">
+                <ShieldCheck className="h-5 w-5 text-[#0F5E4E]" />
+                <h4 className="text-sm font-bold text-[#152235]">
                   Pending Internal Approvals Awaiting Dual-Control Signoff
                 </h4>
               </div>
@@ -2401,19 +2400,19 @@ export default function TendersPage() {
             </div>
 
             {categorizedDeadlines.awaitingSignoff.length === 0 ? (
-              <div className="p-4 rounded-lg bg-blue-50/50 border border-blue-100 text-xs text-[#4A5568] text-center">
+              <div className="p-4 rounded-[8px] bg-[#F9FAFB] border border-dashed border-[#E3E7ED] text-xs text-[#5E6A7C] text-center">
                 All participation requests have been reviewed and approved.
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {categorizedDeadlines.awaitingSignoff.map((t) => (
-                  <div key={t.id} className="p-3.5 rounded-xl border border-[#DCD8CE] bg-white flex items-start justify-between">
+                  <div key={t.id} className="p-3.5 rounded-[10px] border border-[#E3E7ED] bg-white flex items-start justify-between">
                     <div>
-                      <span className="font-bold text-xs text-[#14213D] block">{t.tender_number || t.tender_no}</span>
-                      <p className="text-[11px] text-[#4A5568] mt-0.5">{t.department}</p>
-                      <p className="text-[10px] text-amber-700 font-semibold mt-1">Status: Awaiting Management Decision</p>
+                      <span className="font-bold text-xs text-[#152235] block">{t.tender_number || t.tender_no}</span>
+                      <p className="text-[11px] text-[#5E6A7C] mt-0.5">{t.department}</p>
+                      <p className="text-[10px] text-[#A15C07] font-semibold mt-1">Status: Awaiting Management Decision</p>
                     </div>
-                    <Button size="xs" variant="secondary" onClick={() => openTenderDetails(t)}>
+                    <Button size="xs" variant="cyber" onClick={() => openTenderDetails(t)}>
                       Review Signoff
                     </Button>
                   </div>
@@ -2423,11 +2422,11 @@ export default function TendersPage() {
           </div>
 
           {/* Group 4: Incomplete Tender Preparation (§24) */}
-          <div className="bg-white rounded-xl border border-[#DCD8CE] p-4 shadow-2xs space-y-3">
+          <div className="bg-white rounded-[10px] border border-[#E3E7ED] p-4 shadow-2xs space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Clock className="h-5 w-5 text-blue-600" />
-                <h4 className="text-sm font-bold text-[#14213D]">
+                <Clock className="h-5 w-5 text-[#0F5E4E]" />
+                <h4 className="text-sm font-bold text-[#152235]">
                   Incomplete Tender Preparation (Under Active Drafting)
                 </h4>
               </div>
@@ -2437,17 +2436,17 @@ export default function TendersPage() {
             </div>
 
             {categorizedDeadlines.incompletePrep.length === 0 ? (
-              <div className="p-4 rounded-lg bg-slate-50 text-center text-xs text-[#4A5568]">
+              <div className="p-4 rounded-[8px] bg-[#F9FAFB] border border-dashed border-[#E3E7ED] text-center text-xs text-[#5E6A7C]">
                 No imminent drafting deadlines.
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 {categorizedDeadlines.incompletePrep.map((t) => (
-                  <div key={t.id} className="p-3 rounded-lg border border-[#DCD8CE] bg-[#F8FAFC] space-y-2">
-                    <span className="font-bold text-xs text-[#14213D] block truncate">{t.tender_number || t.tender_no}</span>
-                    <p className="text-[10px] text-[#4A5568] truncate">{t.department}</p>
+                  <div key={t.id} className="p-3 rounded-[8px] border border-[#E3E7ED] bg-[#F9FAFB] space-y-2">
+                    <span className="font-bold text-xs text-[#152235] block truncate">{t.tender_number || t.tender_no}</span>
+                    <p className="text-[10px] text-[#5E6A7C] truncate">{t.department}</p>
                     <div className="flex items-center justify-between pt-1">
-                      <span className="text-[10px] text-[#0F5E63] font-semibold">{t.owner_name || 'Assigned Team'}</span>
+                      <span className="text-[10px] text-[#0F5E4E] font-semibold">{t.owner_name || 'Assigned Team'}</span>
                       <Button size="xs" variant="outline" onClick={() => openTenderDetails(t)}>Open</Button>
                     </div>
                   </div>
@@ -2457,11 +2456,11 @@ export default function TendersPage() {
           </div>
 
           {/* Group 5: Tender Result Follow-Ups (§24) */}
-          <div className="bg-white rounded-xl border border-[#DCD8CE] p-4 shadow-2xs space-y-3">
+          <div className="bg-white rounded-[10px] border border-[#E3E7ED] p-4 shadow-2xs space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Send className="h-5 w-5 text-emerald-600" />
-                <h4 className="text-sm font-bold text-[#14213D]">
+                <Send className="h-5 w-5 text-[#0F5E4E]" />
+                <h4 className="text-sm font-bold text-[#152235]">
                   Post-Submission Result Follow-Ups (Awaiting Commercial Evaluation / Award)
                 </h4>
               </div>
@@ -2471,24 +2470,24 @@ export default function TendersPage() {
             </div>
 
             {categorizedDeadlines.resultFollowups.length === 0 ? (
-              <div className="p-4 rounded-lg bg-slate-50 border border-[#DCD8CE] text-center text-xs text-[#4A5568]">
+              <div className="p-4 rounded-[8px] bg-[#F9FAFB] border border-dashed border-[#E3E7ED] text-center text-xs text-[#5E6A7C]">
                 No pending result follow-ups. All submitted bids have outcomes recorded.
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 {categorizedDeadlines.resultFollowups.map((t) => (
-                  <div key={t.id} className="p-3.5 rounded-xl border border-[#DCD8CE] bg-white space-y-2 hover:border-[#0F5E63] transition-all flex flex-col justify-between">
+                  <div key={t.id} className="p-3.5 rounded-[10px] border border-[#E3E7ED] bg-white space-y-2 hover:border-[#16917A] transition-all flex flex-col justify-between">
                     <div>
                       <div className="flex items-center justify-between">
-                        <span className="font-bold text-xs text-[#14213D] truncate">{t.tender_number || t.tender_no}</span>
+                        <span className="font-bold text-xs text-[#152235] truncate">{t.tender_number || t.tender_no}</span>
                         <Badge variant="cyber" size="sm">{t.status.replace(/_/g, ' ').toUpperCase()}</Badge>
                       </div>
-                      <p className="text-[11px] text-[#4A5568] font-medium truncate mt-0.5">{t.department}</p>
-                      <p className="text-[10px] text-gray-600 mt-0.5">
+                      <p className="text-[11px] text-[#5E6A7C] font-medium truncate mt-0.5">{t.department}</p>
+                      <p className="text-[10px] text-[#5E6A7C] mt-0.5">
                         Closing: {t.submission_deadline || t.bid_closing_date ? new Date(t.submission_deadline || t.bid_closing_date).toLocaleDateString('en-IN') : 'Completed'}
                       </p>
                     </div>
-                    <div className="pt-2 flex items-center gap-1.5 border-t border-[#DCD8CE]/60">
+                    <div className="pt-2 flex items-center gap-1.5 border-t border-[#E3E7ED]">
                       <Button size="xs" variant="outline" className="flex-1" onClick={() => openTenderDetails(t)}>
                         Inspect
                       </Button>
@@ -2614,8 +2613,8 @@ export default function TendersPage() {
                               ['resolved', 'closed'].includes(issue.resolution_status?.toLowerCase())
                                 ? 'success'
                                 : ['escalated'].includes(issue.resolution_status?.toLowerCase())
-                                ? 'danger'
-                                : 'warning'
+                                  ? 'danger'
+                                  : 'warning'
                             }
                             size="sm"
                           >
@@ -2689,8 +2688,8 @@ export default function TendersPage() {
                     selectedTender.status === 'won'
                       ? 'success'
                       : selectedTender.status === 'lost' || selectedTender.status === 'rejected_internally'
-                      ? 'danger'
-                      : 'info'
+                        ? 'danger'
+                        : 'info'
                   }
                   size="sm"
                 >
@@ -2726,44 +2725,40 @@ export default function TendersPage() {
               <button
                 type="button"
                 onClick={() => setDetailTab('overview')}
-                className={`flex items-center justify-center text-center py-2 px-2.5 rounded-lg font-semibold text-xs transition-all cursor-pointer ${
-                  detailTab === 'overview'
+                className={`flex items-center justify-center text-center py-2 px-2.5 rounded-lg font-semibold text-xs transition-all cursor-pointer ${detailTab === 'overview'
                     ? 'bg-white text-[#0F5E63] shadow-xs border border-[#DCD8CE]/80'
                     : 'text-[#4A5568] hover:text-[#14213D] hover:bg-white/60'
-                }`}
+                  }`}
               >
                 <span>Overview</span>
               </button>
               <button
                 type="button"
                 onClick={() => setDetailTab('approval')}
-                className={`flex items-center justify-center text-center py-2 px-2.5 rounded-lg font-semibold text-xs transition-all cursor-pointer ${
-                  detailTab === 'approval'
+                className={`flex items-center justify-center text-center py-2 px-2.5 rounded-lg font-semibold text-xs transition-all cursor-pointer ${detailTab === 'approval'
                     ? 'bg-white text-[#0F5E63] shadow-xs border border-[#DCD8CE]/80'
                     : 'text-[#4A5568] hover:text-[#14213D] hover:bg-white/60'
-                }`}
+                  }`}
               >
                 <span>Approval</span>
               </button>
               <button
                 type="button"
                 onClick={() => setDetailTab('transitions')}
-                className={`flex items-center justify-center text-center py-2 px-2.5 rounded-lg font-semibold text-xs transition-all cursor-pointer ${
-                  detailTab === 'transitions'
+                className={`flex items-center justify-center text-center py-2 px-2.5 rounded-lg font-semibold text-xs transition-all cursor-pointer ${detailTab === 'transitions'
                     ? 'bg-white text-[#0F5E63] shadow-xs border border-[#DCD8CE]/80'
                     : 'text-[#4A5568] hover:text-[#14213D] hover:bg-white/60'
-                }`}
+                  }`}
               >
                 <span>Transitions</span>
               </button>
               <button
                 type="button"
                 onClick={() => setDetailTab('portal_issues')}
-                className={`flex items-center justify-center text-center py-2 px-2.5 rounded-lg font-semibold text-xs transition-all cursor-pointer ${
-                  detailTab === 'portal_issues'
+                className={`flex items-center justify-center text-center py-2 px-2.5 rounded-lg font-semibold text-xs transition-all cursor-pointer ${detailTab === 'portal_issues'
                     ? 'bg-white text-[#0F5E63] shadow-xs border border-[#DCD8CE]/80'
                     : 'text-[#4A5568] hover:text-[#14213D] hover:bg-white/60'
-                }`}
+                  }`}
               >
                 <span>Portal Issues</span>
                 {portalIssues.length > 0 && (
@@ -2775,22 +2770,20 @@ export default function TendersPage() {
               <button
                 type="button"
                 onClick={() => setDetailTab('outcome')}
-                className={`flex items-center justify-center text-center py-2 px-2.5 rounded-lg font-semibold text-xs transition-all cursor-pointer ${
-                  detailTab === 'outcome'
+                className={`flex items-center justify-center text-center py-2 px-2.5 rounded-lg font-semibold text-xs transition-all cursor-pointer ${detailTab === 'outcome'
                     ? 'bg-white text-[#0F5E63] shadow-xs border border-[#DCD8CE]/80'
                     : 'text-[#4A5568] hover:text-[#14213D] hover:bg-white/60'
-                }`}
+                  }`}
               >
                 <span>Win / Loss</span>
               </button>
               <button
                 type="button"
                 onClick={() => setDetailTab('timeline')}
-                className={`flex items-center justify-center text-center py-2 px-2.5 rounded-lg font-semibold text-xs transition-all cursor-pointer ${
-                  detailTab === 'timeline'
+                className={`flex items-center justify-center text-center py-2 px-2.5 rounded-lg font-semibold text-xs transition-all cursor-pointer ${detailTab === 'timeline'
                     ? 'bg-white text-[#0F5E63] shadow-xs border border-[#DCD8CE]/80'
                     : 'text-[#4A5568] hover:text-[#14213D] hover:bg-white/60'
-                }`}
+                  }`}
               >
                 <span>Audit Trail</span>
                 {activities.length > 0 && (
@@ -3090,8 +3083,8 @@ export default function TendersPage() {
                                 issue.resolution_status?.toLowerCase() === 'resolved' || issue.resolution_status?.toLowerCase() === 'closed'
                                   ? 'success'
                                   : issue.resolution_status?.toLowerCase() === 'escalated'
-                                  ? 'danger'
-                                  : 'warning'
+                                    ? 'danger'
+                                    : 'warning'
                               }
                               size="sm"
                             >
@@ -3369,12 +3362,12 @@ export default function TendersPage() {
                 zonesMaster.length > 0
                   ? zonesMaster.map((z) => ({ value: z.name, label: `${z.name} Zone (${z.code})` }))
                   : [
-                      { value: 'North', label: 'North Zone (N)' },
-                      { value: 'North East', label: 'North East Zone (NE)' },
-                      { value: 'South', label: 'South Zone (S)' },
-                      { value: 'East', label: 'East Zone (E)' },
-                      { value: 'West', label: 'West Zone (W)' },
-                    ]
+                    { value: 'North', label: 'North Zone (N)' },
+                    { value: 'North East', label: 'North East Zone (NE)' },
+                    { value: 'South', label: 'South Zone (S)' },
+                    { value: 'East', label: 'East Zone (E)' },
+                    { value: 'West', label: 'West Zone (W)' },
+                  ]
               }
             />
             <Select
@@ -3385,13 +3378,13 @@ export default function TendersPage() {
                 availableRegions.length > 0
                   ? availableRegions.map((r) => ({ value: r.name, label: r.name }))
                   : [
-                      { value: 'Delhi NCR', label: 'Delhi NCR' },
-                      { value: 'Punjab & Chandigarh', label: 'Punjab & Chandigarh' },
-                      { value: 'Haryana', label: 'Haryana' },
-                      { value: 'Rajasthan', label: 'Rajasthan' },
-                      { value: 'Uttar Pradesh', label: 'Uttar Pradesh' },
-                      { value: 'Jammu & Kashmir', label: 'Jammu & Kashmir' },
-                    ]
+                    { value: 'Delhi NCR', label: 'Delhi NCR' },
+                    { value: 'Punjab & Chandigarh', label: 'Punjab & Chandigarh' },
+                    { value: 'Haryana', label: 'Haryana' },
+                    { value: 'Rajasthan', label: 'Rajasthan' },
+                    { value: 'Uttar Pradesh', label: 'Uttar Pradesh' },
+                    { value: 'Jammu & Kashmir', label: 'Jammu & Kashmir' },
+                  ]
               }
             />
             <Input

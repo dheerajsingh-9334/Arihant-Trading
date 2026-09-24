@@ -71,8 +71,8 @@ export const Heading = React.forwardRef<HTMLHeadingElement, HeadingProps>(
       effectiveSize === '3xl' || effectiveSize === '2xl'
         ? 'bold'
         : effectiveSize === 'xl' || effectiveSize === 'lg' || effectiveSize === 'md'
-        ? 'semibold'
-        : 'semibold';
+          ? 'semibold'
+          : 'semibold';
 
     const effectiveWeight = weight ? weights[weight] : weights[defaultWeight];
 
@@ -109,15 +109,15 @@ export interface TextProps extends React.HTMLAttributes<HTMLElement> {
   as?: 'p' | 'span' | 'div' | 'label' | 'small';
   size?: '2xs' | 'xs' | 'sm' | 'base' | 'md' | 'lg' | 'xl';
   color?:
-    | 'primary'
-    | 'secondary'
-    | 'muted'
-    | 'brand'
-    | 'accent'
-    | 'danger'
-    | 'success'
-    | 'warning'
-    | 'white';
+  | 'primary'
+  | 'secondary'
+  | 'muted'
+  | 'brand'
+  | 'accent'
+  | 'danger'
+  | 'success'
+  | 'warning'
+  | 'white';
   weight?: 'normal' | 'medium' | 'semibold' | 'bold';
   align?: 'left' | 'center' | 'right';
   truncate?: boolean;

@@ -5,13 +5,13 @@ import { twMerge } from 'tailwind-merge';
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?:
-    | 'primary'
-    | 'secondary'
-    | 'outline'
-    | 'danger'
-    | 'ghost'
-    | 'success'
-    | 'cyber';
+  | 'primary'
+  | 'secondary'
+  | 'outline'
+  | 'danger'
+  | 'ghost'
+  | 'success'
+  | 'cyber';
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'icon';
   isLoading?: boolean;
   leftIcon?: React.ReactNode;

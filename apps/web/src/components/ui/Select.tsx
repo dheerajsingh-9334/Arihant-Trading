@@ -34,14 +34,14 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
         >
           {options
             ? options.map((opt) => (
-                <option
-                  key={opt.value}
-                  value={opt.value}
-                  className="bg-white text-[#14213D]"
-                >
-                  {opt.label}
-                </option>
-              ))
+              <option
+                key={opt.value}
+                value={opt.value}
+                className="bg-white text-[#14213D]"
+              >
+                {opt.label}
+              </option>
+            ))
             : children}
         </select>
         {error && <p className="text-xs text-[#881337] font-medium">{error}</p>}

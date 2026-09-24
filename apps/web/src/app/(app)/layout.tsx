@@ -52,11 +52,11 @@ export default function AppLayout({
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#F6F5F1] flex flex-col items-center justify-center space-y-3">
-        <div className="h-12 w-12 rounded-[10px] bg-[#0F5E63] flex items-center justify-center shadow-md animate-pulse">
+      <div className="min-h-screen bg-[#F7F8FA] flex flex-col items-center justify-center space-y-3">
+        <div className="h-12 w-12 rounded-[10px] bg-[#0F5E4E] flex items-center justify-center shadow-md animate-pulse">
           <Shield className="h-6 w-6 text-white" />
         </div>
-        <p className="text-xs font-semibold text-[#4A5568] tracking-wider uppercase">
+        <p className="text-xs font-semibold text-[#5E6A7C] tracking-wider uppercase">
           Loading Arihant BOS...
         </p>
       </div>
@@ -76,13 +76,13 @@ export default function AppLayout({
 
   return (
     <SidebarProvider>
-      <div className="h-screen bg-[#F6F5F1] flex flex-row text-[#14213D] overflow-hidden">
+      <div className="h-screen bg-[#F7F8FA] flex flex-row text-[#152235] overflow-hidden">
         <Sidebar />
         <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
           <Navbar onOpenCommand={() => setIsCommandOpen(true)} />
-          <main className="flex-1 overflow-y-auto p-6 lg:p-8 bg-[#F6F5F1] custom-scrollbar">
+          <main className="flex-1 overflow-y-auto p-6 lg:p-8 bg-[#F7F8FA] custom-scrollbar">
             {isUnauthorized ? (
-              <div className="max-w-2xl mx-auto my-12 bg-white border border-[#DCD8CE] rounded-[14px] p-8 shadow-xs text-center space-y-5">
+              <div className="max-w-2xl mx-auto my-12 bg-white border border-[#E3E7ED] rounded-[10px] p-8 shadow-xs text-center space-y-5">
                 <div className="h-14 w-14 rounded-[10px] bg-[#FBEBDD] border border-[#9A3412]/30 flex items-center justify-center mx-auto text-[#7C2D12]">
                   <ShieldAlert className="h-7 w-7" />
                 </div>

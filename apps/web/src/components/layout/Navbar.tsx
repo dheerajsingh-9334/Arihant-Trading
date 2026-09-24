@@ -5,8 +5,6 @@ import Link from 'next/link';
 import {
   Bell,
   Search,
-  Clock,
-  ShieldCheck,
   LogOut,
   Menu,
 } from 'lucide-react';
@@ -22,28 +20,6 @@ export const Navbar: React.FC<{ onOpenCommand?: () => void }> = ({
   const { user, logout } = useAuth();
   const { toggleMobile } = useSidebar();
   const [unreadCount, setUnreadCount] = useState(0);
-  const [istTime, setIstTime] = useState('');
-
-  // Live IST Clock
-  useEffect(() => {
-    const updateTime = () => {
-      const now = new Date();
-      const options: Intl.DateTimeFormatOptions = {
-        timeZone: 'Asia/Kolkata',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-      };
-      setIstTime(new Intl.DateTimeFormat('en-IN', options).format(now));
-    };
-
-    updateTime();
-    const interval = setInterval(updateTime, 1000);
-    return () => clearInterval(interval);
-  }, []);
 
   // Fetch unread count & listen to socket notifications
   useEffect(() => {
@@ -73,14 +49,14 @@ export const Navbar: React.FC<{ onOpenCommand?: () => void }> = ({
   }, [user]);
 
   return (
-    <header className="h-[64px] border-b border-[#DCD8CE] bg-white/95 backdrop-blur-md px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30 select-none text-[#14213D]">
+    <header className="h-[64px] border-b border-[#E3E7ED] bg-white/95 backdrop-blur-md px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30 select-none text-[#152235]">
       {/* Search / Cmd+K Trigger */}
       <div className="flex items-center flex-1 max-w-md min-w-[200px] mr-3">
         {/* Mobile Drawer Trigger Button */}
         <button
           type="button"
           onClick={toggleMobile}
-          className="flex lg:hidden items-center justify-center p-2 mr-2.5 rounded-[8px] bg-white hover:bg-[#FBFAF7] border border-[#DCD8CE] text-[#4A5568] hover:text-[#0F5E63] transition-all cursor-pointer shrink-0 shadow-2xs"
+          className="flex lg:hidden items-center justify-center p-2 mr-2.5 rounded-[8px] bg-white hover:bg-[#F1F7F5] border border-[#E3E7ED] text-[#5E6A7C] hover:text-[#0F5E4E] transition-all cursor-pointer shrink-0 shadow-2xs"
           title="Open Menu Drawer"
           aria-label="Open Menu Drawer"
         >
@@ -91,10 +67,10 @@ export const Navbar: React.FC<{ onOpenCommand?: () => void }> = ({
         <button
           type="button"
           onClick={onOpenCommand}
-          className="w-full flex items-center justify-between px-3.5 py-1.5 rounded-[8px] bg-[#F6F5F1] border border-[#C9C4B8] hover:border-[#0F5E63] text-[#4A5568] text-xs transition-colors cursor-pointer whitespace-nowrap overflow-hidden"
+          className="w-full flex items-center justify-between px-3.5 py-1.5 rounded-[8px] bg-[#F9FAFB] border border-[#E3E7ED] hover:border-[#16917A] text-[#5E6A7C] text-xs transition-colors cursor-pointer whitespace-nowrap overflow-hidden"
         >
           <div className="flex items-center space-x-2 truncate">
-            <Search className="h-3.5 w-3.5 text-[#4A5568] shrink-0" />
+            <Search className="h-3.5 w-3.5 text-[#5E6A7C] shrink-0" />
             <span className="text-[13px] truncate">Search tenders, leads, accounts...</span>
           </div>
           <Kbd className="shrink-0 ml-2 hidden sm:inline-block">⌘K</Kbd>
@@ -103,30 +79,16 @@ export const Navbar: React.FC<{ onOpenCommand?: () => void }> = ({
 
       {/* Right controls */}
       <div className="flex items-center space-x-2.5 shrink-0">
-        {/* Live IST clock */}
-        <div className="hidden xl:flex items-center space-x-2 px-3 py-1.5 rounded-[8px] bg-[#FBFAF7] border border-[#DCD8CE] text-xs tabular-nums text-[#14213D] shrink-0">
-          <Clock className="h-3.5 w-3.5 text-[#0F5E63]" />
-          <span className="font-mono font-semibold">{istTime || 'IST Clock'}</span>
-          <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-[#E3EFEE] text-[#0F5E63] font-bold border border-[#0F5E63]/30">
-            FY 26-27
-          </span>
-        </div>
-
-        {/* System status */}
-        <div className="hidden md:flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-[#E3EFEE] border border-[#0F5E63]/30 text-[#0F5E63] text-xs font-medium shrink-0">
-          <ShieldCheck className="h-3.5 w-3.5" />
-          <span className="text-[11px] font-semibold">Gateway Active</span>
-        </div>
 
         {/* Notifications Icon with unread badge */}
         <Link
           href="/notifications"
-          className="relative p-2 rounded-[8px] bg-white hover:bg-[#FBFAF7] border border-[#DCD8CE] text-[#4A5568] hover:text-[#0F5E63] transition-colors"
+          className="relative p-2 rounded-[8px] bg-white hover:bg-[#F1F7F5] border border-[#E3E7ED] text-[#5E6A7C] hover:text-[#0F5E4E] transition-colors"
           title="Notifications"
         >
           <Bell className="h-4 w-4" />
           {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-[#9A3412] text-white text-[10px] font-bold flex items-center justify-center animate-pulse shadow-xs">
+            <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-[#B42318] text-white text-[10px] font-bold flex items-center justify-center animate-pulse shadow-xs">
               {unreadCount > 9 ? '9+' : unreadCount}
             </span>
           )}
@@ -134,16 +96,16 @@ export const Navbar: React.FC<{ onOpenCommand?: () => void }> = ({
 
         {/* User Pill & Quick Sign Out */}
         {user && (
-          <div className="flex items-center pl-2 border-l border-[#DCD8CE] gap-2">
-            <div className="hidden sm:flex items-center gap-2 px-2.5 py-1 rounded-[8px] bg-[#FBFAF7] border border-[#DCD8CE]">
-              <div className="h-6 w-6 rounded-md bg-[#0F5E63] text-white flex items-center justify-center text-[11px] font-bold shrink-0">
+          <div className="flex items-center pl-2 border-l border-[#E3E7ED] gap-2">
+            <div className="hidden sm:flex items-center gap-2 px-2.5 py-1 rounded-[8px] bg-white border border-[#E3E7ED]">
+              <div className="h-6 w-6 rounded-md bg-[#0F5E4E] text-white flex items-center justify-center text-[11px] font-bold shrink-0">
                 {user.full_name ? user.full_name[0].toUpperCase() : 'U'}
               </div>
               <div className="flex flex-col text-left">
-                <span className="text-xs font-bold text-[#14213D] leading-tight truncate max-w-[120px]">
+                <span className="text-xs font-bold text-[#132822] leading-tight truncate max-w-[120px]">
                   {user.full_name}
                 </span>
-                <span className="text-[9px] font-semibold text-[#4A5568] uppercase tracking-wider leading-none">
+                <span className="text-[9px] font-semibold text-[#84928C] uppercase tracking-wider leading-none">
                   {user.role.replace('_', ' ')}
                 </span>
               </div>
@@ -152,9 +114,9 @@ export const Navbar: React.FC<{ onOpenCommand?: () => void }> = ({
             <button
               onClick={logout}
               title="Sign Out of Arihant BOS"
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-[8px] bg-white hover:bg-[#FCE8EC] text-[#14213D] hover:text-[#881337] border border-[#DCD8CE] hover:border-red-200 text-xs font-semibold transition-all cursor-pointer shadow-2xs group"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-[8px] bg-white hover:bg-[#FEF1EF] text-[#152235] hover:text-[#B42318] border border-[#E3E7ED] hover:border-[#F6CFC9] text-xs font-semibold transition-all cursor-pointer shadow-2xs group"
             >
-              <LogOut className="h-3.5 w-3.5 text-[#4A5568] group-hover:text-[#881337] transition-colors" />
+              <LogOut className="h-3.5 w-3.5 text-[#5E6A7C] group-hover:text-[#B42318] transition-colors" />
               <span className="hidden sm:inline">Sign Out</span>
             </button>
           </div>

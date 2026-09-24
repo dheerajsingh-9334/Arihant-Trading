@@ -248,7 +248,59 @@ export class LeadsService {
       .offset(offset)
       .execute();
 
-    return buildPaginatedResult(leads, total, page, limit);
+    const leadIds = leads.map((l) => l.id);
+    const interestsMap = new Map<string, Array<{ id: string; product_id: string; interest_id: string; name: string; category?: string }>>();
+
+    if (leadIds.length > 0) {
+      const interests = await this.db
+        .selectFrom('lead_product_interests')
+        .innerJoin('products', 'lead_product_interests.product_id', 'products.id')
+        .select([
+          'lead_product_interests.id as interest_id',
+          'lead_product_interests.lead_id',
+          'lead_product_interests.product_id',
+          'products.name',
+          'products.category',
+        ])
+        .where('lead_product_interests.lead_id', 'in', leadIds)
+        .execute();
+
+      for (const item of interests) {
+        let list = interestsMap.get(item.lead_id);
+        if (!list) {
+          list = [];
+          interestsMap.set(item.lead_id, list);
+        }
+        list.push({
+          id: item.product_id,
+          product_id: item.product_id,
+          interest_id: item.interest_id,
+          name: item.name,
+          category: item.category || undefined,
+        });
+      }
+    }
+
+    const leadsWithInterests = leads.map((lead) => {
+      let leadInterests = interestsMap.get(lead.id) || [];
+      if (leadInterests.length === 0 && lead.product_id && lead.product_name) {
+        leadInterests = [
+          {
+            id: lead.product_id,
+            product_id: lead.product_id,
+            interest_id: lead.product_id,
+            name: lead.product_name,
+            category: lead.product_category || undefined,
+          },
+        ];
+      }
+      return {
+        ...lead,
+        product_interests: leadInterests,
+      };
+    });
+
+    return buildPaginatedResult(leadsWithInterests, total, page, limit);
   }
 
   async findOne(id: string, user: AuthUser) {
@@ -296,13 +348,38 @@ export class LeadsService {
     }
 
     // Product interests
-    const productInterests = await this.db
+    let productInterests = await this.db
       .selectFrom('lead_product_interests')
       .innerJoin('products', 'lead_product_interests.product_id', 'products.id')
-      .selectAll('lead_product_interests')
-      .select(['products.name as product_name', 'products.category as product_category'])
+      .select([
+        'lead_product_interests.id as interest_id',
+        'lead_product_interests.lead_id',
+        'lead_product_interests.product_id',
+        'lead_product_interests.product_id as id',
+        'lead_product_interests.created_at',
+        'products.name as name',
+        'products.name as product_name',
+        'products.category as category',
+        'products.category as product_category',
+      ])
       .where('lead_product_interests.lead_id', '=', id)
       .execute();
+
+    if (productInterests.length === 0 && lead.product_id && lead.product_name) {
+      productInterests = [
+        {
+          id: lead.product_id,
+          product_id: lead.product_id,
+          interest_id: lead.product_id,
+          lead_id: lead.id,
+          created_at: lead.created_at,
+          name: lead.product_name,
+          product_name: lead.product_name,
+          category: lead.product_category || undefined,
+          product_category: lead.product_category || undefined,
+        } as any,
+      ];
+    }
 
     // Assignment history
     const assignmentHistory = await this.db
@@ -557,6 +634,7 @@ export class LeadsService {
             product_id: pid,
             created_by: user.id,
           })
+          .onConflict((oc) => oc.columns(['lead_id', 'product_id']).doNothing())
           .execute();
       }
 
@@ -893,8 +971,18 @@ export class LeadsService {
         product_id: productId,
         created_by: user.id,
       })
+      .onConflict((oc) => oc.columns(['lead_id', 'product_id']).doNothing())
       .returningAll()
       .executeTakeFirstOrThrow();
+
+    // If lead has no primary product_id set, update it
+    if (!lead.product_id) {
+      await this.db
+        .updateTable('leads')
+        .set({ product_id: productId, updated_at: new Date() })
+        .where('id', '=', leadId)
+        .execute();
+    }
 
     return inserted;
   }
@@ -905,7 +993,12 @@ export class LeadsService {
     const deleted = await this.db
       .deleteFrom('lead_product_interests')
       .where('lead_id', '=', leadId)
-      .where('product_id', '=', productId)
+      .where((eb) =>
+        eb.or([
+          eb('product_id', '=', productId),
+          eb('id', '=', productId),
+        ]),
+      )
       .returningAll()
       .executeTakeFirst();
 

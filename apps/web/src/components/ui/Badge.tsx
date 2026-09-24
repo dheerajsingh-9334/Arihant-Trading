@@ -4,15 +4,15 @@ import { twMerge } from 'tailwind-merge';
 
 export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   variant?:
-    | 'default'
-    | 'danger'
-    | 'warning'
-    | 'success'
-    | 'info'
-    | 'outline'
-    | 'urgent'
-    | 'cyber'
-    | 'live';
+  | 'default'
+  | 'danger'
+  | 'warning'
+  | 'success'
+  | 'info'
+  | 'outline'
+  | 'urgent'
+  | 'cyber'
+  | 'live';
   size?: 'sm' | 'md';
   hasDot?: boolean;
 }

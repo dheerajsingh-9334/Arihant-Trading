@@ -5,16 +5,16 @@ import { clsx } from 'clsx';
 export interface SurfaceProps extends React.HTMLAttributes<HTMLDivElement> {
   as?: 'div' | 'section' | 'article' | 'aside' | 'span';
   bg?:
-    | 'canvas'
-    | 'card'
-    | 'white'
-    | 'muted'
-    | 'secondary'
-    | 'brand'
-    | 'dangerSubtle'
-    | 'successSubtle'
-    | 'warningSubtle'
-    | 'transparent';
+  | 'canvas'
+  | 'card'
+  | 'white'
+  | 'muted'
+  | 'secondary'
+  | 'brand'
+  | 'dangerSubtle'
+  | 'successSubtle'
+  | 'warningSubtle'
+  | 'transparent';
   border?: 'default' | 'subtle' | 'brand' | 'danger' | 'warning' | 'success' | 'none';
   rounded?: 'none' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'full';
   padding?: 'none' | 'xs' | 'sm' | 'md' | 'lg' | 'xl';

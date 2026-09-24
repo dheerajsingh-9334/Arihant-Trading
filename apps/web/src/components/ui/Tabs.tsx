@@ -33,28 +33,28 @@ export const Tabs: React.FC<TabsProps> = ({
 
   const containerStyles = {
     segmented:
-      'flex items-center space-x-1 p-1 bg-[#ECE9E2] border border-[#DCD8CE] rounded-[10px] overflow-x-auto select-none',
+      'flex items-center space-x-1 p-1 bg-white border border-[#E3E7ED] rounded-[10px] overflow-x-auto select-none',
     pills:
-      'flex flex-wrap items-center gap-1.5 border-b border-[#DCD8CE] pb-2 select-none',
+      'flex flex-wrap items-center gap-1.5 border-b border-[#E3E7ED] pb-2 select-none',
     underline:
-      'flex items-center space-x-4 border-b border-[#DCD8CE] select-none overflow-x-auto',
+      'flex items-center space-x-4 border-b border-[#E3E7ED] select-none overflow-x-auto',
   };
 
   const itemStyles = (isActive: boolean) => {
     if (variant === 'pills') {
       return isActive
-        ? 'bg-[#0F5E63] text-white shadow-xs font-semibold rounded-[8px]'
-        : 'text-[#4A5568] hover:text-[#14213D] hover:bg-[#E3EFEE] rounded-[8px] font-medium';
+        ? 'bg-[#E9F6F2] text-[#132822] shadow-xs font-semibold rounded-[8px]'
+        : 'text-[#5E6A7C] hover:text-[#132822] hover:bg-[#F1F7F5] rounded-[8px] font-medium';
     }
     if (variant === 'underline') {
       return isActive
-        ? 'border-b-2 border-[#14213D] text-[#14213D] font-bold rounded-none pb-2 -mb-[1px]'
-        : 'text-[#4A5568] hover:text-[#14213D] rounded-none pb-2 -mb-[1px] font-medium border-b-2 border-transparent';
+        ? 'border-b-2 border-[#16917A] text-[#132822] font-semibold rounded-none pb-2 -mb-[1px]'
+        : 'text-[#5E6A7C] hover:text-[#132822] rounded-none pb-2 -mb-[1px] font-medium border-b-2 border-transparent';
     }
     // segmented default
     return isActive
-      ? 'bg-white text-[#14213D] shadow-xs border border-[#DCD8CE] font-semibold rounded-[8px]'
-      : 'text-[#4A5568] hover:text-[#14213D] hover:bg-white/60 rounded-[8px] font-medium';
+      ? 'bg-[#E9F6F2] text-[#132822] shadow-xs font-semibold rounded-[8px]'
+      : 'text-[#5E6A7C] hover:text-[#132822] hover:bg-[#F1F7F5] rounded-[8px] font-medium';
   };
 
   return (
@@ -79,13 +79,11 @@ export const Tabs: React.FC<TabsProps> = ({
                 className={twMerge(
                   'px-1.5 py-0.2 text-[10px] font-bold font-mono rounded-full transition-colors',
                   isActive
-                    ? variant === 'pills'
-                      ? 'bg-white/20 text-white'
-                      : 'bg-[#E3EFEE] text-[#0F5E63]'
-                    : 'bg-white/80 text-[#4A5568] border border-[#DCD8CE]/80',
-                  tab.badgeVariant === 'urgent' && 'bg-[#9A3412] text-white font-bold',
-                  tab.badgeVariant === 'warning' && 'bg-[#FBEBDD] text-[#7C2D12] font-bold',
-                  tab.badgeVariant === 'success' && 'bg-[#E3EFEE] text-[#0F5E63] font-bold',
+                    ? 'bg-white text-[#0F5E4E]'
+                    : 'bg-[#EEF1F5] text-[#152235]',
+                  tab.badgeVariant === 'urgent' && 'bg-[#FEF1EF] text-[#B42318] font-bold',
+                  tab.badgeVariant === 'warning' && 'bg-[#FFF8EB] text-[#A15C07] font-bold',
+                  tab.badgeVariant === 'success' && 'bg-[#EAF6F0] text-[#1F7A55] font-bold',
                 )}
               >
                 {tab.count}
