@@ -2510,7 +2510,7 @@ export default function TendersPage() {
         <div className="space-y-6">
           <SectionHeader
             title="GeM & External Portal Issues Hub (§25)"
-            description="Tracking external portal glitches (e.g. required equipment missing on GeM, DSC token errors, technical BoQ discrepancies) with escalation and resolution governance"
+            description="Tracking external portal glitches with escalation and resolution governance. Note: BOS records the issue only; portal functionality is outside BOS scope."
             actions={
               <Button
                 size="sm"
@@ -3042,7 +3042,7 @@ export default function TendersPage() {
                   <div className="flex items-center justify-between">
                     <SectionHeader
                       title="GeM / External Portal Issues Tracker (§25)"
-                      description="Internal tracker for portal glitches, category errors, or OEM auth upload bugs"
+                      description="Internal tracker for portal glitches. Note: BOS records the issue only; portal functionality is outside BOS scope."
                     />
                     <Button
                       size="xs"
@@ -3838,6 +3838,10 @@ export default function TendersPage() {
         maxWidth="md"
       >
         <form onSubmit={handleCreateIssue} className="space-y-4">
+          <div className="p-3 rounded-xl bg-[#FBFAF7] border border-[#DCD8CE] text-xs text-[#4A5568] flex items-start gap-2">
+            <AlertCircle className="h-4 w-4 shrink-0 text-[#9A3412] mt-0.5" />
+            <span><strong>Notice:</strong> BOS records the issue only; portal functionality is outside BOS scope.</span>
+          </div>
           {actionError && (
             <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-xs text-red-700">
               {actionError}

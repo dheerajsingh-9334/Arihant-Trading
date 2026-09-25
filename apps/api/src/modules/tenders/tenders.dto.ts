@@ -74,6 +74,11 @@ export class CreateTenderDto {
   @IsOptional()
   region?: string; // region name
 
+  @IsOptional()
+  @ValidateIf((o, v) => Boolean(v))
+  @Matches(UUID_PATTERN)
+  category_id?: string;
+
   @IsString()
   @IsOptional()
   category?: string;
@@ -81,6 +86,26 @@ export class CreateTenderDto {
   @IsString()
   @IsOptional()
   tender_category?: string; // alias (PQ / General-MHA / Other)
+
+  @IsOptional()
+  @ValidateIf((o, v) => Boolean(v))
+  @Matches(UUID_PATTERN)
+  owner?: string;
+
+  @IsString()
+  @IsOptional()
+  tender_url?: string;
+
+  @IsOptional()
+  @ValidateIf((o, v) => Boolean(v))
+  @Matches(UUID_PATTERN)
+  parent_tender_id?: string;
+
+  @IsOptional()
+  prep_checklist_done?: boolean;
+
+  @IsOptional()
+  extra_fields?: any;
 
   @IsNumber()
   @IsOptional()
@@ -239,6 +264,10 @@ export class UpdateTenderDto {
   @IsOptional()
   region?: string; // region name
 
+  @Matches(UUID_PATTERN)
+  @IsOptional()
+  category_id?: string;
+
   @IsString()
   @IsOptional()
   category?: string;
@@ -246,6 +275,24 @@ export class UpdateTenderDto {
   @IsString()
   @IsOptional()
   tender_category?: string; // alias
+
+  @Matches(UUID_PATTERN)
+  @IsOptional()
+  owner?: string;
+
+  @IsString()
+  @IsOptional()
+  tender_url?: string;
+
+  @Matches(UUID_PATTERN)
+  @IsOptional()
+  parent_tender_id?: string;
+
+  @IsOptional()
+  prep_checklist_done?: boolean;
+
+  @IsOptional()
+  extra_fields?: any;
 
   @IsNumber()
   @IsOptional()
@@ -487,8 +534,16 @@ export class RecordTenderOutcomeDto {
 
 export class CreateTenderPortalIssueDto {
   @IsString()
-  @IsNotEmpty({ message: 'Issue description is required' })
-  issue!: string;
+  @IsOptional()
+  issue?: string;
+
+  @IsString()
+  @IsOptional()
+  issue_description?: string;
+
+  @IsString()
+  @IsOptional()
+  portal?: string;
 
   @IsOptional()
   @ValidateIf((o, v) => Boolean(v))
@@ -627,3 +682,265 @@ export class TenderQueryDto {
   @IsOptional()
   date_field?: string;
 }
+
+export class TransitionTenderDto {
+  @IsString()
+  @IsOptional()
+  to_status?: string;
+
+  @IsString()
+  @IsOptional()
+  target_status?: string;
+
+  @IsString()
+  @IsOptional()
+  note?: string;
+
+  @IsString()
+  @IsOptional()
+  remarks?: string;
+
+  @IsString()
+  @IsOptional()
+  submission_date?: string;
+
+  @IsNumber()
+  @IsOptional()
+  expected_version?: number;
+
+  @IsString()
+  @IsOptional()
+  rejection_reason?: string;
+
+  @IsString()
+  @IsOptional()
+  loss_reason?: string;
+
+  @IsOptional()
+  loss_reasons?: string[];
+
+  @IsString()
+  @IsOptional()
+  other_reason_text?: string;
+
+  @IsNumber()
+  @IsOptional()
+  value?: number;
+
+  @IsString()
+  @IsOptional()
+  result_date?: string;
+}
+
+export class HoldTenderDto {
+  @IsString()
+  @IsOptional()
+  reason?: string;
+
+  @IsNumber()
+  @IsOptional()
+  expected_version?: number;
+}
+
+export class ResumeTenderDto {
+  @IsNumber()
+  @IsOptional()
+  expected_version?: number;
+
+  @IsString()
+  @IsOptional()
+  reason?: string;
+
+  @IsString()
+  @IsOptional()
+  remarks?: string;
+}
+
+export class ChangeDeadlineDto {
+  @IsString()
+  @IsNotEmpty({ message: 'New submission deadline is required' })
+  new_deadline!: string;
+
+  @IsString()
+  @IsNotEmpty({ message: 'Reason for deadline change is required (e.g. Corrigendum No.)' })
+  reason!: string;
+
+  @IsNumber()
+  @IsOptional()
+  expected_version?: number;
+}
+
+export class RecordTenderResultDto {
+  @IsString()
+  @IsNotEmpty({ message: 'Outcome is required ("won" or "lost")' })
+  outcome!: string;
+
+  @IsString()
+  @IsNotEmpty({ message: 'Result date is required' })
+  result_date!: string;
+
+  @IsNumber()
+  @IsOptional()
+  value?: number;
+
+  @IsOptional()
+  loss_reasons?: string[];
+
+  @IsString()
+  @IsOptional()
+  loss_reason?: string;
+
+  @IsString()
+  @IsOptional()
+  other_reason_text?: string;
+
+  @IsString()
+  @IsOptional()
+  competitor?: string;
+
+  @IsString()
+  @IsOptional()
+  notes?: string;
+
+  @IsNumber()
+  @IsOptional()
+  expected_version?: number;
+}
+
+export class ReopenTenderDto {
+  @IsString()
+  @IsNotEmpty({ message: 'Reason for reopening terminal tender is required' })
+  reason!: string;
+
+  @IsNumber()
+  @IsOptional()
+  expected_version?: number;
+}
+
+export class UpdateTenderSettingsDto {
+  @IsNumber()
+  @IsOptional()
+  upcoming_days?: number;
+
+  @IsNumber()
+  @IsOptional()
+  approaching_days?: number;
+
+  @IsNumber()
+  @IsOptional()
+  approval_sla_hours?: number;
+
+  @IsNumber()
+  @IsOptional()
+  result_followup_days?: number;
+
+  @IsOptional()
+  allow_self_approval?: boolean;
+
+  @IsOptional()
+  require_won_value?: boolean;
+
+  @IsOptional()
+  escalation_user_ids?: string[];
+}
+
+export class AddApproverDto {
+  @IsString()
+  @IsNotEmpty()
+  @Matches(UUID_PATTERN)
+  user_id!: string;
+}
+
+export class CreateLossReasonDto {
+  @IsString()
+  @IsNotEmpty()
+  code!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  label!: string;
+
+  @IsOptional()
+  sort_order?: number;
+}
+
+export class UpdateLossReasonDto {
+  @IsString()
+  @IsOptional()
+  label?: string;
+
+  @IsOptional()
+  active?: boolean;
+
+  @IsOptional()
+  sort_order?: number;
+}
+
+export class UpdateTenderStatusLabelDto {
+  @IsString()
+  @IsNotEmpty()
+  label!: string;
+
+  @IsString()
+  @IsOptional()
+  color?: string;
+
+  @IsOptional()
+  sort_order?: number;
+}
+
+export class CreateTenderCategoryDto {
+  @IsString()
+  @IsNotEmpty()
+  code!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  name!: string;
+
+  @IsOptional()
+  requires_pq?: boolean;
+
+  @IsOptional()
+  description?: string;
+
+  @IsOptional()
+  sort_order?: number;
+}
+
+export class UpdateTenderCategoryDto {
+  @IsString()
+  @IsOptional()
+  name?: string;
+
+  @IsOptional()
+  requires_pq?: boolean;
+
+  @IsOptional()
+  active?: boolean;
+
+  @IsOptional()
+  is_active?: boolean;
+
+  @IsOptional()
+  description?: string;
+
+  @IsOptional()
+  sort_order?: number;
+}
+
+export class ImportTenderSheetDto {
+  @IsNotEmpty()
+  rows!: any[];
+
+  @IsString()
+  @IsOptional()
+  duplicate_mode?: 'skip' | 'update';
+
+  @IsOptional()
+  commit?: boolean;
+
+  @IsOptional()
+  column_mapping?: Record<string, string>;
+}
+

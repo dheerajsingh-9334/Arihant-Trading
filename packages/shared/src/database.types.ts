@@ -32,6 +32,7 @@ export interface ZonesTable {
   id: Generated<string>;
   code: string;
   name: string;
+  active?: Generated<boolean>;
   created_at: Generated<Date>;
 }
 
@@ -39,6 +40,7 @@ export interface RegionsTable {
   id: Generated<string>;
   name: string;
   zone_id: string | null;
+  active?: Generated<boolean>;
   created_at: Generated<Date>;
 }
 
@@ -362,7 +364,9 @@ export interface DemoRescheduleHistoryTable {
 export interface TendersTable {
   id: Generated<string>;
   tender_no: string | null;
+  tender_number?: string | null;
   organisation_id: string | null;
+  organisation?: string | null;
   department: string | null;
   product_id: string | null;
   requirement_text: string | null;
@@ -371,6 +375,7 @@ export interface TendersTable {
   zone_id: string | null;
   region_id: string | null;
   category: Generated<TenderCategory>;
+  category_id?: string | null;
   quantity: number | null;
   bidder_turnover: string | null;
   oem_turnover: string | null;
@@ -387,11 +392,17 @@ export interface TendersTable {
   assigned_to: string | null;
   assigned_person_id?: string | null;
   tender_owner_id: string | null;
+  owner?: string | null;
   status: Generated<TenderStatus>;
+  on_hold?: Generated<boolean>;
+  status_before_hold?: string | null;
+  prep_checklist_done?: Generated<boolean>;
   remarks: string | null;
   rejection_reason?: string | null;
   portal?: string | null;
   reference_number?: string | null;
+  tender_url?: string | null;
+  parent_tender_id?: string | null;
   estimated_value?: number | null;
   tender_value?: number | null;
   submission_date?: string | null;
@@ -407,6 +418,9 @@ export interface TendersTable {
   deleted_by?: string | null;
   created_by?: string | null;
   updated_by?: string | null;
+  last_activity_at?: Generated<Date>;
+  version?: Generated<number>;
+  extra_fields?: Generated<any>;
   created_at: Generated<Date>;
   updated_at: Generated<Date>;
 }
@@ -416,9 +430,87 @@ export interface TenderCategoriesTable {
   code: string;
   name: string;
   description: string | null;
+  requires_pq?: Generated<boolean>;
+  active?: Generated<boolean>;
+  sort_order?: Generated<number>;
   is_active: Generated<boolean>;
   created_at: Generated<Date>;
   updated_at: Generated<Date>;
+}
+
+export interface TenderStatusesTable {
+  code: string;
+  label: string;
+  sort_order: number;
+  is_terminal: Generated<boolean>;
+  color: Generated<string>;
+  created_at: Generated<Date>;
+  updated_at: Generated<Date>;
+}
+
+export interface TenderSettingsTable {
+  id: number;
+  upcoming_days: Generated<number>;
+  approaching_days: Generated<number>;
+  approval_sla_hours: Generated<number>;
+  result_followup_days: Generated<number>;
+  allow_self_approval: Generated<boolean>;
+  require_won_value: Generated<boolean>;
+  escalation_user_ids: Generated<any>;
+  created_at: Generated<Date>;
+  updated_at: Generated<Date>;
+}
+
+export interface TenderApproversTable {
+  id: Generated<string>;
+  user_id: string;
+  created_at: Generated<Date>;
+}
+
+export interface LossReasonsTable {
+  id: Generated<string>;
+  code: string;
+  label: string;
+  active: Generated<boolean>;
+  sort_order: Generated<number>;
+  created_at: Generated<Date>;
+}
+
+export interface TenderDeadlineChangesTable {
+  id: Generated<string>;
+  tender_id: string;
+  old_deadline: Date;
+  new_deadline: Date;
+  reason: string;
+  changed_by: string | null;
+  changed_at: Generated<Date>;
+}
+
+export interface TenderResultsTable {
+  id: Generated<string>;
+  tender_id: string;
+  outcome: string;
+  result_date: string;
+  value: number | null;
+  loss_reasons: Generated<string[]>;
+  other_reason_text: string | null;
+  competitor: string | null;
+  notes: string | null;
+  zone_id: string | null;
+  region_id: string | null;
+  assigned_to: string | null;
+  category_id: string | null;
+  product_id: string | null;
+  created_at: Generated<Date>;
+  updated_at: Generated<Date>;
+}
+
+export interface TenderNotificationsLogTable {
+  id: Generated<string>;
+  tender_id: string;
+  alert_type: string;
+  sent_at: Generated<Date>;
+  created_at: Generated<Date>;
 }
 
 export interface TenderApprovalsTable {
@@ -438,14 +530,20 @@ export interface TenderApprovalsTable {
 export interface TenderPortalIssuesTable {
   id: Generated<string>;
   tender_id: string;
+  portal?: string | null;
   issue: string;
+  issue_date?: string | null;
   reported_date: string;
   reported_by: string | null;
+  responsible_user?: string | null;
   responsible_person_id: string | null;
   escalated_to: string | null;
+  escalated_at?: Date | null;
   escalation_date: Date | null;
+  status?: Generated<string>;
   resolution_status: Generated<string>;
   resolution: string | null;
+  resolved_by?: string | null;
   resolved_at: Date | null;
   created_at: Generated<Date>;
   updated_at: Generated<Date>;
@@ -490,7 +588,9 @@ export interface TenderStatusHistoryTable {
   from_status: string | null;
   to_status: string;
   changed_by: string | null;
+  note?: string | null;
   remarks: string | null;
+  changed_at?: Generated<Date>;
   created_at: Generated<Date>;
 }
 
@@ -749,6 +849,13 @@ export interface Database {
   demo_reschedule_history: DemoRescheduleHistoryTable;
   tenders: TendersTable;
   tender_categories: TenderCategoriesTable;
+  tender_statuses: TenderStatusesTable;
+  tender_settings: TenderSettingsTable;
+  tender_approvers: TenderApproversTable;
+  loss_reasons: LossReasonsTable;
+  tender_deadline_changes: TenderDeadlineChangesTable;
+  tender_results: TenderResultsTable;
+  tender_notifications_log: TenderNotificationsLogTable;
   tender_approvals: TenderApprovalsTable;
   tender_portal_issues: TenderPortalIssuesTable;
   tender_activities: TenderActivitiesTable;

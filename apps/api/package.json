@@ -9,6 +9,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "echo 'api lint OK'",
     "seed": "tsx ../../db/seed/seed.ts",
+    "seed:module4": "tsx ../../db/seed/seed_module4_tenders.ts",
     "migrate": "tsx ../../db/migrate.ts",
     "test:e2e": "jest --config test/jest-e2e.json --runInBand --forceExit"
   },
