@@ -565,8 +565,14 @@ export interface OutboxEventsTable {
   id: Generated<string>;
   event_id: string;
   event_type: string;
+  event_version?: Generated<string>;
   aggregate_type: Generated<string>;
   aggregate_id: string;
+  aggregate_sequence?: Generated<number>;
+  correlation_id?: string | null;
+  causation_id?: string | null;
+  tenant_id?: string | null;
+  suppress_notifications?: Generated<boolean>;
   payload: any;
   status: Generated<string>;
   attempts: Generated<number>;
@@ -582,6 +588,29 @@ export interface ProcessedEventsTable {
   event_id: string;
   handler_name: string;
   processed_at: Generated<Date>;
+}
+
+export interface DeadLetterEventsTable {
+  id: Generated<string>;
+  event_id: string;
+  event_type: string;
+  aggregate_type: Generated<string>;
+  aggregate_id: string;
+  payload: any;
+  error_message: string | null;
+  attempts: Generated<number>;
+  failed_at: Generated<Date>;
+  replayed_at: Date | null;
+  replayed_by: string | null;
+}
+
+export interface SchedulerDedupeTable {
+  id: Generated<string>;
+  dedupe_key: string;
+  event_type: string;
+  proposal_id: string;
+  business_date: string;
+  created_at: Generated<Date>;
 }
 
 export interface TenderStatusHistoryTable {
@@ -616,28 +645,60 @@ export interface TenderOutcomesTable {
 export interface ProposalsTable {
   id: Generated<string>;
   proposal_number: Generated<string>;
+  proposal_no?: Generated<string>;
   organisation_id: string;
+  customer_id?: string | null;
   lead_id: string | null;
   product_id: string | null;
+  sector_id?: string | null;
   sector: string | null;
   requested_by: string | null;
+  requested_by_id?: string | null;
+  created_by_id?: string | null;
   responsible_id: string | null;
+  responsible_person_id?: string | null;
   followup_owner_id: string | null;
+  follow_up_owner_id?: string | null;
   request_date: string | null;
   required_date: string | null;
   sent_date: string | null;
   approved_at: Date | null;
   approved_by: string | null;
+  approved_by_id?: string | null;
   version: string | null;
+  current_version?: Generated<number>;
   reference: string | null;
+  email_reference?: string | null;
   status: Generated<ProposalStatus>;
   last_followup: string | null;
+  last_follow_up_at?: Date | null;
   next_followup: string | null;
+  next_follow_up_date?: string | null;
+  next_follow_up_time?: string | null;
+  review_cycle_count?: Generated<number>;
+  is_urgent?: Generated<boolean>;
+  sent_late?: Generated<boolean>;
   outcome: string | null;
+  outcome_date?: string | null;
   lost_reason: string | null;
+  lost_reason_code?: string | null;
+  lost_reason_text?: string | null;
+  lost_to_competitor?: string | null;
   lost_remarks: string | null;
+  closure_reason_code?: string | null;
+  closure_reason_text?: string | null;
   converted_to: string | null;
   converted_reference: string | null;
+  conversion_reference?: string | null;
+  status_before_terminal?: string | null;
+  related_proposal_id?: string | null;
+  last_activity_at?: Generated<Date>;
+  follow_up_count?: Generated<number>;
+  postpone_count?: Generated<number>;
+  owner_inactive_flag?: Generated<boolean>;
+  source?: Generated<string>;
+  external_ref?: string | null;
+  row_version?: Generated<number>;
   remarks: string | null;
   created_by: string | null;
   updated_by: string | null;
@@ -648,16 +709,114 @@ export interface ProposalsTable {
   updated_at: Generated<Date>;
 }
 
+export interface ProposalProductsTable {
+  id: Generated<string>;
+  proposal_id: string;
+  product_id: string;
+  is_primary: Generated<boolean>;
+  created_at: Generated<Date>;
+}
+
+export interface ProposalVersionsTable {
+  id: Generated<string>;
+  proposal_id: string;
+  version_no: Generated<number>;
+  change_summary: string | null;
+  email_references: Generated<any>;
+  document_links: Generated<any>;
+  sent_date: string | null;
+  sent_by: string | null;
+  created_by: string | null;
+  created_at: Generated<Date>;
+}
+
+export interface ProposalStatusHistoryTable {
+  id: Generated<string>;
+  proposal_id: string;
+  from_status: string | null;
+  to_status: string;
+  reason: string | null;
+  actor_id: string | null;
+  occurred_at: Generated<Date>;
+  event_id: string | null;
+}
+
 export interface ProposalFollowupsTable {
   id: Generated<string>;
   proposal_id: string;
   followup_date: string;
-  owner_id: string;
+  contact_date?: Generated<string>;
+  mode?: Generated<string>;
+  contact_person?: string | null;
+  owner_id?: string;
+  logged_by?: string | null;
+  summary?: string;
   remarks: string;
   outcome: string | null;
+  response?: Generated<string>;
   next_followup_date: string | null;
+  next_follow_up_date?: string | null;
+  is_postpone?: Generated<boolean>;
+  postpone_reason?: string | null;
   created_by: string | null;
   created_at: Generated<Date>;
+  edited_at?: Date | null;
+}
+
+export interface ProposalFollowUpsTable {
+  id: Generated<string>;
+  proposal_id: string;
+  contact_date: Generated<string>;
+  mode: Generated<string>;
+  contact_person: string | null;
+  summary: string;
+  response: Generated<string>;
+  next_follow_up_date: string | null;
+  is_postpone: Generated<boolean>;
+  postpone_reason: string | null;
+  logged_by: string | null;
+  created_at: Generated<Date>;
+  edited_at: Date | null;
+}
+
+export interface ProposalTimelineTable {
+  id: Generated<string>;
+  proposal_id: string;
+  event_type: string;
+  category: Generated<string>;
+  title: string;
+  description: string | null;
+  actor_id: string | null;
+  metadata: Generated<any>;
+  occurred_at: Generated<Date>;
+}
+
+export interface ProposalSettingsTable {
+  id: Generated<number>;
+  business_timezone: Generated<string>;
+  default_follow_up_days: Generated<number>;
+  no_follow_up_after_days: Generated<number>;
+  escalate_after_overdue_days: Generated<number>;
+  stale_requested_days: Generated<number>;
+  stale_preparation_days: Generated<number>;
+  stale_review_days: Generated<number>;
+  stale_approved_days: Generated<number>;
+  stale_followup_days: Generated<number>;
+  required_date_warning_days: Generated<number>;
+  urgent_days: Generated<number>;
+  max_follow_up_horizon_days: Generated<number>;
+  max_postpones_before_flag: Generated<number>;
+  suggest_closure_after_days: Generated<number>;
+  duplicate_window_days: Generated<number>;
+  reopen_window_days: Generated<number>;
+  allow_self_approval: Generated<boolean>;
+  allow_fast_track: Generated<boolean>;
+  digest_time: Generated<string>;
+  proposal_number_format: Generated<string>;
+  lost_reason_codes: Generated<any>;
+  closure_reason_codes: Generated<any>;
+  created_at: Generated<Date>;
+  updated_at: Generated<Date>;
 }
 
 export interface ProposalActivitiesTable {
@@ -865,8 +1024,16 @@ export interface Database {
   tender_outcomes: TenderOutcomesTable;
   outbox_events: OutboxEventsTable;
   processed_events: ProcessedEventsTable;
+  dead_letter_events: DeadLetterEventsTable;
+  scheduler_dedupe: SchedulerDedupeTable;
   proposals: ProposalsTable;
+  proposal_products: ProposalProductsTable;
+  proposal_versions: ProposalVersionsTable;
+  proposal_status_history: ProposalStatusHistoryTable;
   proposal_followups: ProposalFollowupsTable;
+  proposal_follow_ups: ProposalFollowUpsTable;
+  proposal_timeline: ProposalTimelineTable;
+  proposal_settings: ProposalSettingsTable;
   proposal_activities: ProposalActivitiesTable;
   service_tickets: ServiceTicketsTable;
   service_reports: ServiceReportsTable;

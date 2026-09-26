@@ -467,7 +467,7 @@ describe('Module 4: Tender Management E2E Test Suite', () => {
           region_id: testRegionId,
           category: 'general_mha',
           publication_date: '2026-09-01',
-          submission_deadline: '2026-09-25T15:00:00Z',
+          submission_deadline: '2026-10-25T15:00:00Z',
           estimated_value: 8500000,
           assigned_person_id: salesUserId,
           remarks: 'Second tender for post-mortem loss verification',

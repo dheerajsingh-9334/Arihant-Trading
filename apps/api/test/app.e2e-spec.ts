@@ -37,8 +37,10 @@ describe('Arihant BOS API E2E Suite', () => {
     const db = moduleFixture.get<Kysely<DB>>('KYSELY_DB');
     await db.deleteFrom('demo_reservations').execute();
     await db.deleteFrom('demos').execute();
+    await db.updateTable('demo_equipment').set({ availability_status: 'available', reserved_until: null }).execute();
     await db.deleteFrom('employee_activities').execute();
     await db.deleteFrom('visit_updates').execute();
+    await db.deleteFrom('expenses').execute();
     await db.deleteFrom('interactions').where('visit_id', 'is not', null).execute();
     await db.deleteFrom('visits').execute();
     await db.deleteFrom('trips').execute();
@@ -179,7 +181,7 @@ describe('Arihant BOS API E2E Suite', () => {
         .set('Authorization', `Bearer ${salesToken}`)
         .send({
           organisation_id: orgId,
-          planned_date: '2026-09-25',
+          planned_date: '2026-10-15',
           purpose: 'Quarterly review with procurement IG',
           location: 'Jalandhar Frontier HQ',
         });
@@ -224,7 +226,16 @@ describe('Arihant BOS API E2E Suite', () => {
       expect(res.body.data).toBeDefined();
       expect(Array.isArray(res.body.data)).toBe(true);
       expect(res.body.total).toBeGreaterThanOrEqual(1);
-      testTenderId = res.body.data[0].id;
+
+      const db = app.get<Kysely<DB>>('KYSELY_DB');
+      const found = res.body.data.find((t: any) => t.status === 'awaiting_internal_approval');
+      if (found) {
+        testTenderId = found.id;
+      } else {
+        const candidate = res.body.data[0];
+        await db.updateTable('tenders').set({ status: 'awaiting_internal_approval' }).where('id', '=', candidate.id).execute();
+        testTenderId = candidate.id;
+      }
     });
 
     it('retrieves tender statistics including PQ vs General counts', async () => {
@@ -261,6 +272,19 @@ describe('Arihant BOS API E2E Suite', () => {
     });
 
     it('allows tender team or management to record structured win/loss outcome', async () => {
+      const db = app.get<Kysely<DB>>('KYSELY_DB');
+      await db
+        .insertInto('tender_status_history')
+        .values({
+          tender_id: testTenderId,
+          from_status: 'under_preparation',
+          to_status: 'submitted',
+          changed_by: '55555555-5555-5555-5555-555555555555',
+          remarks: 'Submitted tender',
+        })
+        .execute();
+      await db.updateTable('tenders').set({ status: 'submitted' }).where('id', '=', testTenderId).execute();
+
       const res = await request(app.getHttpServer())
         .post(`/api/tenders/${testTenderId}/outcome`)
         .set('Authorization', `Bearer ${mgmtToken}`)

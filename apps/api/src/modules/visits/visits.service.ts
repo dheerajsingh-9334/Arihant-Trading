@@ -924,8 +924,8 @@ export class VisitsService {
         assigned_by_manager: user.id,
         manager_assigned: true,
         remarks: existing.remarks
-          ? `${existing.remarks} | Manager Directive: ${dto.instructions}`
-          : `Manager Directive: ${dto.instructions}`,
+          ? `${existing.remarks} | Manager Intervention: ${dto.instructions}`
+          : `Manager Intervention: ${dto.instructions}`,
         version: existing.version + 1,
       })
       .where('id', '=', id)

@@ -252,6 +252,7 @@ export type DemoCancellationReason =
   | 'other';
 
 export type ProposalStatus =
+  | 'REQUESTED'
   | 'PROPOSAL_REQUESTED'
   | 'UNDER_PREPARATION'
   | 'READY_FOR_REVIEW'
@@ -272,6 +273,7 @@ export type ProposalStatus =
   | 'lost';
 
 export const PROPOSAL_STATUS_LABELS: Record<string, string> = {
+  REQUESTED: 'Proposal Requested',
   PROPOSAL_REQUESTED: 'Proposal Requested',
   UNDER_PREPARATION: 'Under Preparation',
   READY_FOR_REVIEW: 'Ready for Review',
@@ -296,18 +298,53 @@ export const PROPOSAL_INACTIVITY_DAYS = 7;
 
 export type ProposalLostReason =
   | 'Price'
+  | 'Price Too High'
   | 'Competitor'
+  | 'Competitor Chosen'
   | 'Customer Cancelled'
+  | 'Specification Mismatch'
+  | 'Customer Budget Withdrawn'
+  | 'Procurement Delayed'
   | 'No Response'
   | 'Other';
 
-export const PROPOSAL_LOST_REASONS: ProposalLostReason[] = [
-  'Price',
-  'Competitor',
-  'Customer Cancelled',
-  'No Response',
+export const PROPOSAL_LOST_REASONS: string[] = [
+  'Price Too High',
+  'Competitor Chosen',
+  'Specification Mismatch',
+  'Customer Budget Withdrawn',
+  'Procurement Delayed',
   'Other',
 ];
+
+export const PROPOSAL_CLOSURE_REASONS: string[] = [
+  'Cancelled by requester',
+  'Customer withdrew enquiry',
+  'Duplicate',
+  'No response/expired',
+  'Superseded by new proposal',
+  'Other',
+];
+
+export const PROPOSAL_FOLLOW_UP_MODES = [
+  'Call',
+  'Email',
+  'Visit',
+  'Meeting',
+  'Message',
+  'Other',
+] as const;
+export type ProposalFollowUpMode = typeof PROPOSAL_FOLLOW_UP_MODES[number];
+
+export const PROPOSAL_FOLLOW_UP_RESPONSES = [
+  'Positive',
+  'Neutral',
+  'Negative',
+  'No response',
+  'Revision requested',
+  'Decision pending',
+] as const;
+export type ProposalFollowUpResponse = typeof PROPOSAL_FOLLOW_UP_RESPONSES[number];
 
 export type ServiceTicketStatus =
   | 'received'

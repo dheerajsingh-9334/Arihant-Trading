@@ -121,6 +121,25 @@ async function runMigration() {
       console.log('   ✓ db/migrations/009_tender_compatibility_columns.sql executed successfully.');
     }
 
+    // 3.12. Migrations 010 to 015
+    const additionalMigrations = [
+      '010_tender_win_loss_issues.sql',
+      '011_tender_management_specification.sql',
+      '012_tender_portal_issues_alignment.sql',
+      '013_lead_and_org_department.sql',
+      '014_lead_category_new_lead.sql',
+      '015_proposal_management_specification.sql',
+    ];
+    for (const mName of additionalMigrations) {
+      const mPath = path.join(rootDir, 'db/migrations', mName);
+      if (fs.existsSync(mPath)) {
+        console.log(`📜 Executing db/migrations/${mName}...`);
+        const mSql = fs.readFileSync(mPath, 'utf8');
+        await client.query(mSql);
+        console.log(`   ✓ db/migrations/${mName} executed successfully.`);
+      }
+    }
+
     // 4. Baseline Zones & Regions (Essential Master References)
     console.log('🌍 [4/5] Seeding baseline Zones & Regions masters...');
     const zonesRes = await client.query(`

@@ -9,8 +9,13 @@ import type { Database } from '@arihant/shared';
 export interface DomainEventEnvelope<T = any> {
   eventId: string;
   eventType: string;
+  eventVersion?: string;
   aggregateType: string;
   aggregateId: string;
+  aggregateSequence?: number;
+  correlationId?: string;
+  causationId?: string;
+  suppressNotifications?: boolean;
   occurredAt: Date;
   actorId?: string;
   payload: T;
@@ -28,14 +33,19 @@ export class OutboxService {
 
   /**
    * Enqueue a domain event into outbox within an active database transaction.
-   * Ensures transactional consistency: either both tender state & event are committed, or neither.
+   * Ensures transactional consistency: either both entity state & event are committed, or neither.
    */
   async queueEvent<T = any>(
     trx: Transaction<Database> | Kysely<Database>,
     data: {
       eventType: string;
+      eventVersion?: string;
       aggregateType?: string;
       aggregateId: string;
+      aggregateSequence?: number;
+      correlationId?: string;
+      causationId?: string;
+      suppressNotifications?: boolean;
       actorId?: string;
       payload: T;
     },
@@ -47,8 +57,13 @@ export class OutboxService {
       .values({
         event_id: eventId,
         event_type: data.eventType,
-        aggregate_type: data.aggregateType || 'TENDER',
+        event_version: data.eventVersion || '1.0',
+        aggregate_type: data.aggregateType || 'Proposal',
         aggregate_id: data.aggregateId,
+        aggregate_sequence: data.aggregateSequence ?? 1,
+        correlation_id: data.correlationId || null,
+        causation_id: data.causationId || null,
+        suppress_notifications: data.suppressNotifications || false,
         payload: {
           ...data.payload,
           _actorId: data.actorId,
@@ -128,8 +143,13 @@ export class OutboxService {
         const envelope: DomainEventEnvelope = {
           eventId: event.event_id,
           eventType: event.event_type,
+          eventVersion: event.event_version || '1.0',
           aggregateType: event.aggregate_type,
           aggregateId: event.aggregate_id,
+          aggregateSequence: event.aggregate_sequence || 1,
+          correlationId: event.correlation_id || undefined,
+          causationId: event.causation_id || undefined,
+          suppressNotifications: event.suppress_notifications || false,
           occurredAt: event.created_at,
           actorId: (event.payload as any)?._actorId,
           payload: event.payload,
@@ -169,6 +189,30 @@ export class OutboxService {
               })
               .where('id', '=', event.id)
               .execute();
+
+            // Insert into dead_letter_events table
+            try {
+              await this.db
+                .insertInto('dead_letter_events')
+                .values({
+                  event_id: event.event_id,
+                  event_type: event.event_type,
+                  aggregate_type: event.aggregate_type || 'Proposal',
+                  aggregate_id: event.aggregate_id,
+                  payload: event.payload,
+                  error_message: err.message || 'Exceeded max attempts',
+                  attempts,
+                  failed_at: new Date(),
+                })
+                .onConflict((oc) => oc.column('event_id').doUpdateSet({
+                  attempts,
+                  error_message: err.message || 'Exceeded max attempts',
+                  failed_at: new Date(),
+                }))
+                .execute();
+            } catch (dlErr: any) {
+              this.logger.error(`Error recording dead-letter event: ${dlErr.message}`);
+            }
           } else {
             // Exponential backoff: 2^attempts * 5 seconds
             const backoffMs = Math.pow(2, attempts) * 5000;
@@ -193,6 +237,65 @@ export class OutboxService {
     }
 
     return processedCount;
+  }
+
+  /**
+   * List dead letter events with pagination
+   */
+  async getDeadLetterEvents(options?: { limit?: number; offset?: number; aggregateType?: string }) {
+    let query = this.db.selectFrom('dead_letter_events').selectAll().orderBy('failed_at', 'desc');
+    if (options?.aggregateType) {
+      query = query.where('aggregate_type', '=', options.aggregateType);
+    }
+    if (options?.limit) {
+      query = query.limit(options.limit);
+    }
+    if (options?.offset) {
+      query = query.offset(options.offset);
+    }
+    return query.execute();
+  }
+
+  /**
+   * Replay a dead-letter event by re-queueing to outbox_events with status PENDING
+   */
+  async replayDeadLetterEvent(deadLetterId: string, actorId?: string): Promise<boolean> {
+    const record = await this.db
+      .selectFrom('dead_letter_events')
+      .selectAll()
+      .where('id', '=', deadLetterId)
+      .executeTakeFirst();
+    if (!record) return false;
+
+    const replayEventId = `replay_${Date.now()}_${record.event_id.replace(/^replay_\d+_/, '')}`;
+
+    await this.db
+      .insertInto('outbox_events')
+      .values({
+        event_id: replayEventId,
+        event_type: record.event_type,
+        aggregate_type: record.aggregate_type,
+        aggregate_id: record.aggregate_id,
+        payload: record.payload,
+        status: 'PENDING',
+        attempts: 0,
+        max_attempts: 5,
+        available_at: new Date(),
+        created_at: new Date(),
+      })
+      .execute();
+
+    await this.db
+      .updateTable('dead_letter_events')
+      .set({
+        replayed_at: new Date(),
+        replayed_by: actorId || null,
+      })
+      .where('id', '=', deadLetterId)
+      .execute();
+
+    this.triggerImmediate();
+    return true;
   }
 
   /**

@@ -1,0 +1,180 @@
+import { Injectable, Inject, Logger } from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
+import { Kysely } from 'kysely';
+import { KYSELY_DB } from '../../../common/database/database.module.js';
+import { OutboxService, type DomainEventEnvelope } from '../../../common/outbox/outbox.service.js';
+import { EventsGateway } from '../../../common/realtime/events.gateway.js';
+import type { Database } from '@arihant/shared';
+
+@Injectable()
+export class ProposalNotificationConsumer {
+  private readonly logger = new Logger(ProposalNotificationConsumer.name);
+  private readonly handlerName = 'NotificationConsumer';
+
+  constructor(
+    @Inject(KYSELY_DB) private readonly db: Kysely<Database>,
+    private readonly outboxService: OutboxService,
+    private readonly eventsGateway: EventsGateway,
+  ) {}
+
+  @OnEvent('proposal.*')
+  async handleProposalNotification(envelope: DomainEventEnvelope) {
+    const { eventId, eventType, aggregateId, payload, suppressNotifications } = envelope;
+
+    // E67: Notifications suppressed during imports or silent syncs
+    if (suppressNotifications) {
+      this.logger.debug(`[${this.handlerName}] Notifications suppressed for event ${eventId}`);
+      return;
+    }
+
+    // Idempotency check (E51)
+    const isProcessed = await this.outboxService.isEventProcessed(eventId, this.handlerName);
+    if (isProcessed) {
+      return;
+    }
+
+    try {
+      const recipientUserIds = new Set<string>();
+      let title = '';
+      let body = '';
+
+      switch (eventType) {
+        case 'proposal.assigned':
+          if (payload?.newResponsibleId) recipientUserIds.add(payload.newResponsibleId);
+          title = `Proposal Assigned to You: ${payload?.proposalNo || ''}`;
+          body = `You have been assigned responsibility for proposal ${payload?.proposalNo || ''}.`;
+          break;
+
+        case 'proposal.requested':
+          if (payload?.responsiblePersonId && payload.responsiblePersonId !== envelope.actorId) {
+            recipientUserIds.add(payload.responsiblePersonId);
+            title = `Proposal Assigned to You: ${payload?.proposalNo || ''}`;
+            body = `You have been assigned responsibility for proposal ${payload?.proposalNo || ''}.`;
+          }
+          break;
+
+        case 'proposal.submitted_for_review':
+        case 'proposal.review_requested': {
+          // Approvers: Management & Regional Managers
+          const approvers = await this.db
+            .selectFrom('users')
+            .select('id')
+            .where('role', 'in', ['management', 'admin', 'regional_manager'])
+            .where('is_active', '=', true)
+            .execute();
+          approvers.forEach((a) => recipientUserIds.add(a.id));
+          title = `Proposal Submitted for Review: ${payload?.proposalNo || ''}`;
+          body = `Proposal ${payload?.proposalNo || ''} is awaiting your approval.`;
+          break;
+        }
+
+        case 'proposal.approved':
+          if (payload?.responsiblePersonId) recipientUserIds.add(payload.responsiblePersonId);
+          if (payload?.requestedById) recipientUserIds.add(payload.requestedById);
+          title = `Proposal Approved: ${payload?.proposalNo || ''}`;
+          body = `Proposal ${payload?.proposalNo || ''} has been approved for customer dispatch.`;
+          break;
+
+        case 'proposal.changes_requested':
+          if (payload?.responsiblePersonId) recipientUserIds.add(payload.responsiblePersonId);
+          if (payload?.requestedById) recipientUserIds.add(payload.requestedById);
+          title = `Proposal Changes Requested: ${payload?.proposalNo || ''}`;
+          body = `Reviewer requested changes on proposal ${payload?.proposalNo || ''}: ${payload?.comment || ''}`;
+          break;
+
+        case 'proposal.sent':
+          if (payload?.requestedById) recipientUserIds.add(payload.requestedById);
+          if (payload?.followUpOwnerId) recipientUserIds.add(payload.followUpOwnerId);
+          title = 'Proposal Dispatched to Customer';
+          body = `Proposal ${payload?.proposalNo || ''} has been sent. Follow-up is now active.`;
+          break;
+
+        case 'proposal.follow_up_owner_changed':
+          if (payload?.oldOwnerId) recipientUserIds.add(payload.oldOwnerId);
+          if (payload?.newOwnerId) recipientUserIds.add(payload.newOwnerId);
+          title = 'Follow-up Ownership Updated';
+          body = `Follow-up ownership for proposal ${payload?.proposalNo || ''} was transferred.`;
+          break;
+
+        case 'proposal.revision_requested':
+          if (payload?.responsiblePersonId) recipientUserIds.add(payload.responsiblePersonId);
+          title = 'Revision Requested by Customer';
+          body = `Customer requested a revision on proposal ${payload?.proposalNo || ''}. Follow-up schedule suspended.`;
+          break;
+
+        case 'proposal.converted':
+        case 'proposal.lost':
+        case 'proposal.closed':
+          if (payload?.requestedById) recipientUserIds.add(payload.requestedById);
+          if (payload?.responsiblePersonId) recipientUserIds.add(payload.responsiblePersonId);
+          title = `Proposal ${eventType.split('.')[1].toUpperCase()}`;
+          body = `Proposal ${payload?.proposalNo || ''} was concluded with status ${eventType.split('.')[1].toUpperCase()}.`;
+          break;
+
+        case 'proposal.followup_escalated':
+          if (payload?.managerId) recipientUserIds.add(payload.managerId);
+          title = 'ESCALATION: Proposal Follow-up Overdue';
+          body = `Proposal ${payload?.proposalNo || ''} follow-up is severely overdue and requires intervention.`;
+          break;
+
+        case 'proposal.required_date_missed':
+          if (payload?.responsibleId) recipientUserIds.add(payload.responsibleId);
+          title = 'Required Date Missed';
+          body = `Proposal ${payload?.proposalNo || ''} has exceeded its customer required deadline without dispatch.`;
+          break;
+
+        default:
+          // Routine events do not send immediate notifications; they feed into the daily digest (E57)
+          await this.outboxService.markEventProcessed(eventId, this.handlerName);
+          return;
+      }
+
+      // Dispatch in-app notifications
+      for (const userId of recipientUserIds) {
+        if (!userId) continue;
+        await this.db
+          .insertInto('notifications')
+          .values({
+            user_id: userId,
+            type: eventType,
+            title,
+            body,
+            entity_type: 'proposal',
+            entity_id: aggregateId,
+            is_read: false,
+            created_at: new Date(),
+          })
+          .execute();
+
+        // Realtime broadcast via WebSocket
+        this.eventsGateway.sendToUser(userId, 'notification', {
+          id: eventId,
+          type: eventType,
+          title,
+          body,
+          entity_id: aggregateId,
+          entity_type: 'proposal',
+          created_at: new Date(),
+        });
+
+        // Simulated resilient email transport (E56)
+        this.sendEmailSafely(userId, title, body);
+      }
+
+      await this.outboxService.markEventProcessed(eventId, this.handlerName);
+    } catch (err: any) {
+      this.logger.error(`[${this.handlerName}] Failed to process event ${eventId}: ${err.message}`);
+    }
+  }
+
+  /**
+   * Resilient email dispatch: failures do not block the caller or in-app notification (E56)
+   */
+  private sendEmailSafely(userId: string, subject: string, message: string): void {
+    try {
+      this.logger.debug(`[Email Service Simulation] Sent email notification to user ${userId}: "${subject}"`);
+    } catch (err: any) {
+      this.logger.warn(`[Email Service Warning] Failed sending email to user ${userId}: ${err.message}`);
+    }
+  }
+}

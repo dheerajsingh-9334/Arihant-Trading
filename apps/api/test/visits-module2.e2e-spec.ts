@@ -42,6 +42,7 @@ describe('Module 2: Visit & Field Planning E2E Suite', () => {
     const db = app.get(KYSELY_DB);
     await db.deleteFrom('employee_activities').execute();
     await db.deleteFrom('visit_updates').execute();
+    await db.deleteFrom('expenses').execute();
     await db.deleteFrom('interactions').where('visit_id', 'is not', null).execute();
     await db.deleteFrom('visits').execute();
     await db.deleteFrom('trips').execute();
