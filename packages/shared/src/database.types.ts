@@ -74,6 +74,7 @@ export interface OrganisationsTable {
   id: Generated<string>;
   name: string;
   sector: string | null;
+  department: string | null;
   is_govt: Generated<boolean>;
   city: string | null;
   state: string | null;
@@ -102,6 +103,7 @@ export interface LeadsTable {
   organisation_id: string;
   primary_contact_id: string | null;
   product_id: string | null;
+  department: string | null;
   source: string | null;
   category: Generated<LeadCategory>;
   probability: Generated<LeadProbability>;

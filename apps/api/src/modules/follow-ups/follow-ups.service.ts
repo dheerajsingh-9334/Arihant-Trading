@@ -134,7 +134,7 @@ export class FollowUpsService {
     const today = new Date().toISOString().split('T')[0];
     let query = this.db
       .selectFrom('follow_ups')
-      .innerJoin('organisations', 'follow_ups.organisation_id', 'organisations.id');
+      .leftJoin('organisations', 'follow_ups.organisation_id', 'organisations.id');
 
     if (user.role === 'sales') {
       query = query.where('follow_ups.assigned_to', '=', user.id);
@@ -144,22 +144,30 @@ export class FollowUpsService {
 
     const stats = await query
       .select([
-        sql<number>`count(case when follow_ups.status = 'pending' and follow_ups.due_date = ${today} then 1 end)::int`.as('due_today'),
-        sql<number>`count(case when follow_ups.status = 'pending' and follow_ups.due_date < ${today} then 1 end)::int`.as('overdue'),
-        sql<number>`count(case when follow_ups.status = 'pending' and follow_ups.due_date > ${today} then 1 end)::int`.as('upcoming'),
+        sql<number>`count(case when follow_ups.status = 'pending' and follow_ups.due_date = ${today}::date then 1 end)::int`.as('due_today'),
+        sql<number>`count(case when follow_ups.status = 'pending' and follow_ups.due_date < ${today}::date then 1 end)::int`.as('overdue'),
+        sql<number>`count(case when follow_ups.status = 'pending' and follow_ups.due_date > ${today}::date then 1 end)::int`.as('upcoming'),
         sql<number>`count(case when follow_ups.status = 'completed' then 1 end)::int`.as('completed'),
         sql<number>`count(case when follow_ups.status = 'cancelled' then 1 end)::int`.as('cancelled'),
         sql<number>`count(follow_ups.id)::int`.as('total'),
       ])
       .executeTakeFirst();
 
+    const dueToday = Number(stats?.due_today) || 0;
+    const overdue = Number(stats?.overdue) || 0;
+    const upcoming = Number(stats?.upcoming) || 0;
+    const completed = Number(stats?.completed) || 0;
+    const cancelled = Number(stats?.cancelled) || 0;
+    const total = Number(stats?.total) || 0;
+
     return {
-      dueToday: stats?.due_today || 0,
-      overdue: stats?.overdue || 0,
-      upcoming: stats?.upcoming || 0,
-      completed: stats?.completed || 0,
-      cancelled: stats?.cancelled || 0,
-      total: stats?.total || 0,
+      dueToday,
+      due_today: dueToday,
+      overdue,
+      upcoming,
+      completed,
+      cancelled,
+      total,
     };
   }
 

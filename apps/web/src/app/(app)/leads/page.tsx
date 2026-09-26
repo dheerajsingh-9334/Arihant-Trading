@@ -68,7 +68,14 @@ import {
   TableHead,
   TableCell,
 } from '@/components/ui';
-import { formatLakh, LeadStatus, LeadType, LeadLossReason, InteractionType, FollowUpStatus } from '@arihant/shared';
+import { formatLakh, LeadStatus, LeadCategory, LeadType, LeadLossReason, InteractionType, FollowUpStatus } from '@arihant/shared';
+
+const LEAD_CATEGORY_OPTIONS: { value: LeadCategory; label: string }[] = [
+  { value: 'new_lead', label: 'New Lead' },
+  { value: 'active', label: 'Active Pipeline' },
+  { value: 'expected', label: 'Expected Deal' },
+  { value: 'follow_up', label: 'Follow-up' },
+];
 
 const SECTOR_OPTIONS = [
   { value: 'Defence', label: 'Defence (Army / Navy / Air Force)' },
@@ -229,6 +236,7 @@ export default function LeadsPage() {
     contact_email: '',
     product_ids: [] as string[],
     source: 'field_visit',
+    category: 'new_lead' as LeadCategory,
     assigned_to: '',
     regional_manager_id: '',
     remarks: '',
@@ -370,8 +378,32 @@ export default function LeadsPage() {
         api.get('/leads/dashboard'),
         api.get('/follow-ups/metrics'),
       ]);
-      if (lDash.status === 'fulfilled') setLeadStats(lDash.value);
-      if (fDash.status === 'fulfilled') setFollowupStats(fDash.value);
+      if (lDash.status === 'fulfilled') {
+        const val = lDash.value?.data || lDash.value || {};
+        const m = val.metrics || val;
+        setLeadStats({
+          ...val,
+          ...m,
+          total_leads: val.total_leads ?? val.totalLeads ?? m.totalLeads ?? m.total_leads ?? 0,
+          fresh_leads: val.fresh_leads ?? val.freshLeads ?? m.freshLeads ?? m.fresh_leads ?? 0,
+          reapproached_leads: val.reapproached_leads ?? val.re_approached_leads ?? val.reApproachedLeads ?? m.reApproachedLeads ?? m.reapproached_leads ?? 0,
+          active_leads: val.active_leads ?? val.activeLeads ?? m.activeLeads ?? m.active_leads ?? 0,
+          converted_leads: val.converted_leads ?? val.convertedLeads ?? m.convertedLeads ?? m.converted_leads ?? m.byStatus?.converted ?? 0,
+          lost_leads: val.lost_leads ?? val.lostLeads ?? m.lostLeads ?? m.lost_leads ?? m.byStatus?.lost ?? 0,
+        });
+      }
+      if (fDash.status === 'fulfilled') {
+        const val = fDash.value?.data || fDash.value || {};
+        setFollowupStats({
+          ...val,
+          dueToday: val.dueToday ?? val.due_today ?? 0,
+          due_today: val.due_today ?? val.dueToday ?? 0,
+          overdue: val.overdue ?? 0,
+          upcoming: val.upcoming ?? 0,
+          completed: val.completed ?? 0,
+          total: val.total ?? 0,
+        });
+      }
     } catch (err) {
       console.error('Failed to load dashboard metrics:', err);
     }
@@ -615,6 +647,7 @@ export default function LeadsPage() {
         product_id: leadForm.product_ids[0] || undefined,
         product_ids: leadForm.product_ids.length > 0 ? leadForm.product_ids : undefined,
         source: leadForm.source || 'field_visit',
+        category: leadForm.category || 'new_lead',
         assigned_to: leadForm.assigned_to || user?.id,
         regional_manager_id: leadForm.regional_manager_id || undefined,
         remarks: leadForm.remarks.trim() || undefined,
@@ -624,6 +657,7 @@ export default function LeadsPage() {
         last_interaction_type: leadForm.last_interaction_type || 'call',
         next_followup_date: leadForm.next_followup_date ? leadForm.next_followup_date : undefined,
         value_lakh: leadForm.value_lakh ? Number(leadForm.value_lakh) : undefined,
+        estimated_value_lakh: leadForm.value_lakh ? Number(leadForm.value_lakh) : undefined,
       });
 
       setIsCreateLeadOpen(false);
@@ -656,6 +690,7 @@ export default function LeadsPage() {
       contact_email: '',
       product_ids: [],
       source: 'field_visit',
+      category: 'new_lead',
       assigned_to: user?.id || '',
       regional_manager_id: '',
       remarks: '',
@@ -716,6 +751,7 @@ export default function LeadsPage() {
       const updated = await api.get(`/leads/${selectedLead.id}`);
       setSelectedLead(updated);
       fetchLeads();
+      fetchDashboardStats();
     } catch (err: any) {
       setFormError(err.message || 'Failed to reassign salesperson.');
     } finally {
@@ -731,6 +767,7 @@ export default function LeadsPage() {
       const updated = await api.get(`/leads/${selectedLead.id}`);
       setSelectedLead(updated);
       fetchLeads();
+      fetchDashboardStats();
     } catch (err: any) {
       alert(err.message || 'Failed to attach product.');
     }
@@ -744,6 +781,7 @@ export default function LeadsPage() {
       const updated = await api.get(`/leads/${selectedLead.id}`);
       setSelectedLead(updated);
       fetchLeads();
+      fetchDashboardStats();
     } catch (err: any) {
       alert(err.message || 'Failed to remove product.');
     }
@@ -898,6 +936,58 @@ export default function LeadsPage() {
     }
   };
 
+  // Computed HUD counts with fallback to loaded dataset
+  const activePipelineCount =
+    leadStats?.active_leads ??
+    leadStats?.activeLeads ??
+    leadStats?.metrics?.activeLeads ??
+    (leads.length > 0
+      ? leads.filter((l) => !['converted', 'won', 'lost', 'dropped'].includes(String(l.lead_status || l.status).toLowerCase())).length
+      : 0);
+
+  const totalLeadsCount =
+    leadStats?.total_leads ??
+    leadStats?.totalLeads ??
+    leadStats?.metrics?.totalLeads ??
+    leadsTotal ??
+    leads.length;
+
+  const freshLeadsCount =
+    leadStats?.fresh_leads ??
+    leadStats?.freshLeads ??
+    leadStats?.metrics?.freshLeads ??
+    (leads.length > 0 ? leads.filter((l) => (l.lead_type || 'fresh') === 'fresh').length : 0);
+
+  const reapproachedLeadsCount =
+    leadStats?.reapproached_leads ??
+    leadStats?.re_approached_leads ??
+    leadStats?.reApproachedLeads ??
+    leadStats?.metrics?.reApproachedLeads ??
+    (leads.length > 0 ? leads.filter((l) => l.lead_type === 're_approached').length : 0);
+
+  const convertedDealsCount =
+    leadStats?.converted_leads ??
+    leadStats?.convertedLeads ??
+    leadStats?.metrics?.convertedLeads ??
+    leadStats?.metrics?.byStatus?.converted ??
+    (leads.length > 0 ? leads.filter((l) => ['converted', 'won'].includes(String(l.lead_status || l.status).toLowerCase())).length : 0);
+
+  const lostLeadsCount =
+    leadStats?.lost_leads ??
+    leadStats?.lostLeads ??
+    leadStats?.metrics?.lostLeads ??
+    leadStats?.metrics?.byStatus?.lost ??
+    (leads.length > 0 ? leads.filter((l) => ['lost', 'dropped'].includes(String(l.lead_status || l.status).toLowerCase())).length : 0);
+
+  const followupsDueTodayCount =
+    followupStats?.dueToday ??
+    followupStats?.due_today ??
+    0;
+
+  const followupsOverdueCount =
+    followupStats?.overdue ??
+    0;
+
   return (
     <div className="space-y-6 pb-12 animate-in fade-in duration-200">
       {/* 1. Page Header */}
@@ -940,36 +1030,36 @@ export default function LeadsPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
         <StatCard
           label="Active Pipeline"
-          value={leadStats?.active_leads ?? '—'}
-          subtext={`Total Leads: ${leadStats?.total_leads ?? 0}`}
+          value={activePipelineCount}
+          subtext={`Total Leads: ${totalLeadsCount}`}
           variant="primary"
           icon={<Compass className="h-4 w-4 text-[#0F5E63]" />}
         />
         <StatCard
           label="Fresh Prospects"
-          value={leadStats?.fresh_leads ?? '—'}
+          value={freshLeadsCount}
           subtext="First-time Accounts"
           variant="emerald"
           icon={<Sparkles className="h-4 w-4 text-emerald-600" />}
         />
         <StatCard
           label="Re-Approached"
-          value={leadStats?.reapproached_leads ?? '—'}
+          value={reapproachedLeadsCount}
           subtext="Repeat Engagements"
           variant="amber"
           icon={<Layers className="h-4 w-4 text-amber-600" />}
         />
         <StatCard
           label="Follow-ups Due Today"
-          value={followupStats?.dueToday ?? followupStats?.due_today ?? '—'}
-          subtext={`Overdue: ${followupStats?.overdue ?? 0}`}
-          variant={Number(followupStats?.overdue) > 0 ? 'rose' : 'amber'}
+          value={followupsDueTodayCount}
+          subtext={`Overdue: ${followupsOverdueCount}`}
+          variant={Number(followupsOverdueCount) > 0 ? 'rose' : 'amber'}
           icon={<Clock className="h-4 w-4 text-amber-600" />}
         />
         <StatCard
           label="Converted Deals"
-          value={leadStats?.converted_leads ?? '—'}
-          subtext={`Lost: ${leadStats?.lost_leads ?? 0}`}
+          value={convertedDealsCount}
+          subtext={`Lost: ${lostLeadsCount}`}
           variant="emerald"
           icon={<Award className="h-4 w-4 text-emerald-600" />}
         />
@@ -2028,11 +2118,11 @@ export default function LeadsPage() {
             <div className="flex items-center gap-2 border-b border-[#DCD8CE] pb-2">
               <Target className="h-4 w-4 text-[#0F5E63]" />
               <span className="text-xs font-bold text-[#14213D] uppercase tracking-wider">
-                3. Product Interest, Source & Status
+                3. Product Interest, Category, Source & Status
               </span>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className="space-y-1.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <div className="space-y-1.5 sm:col-span-2 lg:col-span-1">
                 <Select
                   label="Product Interests *"
                   required={leadForm.product_ids.length === 0}
@@ -2062,35 +2152,14 @@ export default function LeadsPage() {
                       })),
                   ]}
                 />
-                {leadForm.product_ids.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 pt-1">
-                    {leadForm.product_ids.map((pid) => {
-                      const prod = productsList.find((p) => p.id === pid);
-                      return (
-                        <span
-                          key={pid}
-                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#E3EFEE] text-[#0F5E63] text-xs font-semibold border border-[#0F5E63]/20"
-                        >
-                          <span className="truncate max-w-[200px]">{prod ? prod.name : pid}</span>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setLeadForm({
-                                ...leadForm,
-                                product_ids: leadForm.product_ids.filter((id) => id !== pid),
-                              })
-                            }
-                            className="text-[#0F5E63] hover:text-red-700 transition-colors"
-                            title="Remove product"
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
-                        </span>
-                      );
-                    })}
-                  </div>
-                )}
               </div>
+              <Select
+                label="Lead Category *"
+                required
+                value={leadForm.category}
+                onChange={(e) => setLeadForm({ ...leadForm, category: e.target.value as LeadCategory })}
+                options={LEAD_CATEGORY_OPTIONS}
+              />
               <Select
                 label="Lead Source *"
                 required
@@ -2106,6 +2175,34 @@ export default function LeadsPage() {
                 options={LEAD_STATUS_OPTIONS}
               />
             </div>
+            {leadForm.product_ids.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {leadForm.product_ids.map((pid) => {
+                  const prod = productsList.find((p) => p.id === pid);
+                  return (
+                    <span
+                      key={pid}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#E3EFEE] text-[#0F5E63] text-xs font-semibold border border-[#0F5E63]/20"
+                    >
+                      <span className="truncate max-w-[200px]">{prod ? prod.name : pid}</span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setLeadForm({
+                            ...leadForm,
+                            product_ids: leadForm.product_ids.filter((id) => id !== pid),
+                          })
+                        }
+                        className="text-[#0F5E63] hover:text-red-700 transition-colors"
+                        title="Remove product"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </span>
+                  );
+                })}
+              </div>
+            )}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <Input
                 label="Estimated Deal Value (₹ Lakh)"
@@ -2214,17 +2311,33 @@ export default function LeadsPage() {
       <Modal
         isOpen={isLeadDetailOpen}
         onClose={() => setIsLeadDetailOpen(false)}
-        title={selectedLead?.title || 'Opportunity Intelligence'}
-        description={`Account: ${selectedLead?.organisation_name || 'Government Body'}`}
+        title={selectedLead?.title || (selectedLead?.organisation_name ? `${selectedLead.organisation_name} — Opportunity Intelligence` : 'Opportunity Intelligence')}
+        description={`Account: ${selectedLead?.organisation_name || 'Government Body'}${selectedLead?.department ? ` • ${selectedLead.department}` : ''}${selectedLead?.city ? ` (${selectedLead.city}, ${selectedLead.state || ''})` : ''}`}
         maxWidth="4xl"
       >
         {selectedLead && (
-          <div className="space-y-6 text-xs">
-            {/* Meta Row */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 rounded-xl bg-[#FBFAF7] border border-[#DCD8CE]">
+          <div className="space-y-5 text-xs">
+            {/* Meta Executive Metrics Strip */}
+            <div className="grid grid-cols-2 sm:grid-cols-6 gap-3 p-4 rounded-xl bg-[#FBFAF7] border border-[#DCD8CE]">
               <div>
                 <span className="text-[10px] uppercase text-[#4A5568] font-bold block">Current Stage</span>
                 <div className="mt-1">{getStatusBadge(selectedLead.lead_status || selectedLead.status)}</div>
+              </div>
+              <div>
+                <span className="text-[10px] uppercase text-[#4A5568] font-bold block">Lead Category</span>
+                <div className="mt-1">
+                  <Badge variant="info" size="sm" className="font-bold">
+                    {selectedLead.category === 'new_lead'
+                      ? 'NEW LEAD'
+                      : selectedLead.category === 'active'
+                      ? 'ACTIVE'
+                      : selectedLead.category === 'expected'
+                      ? 'EXPECTED'
+                      : selectedLead.category === 'follow_up'
+                      ? 'FOLLOW-UP'
+                      : (selectedLead.category || 'NEW LEAD').toUpperCase()}
+                  </Badge>
+                </div>
               </div>
               <div>
                 <span className="text-[10px] uppercase text-[#4A5568] font-bold block">Classification</span>
@@ -2238,15 +2351,245 @@ export default function LeadsPage() {
               </div>
               <div>
                 <span className="text-[10px] uppercase text-[#4A5568] font-bold block">Estimated Deal</span>
-                <span className="font-extrabold text-[#0F5E63] mt-1 block text-sm">
+                <span className="font-extrabold text-[#0F5E63] mt-1 block text-sm font-mono">
                   {formatLakh(selectedLead.value_lakh || selectedLead.estimated_value_lakh || 0)}
                 </span>
               </div>
               <div>
-                <span className="text-[10px] uppercase text-[#4A5568] font-bold block">Current Sales Owner</span>
-                <span className="font-bold text-gray-800 mt-1 block">
-                  {selectedLead.assigned_salesperson_name || 'Unassigned'}
+                <span className="text-[10px] uppercase text-[#4A5568] font-bold block">Probability</span>
+                <div className="mt-1">
+                  <Badge
+                    variant={
+                      selectedLead.probability === 'high'
+                        ? 'success'
+                        : selectedLead.probability === 'medium'
+                        ? 'warning'
+                        : 'default'
+                    }
+                    size="sm"
+                    className="font-bold uppercase text-[10px]"
+                  >
+                    {selectedLead.probability || 'MEDIUM'}
+                  </Badge>
+                </div>
+              </div>
+              <div>
+                <span className="text-[10px] uppercase text-[#4A5568] font-bold block">Lead Source</span>
+                <span className="font-bold text-[#14213D] mt-1 block capitalize truncate">
+                  {LEAD_SOURCE_OPTIONS.find((s) => s.value === selectedLead.source)?.label || selectedLead.source || 'Direct Field Visit'}
                 </span>
+              </div>
+            </div>
+
+            {/* Two-Column Grid: 1. Organisation & Jurisdiction | 2. Key Contact Person */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* 1. Organisation & Jurisdiction Intelligence */}
+              <div className="p-4 rounded-xl bg-white border border-[#DCD8CE] space-y-3">
+                <div className="flex items-center gap-2 border-b border-[#ECE9E2] pb-2">
+                  <Building className="h-4 w-4 text-[#0F5E63]" />
+                  <span className="text-xs font-bold text-[#14213D] uppercase tracking-wider">
+                    Organisation & Jurisdiction
+                  </span>
+                </div>
+                <div className="space-y-2 text-xs">
+                  <div>
+                    <span className="text-[10px] font-semibold text-[#4A5568] uppercase block">Organisation / Agency Name</span>
+                    <span className="font-bold text-[#14213D] text-sm block">
+                      {selectedLead.organisation_name || '—'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-semibold text-[#4A5568] uppercase block">Department / Unit / Wing</span>
+                    <span className="font-medium text-[#14213D]">
+                      {selectedLead.department || '—'}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 pt-1 border-t border-[#ECE9E2]">
+                    <div>
+                      <span className="text-[10px] font-semibold text-[#4A5568] uppercase block">Sector / Domain</span>
+                      <span className="font-medium text-[#14213D]">
+                        {SECTOR_OPTIONS.find((s) => s.value === selectedLead.sector)?.label || selectedLead.sector || 'Defence / Security'}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-semibold text-[#4A5568] uppercase block">Location (City, State)</span>
+                      <span className="font-medium text-[#14213D] flex items-center gap-1">
+                        <MapPin className="h-3 w-3 text-[#4A5568] shrink-0" />
+                        <span>
+                          {selectedLead.city ? `${selectedLead.city}, ` : ''}{selectedLead.state || 'India'}
+                        </span>
+                      </span>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 pt-1 border-t border-[#ECE9E2]">
+                    <div>
+                      <span className="text-[10px] font-semibold text-[#4A5568] uppercase block">Territory / Zone</span>
+                      <span className="font-medium text-[#14213D]">
+                        {selectedLead.zone_name
+                          ? (selectedLead.zone_name.toLowerCase().includes('zone') ? selectedLead.zone_name : `${selectedLead.zone_name} Zone`)
+                          : (zonesList.find((z) => z.id === selectedLead.zone_id)?.name
+                              ? (zonesList.find((z) => z.id === selectedLead.zone_id)!.name.toLowerCase().includes('zone')
+                                  ? zonesList.find((z) => z.id === selectedLead.zone_id)!.name
+                                  : `${zonesList.find((z) => z.id === selectedLead.zone_id)!.name} Zone`)
+                              : 'North Zone')}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-semibold text-[#4A5568] uppercase block">Region Office</span>
+                      <span className="font-medium text-[#14213D]">
+                        {selectedLead.region_name || regionsList.find((r) => r.id === selectedLead.region_id)?.name || 'Delhi NCR'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 2. Key Contact Person Details */}
+              <div className="p-4 rounded-xl bg-white border border-[#DCD8CE] space-y-3">
+                <div className="flex items-center gap-2 border-b border-[#ECE9E2] pb-2">
+                  <User className="h-4 w-4 text-[#0F5E63]" />
+                  <span className="text-xs font-bold text-[#14213D] uppercase tracking-wider">
+                    Key Contact Person
+                  </span>
+                </div>
+                <div className="space-y-2 text-xs">
+                  <div>
+                    <span className="text-[10px] font-semibold text-[#4A5568] uppercase block">Contact Person Name</span>
+                    <span className="font-bold text-[#14213D] text-sm block">
+                      {selectedLead.contact_name || 'No Contact Specified'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-semibold text-[#4A5568] uppercase block">Designation / Rank</span>
+                    <span className="font-medium text-[#14213D]">
+                      {selectedLead.contact_designation || 'Officer / Authority'}
+                    </span>
+                  </div>
+                  <div className="pt-1 border-t border-[#ECE9E2] space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-semibold text-[#4A5568] uppercase">Mobile / Phone</span>
+                      {selectedLead.contact_mobile ? (
+                        <a
+                          href={`tel:${selectedLead.contact_mobile}`}
+                          className="font-mono text-xs font-semibold text-[#0F5E63] hover:underline flex items-center gap-1.5"
+                        >
+                          <Phone className="h-3 w-3" />
+                          <span>{selectedLead.contact_mobile}</span>
+                        </a>
+                      ) : (
+                        <span className="text-[#4A5568] italic text-[11px]">—</span>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-semibold text-[#4A5568] uppercase">Email Address</span>
+                      {selectedLead.contact_email ? (
+                        <a
+                          href={`mailto:${selectedLead.contact_email}`}
+                          className="font-mono text-xs font-semibold text-[#0F5E63] hover:underline flex items-center gap-1.5 truncate max-w-[200px]"
+                          title={selectedLead.contact_email}
+                        >
+                          <Mail className="h-3 w-3 shrink-0" />
+                          <span className="truncate">{selectedLead.contact_email}</span>
+                        </a>
+                      ) : (
+                        <span className="text-[#4A5568] italic text-[11px]">—</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Ownership & Territorial Jurisdiction Strip */}
+            <div className="p-4 rounded-xl bg-[#FBFAF7] border border-[#DCD8CE]">
+              <div className="flex items-center gap-2 border-b border-[#DCD8CE] pb-2 mb-3">
+                <Users className="h-4 w-4 text-[#0F5E63]" />
+                <span className="text-xs font-bold text-[#14213D] uppercase tracking-wider">
+                  Sales Ownership & Managerial Governance
+                </span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                <div>
+                  <span className="text-[10px] font-semibold text-[#4A5568] uppercase block">Assigned Sales Owner</span>
+                  <span className="font-bold text-[#14213D] block mt-0.5">
+                    {selectedLead.assigned_salesperson_name || selectedLead.assignee_name || 'Unassigned'}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[10px] font-semibold text-[#4A5568] uppercase block">Regional Manager / Escalation</span>
+                  <span className="font-bold text-[#14213D] block mt-0.5">
+                    {selectedLead.regional_manager_name || 'Reporting Head'}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[10px] font-semibold text-[#4A5568] uppercase block">Channel Route</span>
+                  <span className="font-bold text-[#14213D] block mt-0.5 uppercase font-mono">
+                    {selectedLead.channel || 'DIRECT'}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[10px] font-semibold text-[#4A5568] uppercase block">Lead Created / Registered</span>
+                  <span className="font-mono text-xs text-[#14213D] block mt-0.5">
+                    {selectedLead.created_at ? new Date(selectedLead.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Interactions, Scheduled Follow-Up & Remarks */}
+            <div className="p-4 rounded-xl bg-white border border-[#DCD8CE] space-y-3">
+              <div className="flex items-center gap-2 border-b border-[#ECE9E2] pb-2">
+                <Clock className="h-4 w-4 text-[#0F5E63]" />
+                <span className="text-xs font-bold text-[#14213D] uppercase tracking-wider">
+                  Interactions, Follow-Up Schedule & Notes
+                </span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="p-3 rounded-lg bg-[#FBFAF7] border border-[#ECE9E2]">
+                  <span className="text-[10px] font-bold text-[#4A5568] uppercase block mb-1">Last Interaction Touchpoint</span>
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-xs font-semibold text-[#14213D]">
+                      {selectedLead.last_contact_date
+                        ? new Date(selectedLead.last_contact_date).toLocaleDateString('en-IN')
+                        : selectedLead.last_interaction_at
+                        ? new Date(selectedLead.last_interaction_at).toLocaleDateString('en-IN')
+                        : selectedLead.interactions?.[0]?.occurred_on
+                        ? new Date(selectedLead.interactions[0].occurred_on).toLocaleDateString('en-IN')
+                        : 'None logged'}
+                    </span>
+                    <Badge variant="outline" size="sm" className="font-bold text-[10px]">
+                      {INTERACTION_TYPE_OPTIONS.find(t => t.value === (selectedLead.last_interaction_type || selectedLead.interactions?.[0]?.type))?.label ||
+                        (selectedLead.last_interaction_type || selectedLead.interactions?.[0]?.type || 'CALL').toUpperCase()}
+                    </Badge>
+                  </div>
+                </div>
+                <div className="p-3 rounded-lg bg-[#FBFAF7] border border-[#ECE9E2]">
+                  <span className="text-[10px] font-bold text-[#4A5568] uppercase block mb-1">Next Follow-Up Commitment</span>
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-xs font-semibold text-[#14213D]">
+                      {selectedLead.next_followup_date
+                        ? new Date(selectedLead.next_followup_date).toLocaleDateString('en-IN')
+                        : selectedLead.next_followup_at
+                        ? new Date(selectedLead.next_followup_at).toLocaleDateString('en-IN')
+                        : selectedLead.follow_ups?.[0]?.due_date
+                        ? new Date(selectedLead.follow_ups[0].due_date).toLocaleDateString('en-IN')
+                        : 'None scheduled'}
+                    </span>
+                    {(selectedLead.next_followup_date || selectedLead.next_followup_at || selectedLead.follow_ups?.[0]?.due_date) && (
+                      <Badge variant="warning" size="sm" className="uppercase font-bold text-[10px]">
+                        {selectedLead.next_followup_status || selectedLead.follow_ups?.[0]?.status || 'PENDING'}
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <div>
+                <span className="text-[10px] font-bold text-[#4A5568] uppercase block mb-1">Remarks & Discussion Summary</span>
+                <div className="p-3 rounded-lg bg-[#FBFAF7] border border-[#ECE9E2] text-xs text-[#14213D] leading-relaxed">
+                  {selectedLead.remarks || selectedLead.last_interaction_notes || selectedLead.interactions?.[0]?.remarks || (
+                    <span className="text-[#4A5568] italic">No remarks provided during opportunity registration.</span>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -2315,7 +2658,7 @@ export default function LeadsPage() {
                       key={p.product_id || p.id}
                       className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white border border-[#DCD8CE] text-xs font-medium text-[#14213D]"
                     >
-                      <span>{p.name || p.product_name}</span>
+                      <span>{p.name || p.product_name || productsList.find((x) => x.id === (p.product_id || p.id))?.name || 'Product Interest'}</span>
                       <button
                         type="button"
                         onClick={() => handleRemoveProductInterest(p.product_id || p.id)}
@@ -2442,6 +2785,7 @@ export default function LeadsPage() {
         title={`Advance Opportunity Status: ${targetStatus.toUpperCase()}`}
         description="Transitions are verified against Arihant BOS state machine rules."
         maxWidth="md"
+        zIndex={60}
       >
         <form onSubmit={handleStatusChange} className="space-y-4 text-xs">
           {formError && (
@@ -2510,6 +2854,7 @@ export default function LeadsPage() {
         title="Reassign Opportunity Ownership"
         description="Transfers the lead to a new salesperson and immutably records the reassignment in audit history."
         maxWidth="md"
+        zIndex={60}
       >
         <form onSubmit={handleReassign} className="space-y-4 text-xs">
           {!canReassign && (
@@ -2597,129 +2942,6 @@ export default function LeadsPage() {
         </form>
       </Modal>
 
-      {/* ========================================================================= */}
-      {/* MODAL 5: LOG FIELD INTERACTION & AUTO FOLLOW-UP SCHEDULER                 */}
-      {/* ========================================================================= */}
-      <Modal
-        isOpen={isLogInteractionOpen}
-        onClose={() => setIsLogInteractionOpen(false)}
-        title="Log Client Interaction & Field Minutes"
-        description="Record phone calls, in-person meetings, discussions, and technical presentations."
-        maxWidth="lg"
-      >
-        <form onSubmit={handleLogInteraction} className="space-y-4 text-xs">
-          {formError && (
-            <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-700">
-              {formError}
-            </div>
-          )}
-
-          <div className="grid grid-cols-2 gap-3">
-            <Select
-              label="Interaction Channel *"
-              value={interactionForm.type}
-              onChange={(e) => setInteractionForm({ ...interactionForm, type: e.target.value })}
-              options={[
-                { value: 'call', label: '📞 Phone Call' },
-                { value: 'physical_visit', label: '🏢 Physical Visit (In-Person)' },
-                { value: 'demo', label: '🎯 Product Demonstration / Trial' },
-                { value: 'proposal', label: '📄 Proposal Submission' },
-                { value: 'whatsapp', label: '💬 WhatsApp Message' },
-                { value: 'email', label: '✉️ Email Correspondence' },
-                { value: 'tender_discussion', label: '⚖️ Pre-Tender Discussion' },
-                { value: 'follow_up', label: '⏰ Routine Follow-up' },
-                { value: 'service_discussion', label: '🔧 Service / Warranty Review' },
-              ]}
-            />
-            <Input
-              label="Interaction Date *"
-              type="date"
-              required
-              value={interactionForm.date}
-              onChange={(e) => setInteractionForm({ ...interactionForm, date: e.target.value })}
-            />
-          </div>
-
-          {customerContacts.length > 0 && (
-            <Select
-              label="Contact Person (Optional)"
-              value={interactionForm.contact_id}
-              onChange={(e) => setInteractionForm({ ...interactionForm, contact_id: e.target.value })}
-              options={[
-                { value: '', label: 'General / Primary Contact' },
-                ...customerContacts.map((c) => ({
-                  value: c.id,
-                  label: `${c.name || c.full_name || 'Contact'}${c.designation ? ` (${c.designation})` : ''}`,
-                })),
-              ]}
-            />
-          )}
-
-          <Textarea
-            label="Minutes / Discussion Notes *"
-            required
-            value={interactionForm.notes}
-            onChange={(e) => setInteractionForm({ ...interactionForm, notes: e.target.value })}
-            placeholder="Key discussion points, specifications requested, procurement timing, decision maker feedback..."
-          />
-
-          <div className="grid grid-cols-2 gap-3">
-            <Input
-              label="Client Outcome / Feedback"
-              value={interactionForm.outcome}
-              onChange={(e) => setInteractionForm({ ...interactionForm, outcome: e.target.value })}
-              placeholder="e.g. Approved technical trial"
-            />
-            <Input
-              label="Next Action Step"
-              value={interactionForm.next_action}
-              onChange={(e) => setInteractionForm({ ...interactionForm, next_action: e.target.value })}
-              placeholder="e.g. Send formal quote & compliance"
-            />
-          </div>
-
-          {/* Follow-up scheduler */}
-          <div className="p-3 rounded-xl bg-[#FBFAF7] border border-[#DCD8CE]">
-            <Input
-              label="Schedule Next Touchpoint Due Date (Auto-creates Follow-up)"
-              type="date"
-              value={interactionForm.next_followup_date}
-              onChange={(e) => setInteractionForm({ ...interactionForm, next_followup_date: e.target.value })}
-            />
-          </div>
-
-          {/* Supporting Document Attachment */}
-          <div className="p-3 rounded-xl bg-[#FBFAF7] border border-[#DCD8CE] space-y-2">
-            <span className="font-bold text-[#14213D] block text-[11px] flex items-center gap-1.5">
-              <Paperclip className="h-3.5 w-3.5 text-[#4A5568]" />
-              <span>Attach Supporting Document (Proposal / MOM)</span>
-            </span>
-            <div className="grid grid-cols-2 gap-2">
-              <Input
-                label="Document Name"
-                value={interactionForm.attachment_title}
-                onChange={(e) => setInteractionForm({ ...interactionForm, attachment_title: e.target.value })}
-                placeholder="e.g. RAF_MOM_Signed.pdf"
-              />
-              <Input
-                label="File URL / Storage Link"
-                value={interactionForm.attachment_url}
-                onChange={(e) => setInteractionForm({ ...interactionForm, attachment_url: e.target.value })}
-                placeholder="https://storage.arihant.com/docs/..."
-              />
-            </div>
-          </div>
-
-          <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#DCD8CE]">
-            <Button type="button" variant="ghost" size="sm" onClick={() => setIsLogInteractionOpen(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" variant="primary" size="sm" isLoading={actionLoading}>
-              Save Touchpoint
-            </Button>
-          </div>
-        </form>
-      </Modal>
 
       {/* ========================================================================= */}
       {/* MODAL 6: CUSTOMER 360° ACCOUNT INTELLIGENCE DRAWER                        */}
@@ -3442,6 +3664,132 @@ export default function LeadsPage() {
       </Modal>
 
       {/* ========================================================================= */}
+      {/* MODAL 5: LOG FIELD INTERACTION & AUTO FOLLOW-UP SCHEDULER                 */}
+      {/* Layered foreground action dialog with zIndex={70}                         */}
+      {/* ========================================================================= */}
+      <Modal
+        isOpen={isLogInteractionOpen}
+        onClose={() => setIsLogInteractionOpen(false)}
+        title="Log Client Interaction & Field Minutes"
+        description="Record phone calls, in-person meetings, discussions, and technical presentations."
+        maxWidth="lg"
+        zIndex={70}
+      >
+        <form onSubmit={handleLogInteraction} className="space-y-4 text-xs">
+          {formError && (
+            <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-700">
+              {formError}
+            </div>
+          )}
+
+          <div className="grid grid-cols-2 gap-3">
+            <Select
+              label="Interaction Channel *"
+              value={interactionForm.type}
+              onChange={(e) => setInteractionForm({ ...interactionForm, type: e.target.value })}
+              options={[
+                { value: 'call', label: '📞 Phone Call' },
+                { value: 'physical_visit', label: '🏢 Physical Visit (In-Person)' },
+                { value: 'demo', label: '🎯 Product Demonstration / Trial' },
+                { value: 'proposal', label: '📄 Proposal Submission' },
+                { value: 'whatsapp', label: '💬 WhatsApp Message' },
+                { value: 'email', label: '✉️ Email Correspondence' },
+                { value: 'tender_discussion', label: '⚖️ Pre-Tender Discussion' },
+                { value: 'follow_up', label: '⏰ Routine Follow-up' },
+                { value: 'service_discussion', label: '🔧 Service / Warranty Review' },
+              ]}
+            />
+            <Input
+              label="Interaction Date *"
+              type="date"
+              required
+              value={interactionForm.date}
+              onChange={(e) => setInteractionForm({ ...interactionForm, date: e.target.value })}
+            />
+          </div>
+
+          {customerContacts.length > 0 && (
+            <Select
+              label="Contact Person (Optional)"
+              value={interactionForm.contact_id}
+              onChange={(e) => setInteractionForm({ ...interactionForm, contact_id: e.target.value })}
+              options={[
+                { value: '', label: 'General / Primary Contact' },
+                ...customerContacts.map((c) => ({
+                  value: c.id,
+                  label: `${c.name || c.full_name || 'Contact'}${c.designation ? ` (${c.designation})` : ''}`,
+                })),
+              ]}
+            />
+          )}
+
+          <Textarea
+            label="Minutes / Discussion Notes *"
+            required
+            value={interactionForm.notes}
+            onChange={(e) => setInteractionForm({ ...interactionForm, notes: e.target.value })}
+            placeholder="Key discussion points, specifications requested, procurement timing, decision maker feedback..."
+          />
+
+          <div className="grid grid-cols-2 gap-3">
+            <Input
+              label="Client Outcome / Feedback"
+              value={interactionForm.outcome}
+              onChange={(e) => setInteractionForm({ ...interactionForm, outcome: e.target.value })}
+              placeholder="e.g. Approved technical trial"
+            />
+            <Input
+              label="Next Action Step"
+              value={interactionForm.next_action}
+              onChange={(e) => setInteractionForm({ ...interactionForm, next_action: e.target.value })}
+              placeholder="e.g. Send formal quote & compliance"
+            />
+          </div>
+
+          {/* Follow-up scheduler */}
+          <div className="p-3 rounded-xl bg-[#FBFAF7] border border-[#DCD8CE]">
+            <Input
+              label="Schedule Next Touchpoint Due Date (Auto-creates Follow-up)"
+              type="date"
+              value={interactionForm.next_followup_date}
+              onChange={(e) => setInteractionForm({ ...interactionForm, next_followup_date: e.target.value })}
+            />
+          </div>
+
+          {/* Supporting Document Attachment */}
+          <div className="p-3 rounded-xl bg-[#FBFAF7] border border-[#DCD8CE] space-y-2">
+            <span className="font-bold text-[#14213D] block text-[11px] flex items-center gap-1.5">
+              <Paperclip className="h-3.5 w-3.5 text-[#4A5568]" />
+              <span>Attach Supporting Document (Proposal / MOM)</span>
+            </span>
+            <div className="grid grid-cols-2 gap-2">
+              <Input
+                label="Document Name"
+                value={interactionForm.attachment_title}
+                onChange={(e) => setInteractionForm({ ...interactionForm, attachment_title: e.target.value })}
+                placeholder="e.g. RAF_MOM_Signed.pdf"
+              />
+              <Input
+                label="File URL / Storage Link"
+                value={interactionForm.attachment_url}
+                onChange={(e) => setInteractionForm({ ...interactionForm, attachment_url: e.target.value })}
+                placeholder="https://storage.arihant.com/docs/..."
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#DCD8CE]">
+            <Button type="button" variant="ghost" size="sm" onClick={() => setIsLogInteractionOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" variant="primary" size="sm" isLoading={actionLoading}>
+              Save Touchpoint
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* ========================================================================= */}
       {/* MODAL 7: COMPLETE FOLLOW-UP & OPTIONAL CONTINUATION SCHEDULER             */}
       {/* ========================================================================= */}
       <Modal
@@ -3450,6 +3798,7 @@ export default function LeadsPage() {
         title="Complete Follow-up Touchpoint"
         description="Records outcome remarks and optionally schedules the subsequent pipeline reminder."
         maxWidth="md"
+        zIndex={60}
       >
         <form onSubmit={handleCompleteFollowup} className="space-y-4 text-xs">
           {formError && (
@@ -3516,6 +3865,7 @@ export default function LeadsPage() {
         title="Reschedule Follow-up Touchpoint"
         description="Updates the reminder due date for this sales activity."
         maxWidth="sm"
+        zIndex={60}
       >
         <form onSubmit={handleRescheduleFollowup} className="space-y-4 text-xs">
           {formError && (

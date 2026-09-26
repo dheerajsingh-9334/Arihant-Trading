@@ -234,6 +234,9 @@ export default function DemosPage() {
     reserved_to: '',
     remarks: '',
   });
+  const [reserveModalError, setReserveModalError] = useState<string | null>(null);
+  const [modalEquipmentUnits, setModalEquipmentUnits] = useState<any[]>([]);
+  const [isLoadingModalEquipment, setIsLoadingModalEquipment] = useState(false);
 
   // 4. Confirm Date Form
   const [confirmForm, setConfirmForm] = useState({
@@ -524,26 +527,114 @@ export default function DemosPage() {
     }
   };
 
+  const loadModalEquipmentAvailability = async (fromDate: string, toDate: string) => {
+    if (!fromDate || !toDate) return;
+    try {
+      setIsLoadingModalEquipment(true);
+      setReserveModalError(null);
+      const res = await api.get('/demos/equipment/availability', {
+        from_date: fromDate,
+        to_date: toDate,
+      });
+      setModalEquipmentUnits(res?.units || []);
+    } catch (err: any) {
+      console.error('Failed to load modal equipment availability:', err);
+      setModalEquipmentUnits(equipmentList);
+    } finally {
+      setIsLoadingModalEquipment(false);
+    }
+  };
+
   const handleOpenReserve = (demo: any) => {
     setSelectedDemo(demo);
-    const date = demo.confirmed_date || demo.requested_date || new Date().toISOString().split('T')[0];
+    setReserveModalError(null);
+    const rawDate = demo.confirmed_date || demo.requested_date || new Date().toISOString();
+    const dateStr = typeof rawDate === 'string' ? rawDate.split('T')[0] : new Date(rawDate).toISOString().split('T')[0];
     setReserveForm({
       equipment_id: '',
-      reserved_from: date,
-      reserved_to: date,
+      reserved_from: dateStr,
+      reserved_to: dateStr,
       remarks: '',
     });
     setIsReserveEquipOpen(true);
+    loadModalEquipmentAvailability(dateStr, dateStr);
   };
+
+  useEffect(() => {
+    if (isReserveEquipOpen && reserveForm.reserved_from && reserveForm.reserved_to) {
+      if (reserveForm.reserved_from > reserveForm.reserved_to) {
+        setReserveModalError('Reservation start date cannot be after end date.');
+        return;
+      }
+      setReserveModalError(null);
+      const timer = setTimeout(() => {
+        loadModalEquipmentAvailability(reserveForm.reserved_from, reserveForm.reserved_to);
+      }, 250);
+      return () => clearTimeout(timer);
+    }
+  }, [reserveForm.reserved_from, reserveForm.reserved_to, isReserveEquipOpen]);
 
   const handleReserveSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedDemo) return;
+    setReserveModalError(null);
     setActionError(null);
+
+    const fromDate = (reserveForm.reserved_from || '').split('T')[0];
+    const toDate = (reserveForm.reserved_to || fromDate).split('T')[0];
+
+    if (!fromDate || !toDate) {
+      setReserveModalError('Reservation start and end dates are required.');
+      return;
+    }
+
+    if (fromDate > toDate) {
+      setReserveModalError('Reservation start date cannot be after end date.');
+      return;
+    }
+
+    if (!reserveForm.equipment_id) {
+      setReserveModalError('Please select an available fleet equipment unit.');
+      return;
+    }
+
+    // Verify chosen unit status in live availability roster
+    const activeRoster = modalEquipmentUnits.length > 0 ? modalEquipmentUnits : equipmentList;
+    const chosenUnit = activeRoster.find((u) => u.id === reserveForm.equipment_id);
+
+    if (chosenUnit) {
+      const isAlreadyOnThisDemo = selectedDemo?.reservations?.some((r: any) => r.equipment_id === chosenUnit.id);
+      if (isAlreadyOnThisDemo) {
+        setReserveModalError(
+          `Equipment unit ${chosenUnit.model} (${chosenUnit.serial_no || 'Unit'}) is already reserved for this demo.`,
+        );
+        return;
+      }
+
+      const isUnavailable =
+        !chosenUnit.is_available_for_dates ||
+        chosenUnit.effective_status === 'reserved' ||
+        chosenUnit.effective_status === 'maintenance' ||
+        chosenUnit.availability_status === 'reserved' ||
+        chosenUnit.availability_status === 'maintenance';
+
+      if (isUnavailable) {
+        setReserveModalError(
+          `Equipment unit ${chosenUnit.model} (${chosenUnit.serial_no || 'Unit'}) is already reserved for the chosen date window (${fromDate} to ${toDate}). Please select an available unit.`,
+        );
+        return;
+      }
+    }
+
     setIsSubmitting(true);
 
     try {
-      const res = await api.post(`/demos/${selectedDemo.id}/reserve`, reserveForm);
+      const res = await api.post(`/demos/${selectedDemo.id}/reserve`, {
+        ...reserveForm,
+        reserved_from: fromDate,
+        reserved_to: toDate,
+      });
+
       if (res.location_mismatch) {
         setActionSuccess(
           `Demo Unit Reserved! NOTE: Equipment is located in ${res.equipment_location}, while Demo is in ${res.demo_location}. Depot transit planning recorded.`,
@@ -554,7 +645,7 @@ export default function DemosPage() {
       setIsReserveEquipOpen(false);
       await fetchDemosData();
     } catch (err: any) {
-      setActionError(err.message || 'Failed to reserve equipment unit.');
+      setReserveModalError(err.message || 'Failed to reserve equipment unit.');
     } finally {
       setIsSubmitting(false);
     }
@@ -2550,13 +2641,29 @@ export default function DemosPage() {
         title={`Reserve Equipment Unit — ${selectedDemo?.demo_no}`}
       >
         <form onSubmit={handleReserveSubmit} className="space-y-4 text-sm">
-          <div className="p-3 rounded-lg bg-[#FBFAF7] border border-[#DCD8CE] text-xs text-[#14213D]">
-            <p>
-              <strong>Demo Location:</strong> {selectedDemo?.location || 'Site'}
-            </p>
-            <p>
-              <strong>Required Product:</strong> {selectedDemo?.product_name || 'Standard'}
-            </p>
+          {reserveModalError && (
+            <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 flex items-start gap-2.5">
+              <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+              <div className="space-y-0.5 text-xs">
+                <p className="font-bold">Reservation Conflict Detected</p>
+                <p>{reserveModalError}</p>
+              </div>
+            </div>
+          )}
+
+          <div className="p-3.5 rounded-xl bg-[#FBFAF7] border border-[#DCD8CE] text-xs text-[#14213D] grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <span className="text-[10px] text-[#4A5568] uppercase font-bold block">Demo Destination</span>
+              <span className="font-semibold text-xs text-[#14213D] block mt-0.5">
+                {selectedDemo?.location || 'Site Location'}
+              </span>
+            </div>
+            <div>
+              <span className="text-[10px] text-[#4A5568] uppercase font-bold block">Demo Required Product</span>
+              <span className="font-semibold text-xs text-[#0F5E63] block mt-0.5">
+                {selectedDemo?.product_name || 'Standard Specification'}
+              </span>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -2577,63 +2684,170 @@ export default function DemosPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-[#14213D] mb-1.5">
-              Select Fleet Equipment Unit (Serial Number & Depot) *
-            </label>
-            <div className="space-y-2 max-h-56 overflow-y-auto border border-[#DCD8CE] rounded-lg p-2 bg-[#FBFAF7]">
-              {equipmentList.map((unit) => {
-                const isLocationMismatch =
-                  unit.current_location &&
-                  selectedDemo?.location &&
-                  !selectedDemo.location.toLowerCase().includes(unit.current_location.toLowerCase());
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-xs font-bold text-[#14213D] uppercase tracking-wider">
+                Select Fleet Equipment Unit (Serial Number & Depot) *
+              </label>
+              {isLoadingModalEquipment && (
+                <div className="flex items-center gap-1.5 text-[11px] text-[#0F5E63]">
+                  <RefreshCw className="h-3 w-3 animate-spin" />
+                  <span>Checking live date calendar...</span>
+                </div>
+              )}
+            </div>
 
-                return (
-                  <label
-                    key={unit.id}
-                    className={`block p-2.5 rounded-lg border cursor-pointer transition-all ${
-                      reserveForm.equipment_id === unit.id
-                        ? 'bg-[#E3EFEE] border-[#0F5E63] text-[#14213D]'
-                        : 'bg-white border-[#DCD8CE] text-[#14213D] hover:bg-[#F0F5FF]'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="radio"
-                          name="reserve_unit"
-                          value={unit.id}
-                          checked={reserveForm.equipment_id === unit.id}
-                          onChange={() => setReserveForm({ ...reserveForm, equipment_id: unit.id })}
-                        />
-                        <div>
-                          <p className="font-semibold text-xs text-[#14213D]">
-                            {unit.model} — {unit.serial_no || 'Unserialized'}
-                          </p>
-                          <span className="text-[10px] text-[#4A5568]">
-                            Product: {unit.product_name} • Depot: {unit.current_location}
-                          </span>
+            <div className="space-y-2 max-h-64 overflow-y-auto border border-[#DCD8CE] rounded-xl p-2 bg-[#FBFAF7]">
+              {(() => {
+                const roster = modalEquipmentUnits.length > 0 ? modalEquipmentUnits : equipmentList;
+                const sortedRoster = [...roster].sort((a, b) => {
+                  const aOnDemo = selectedDemo?.reservations?.some((r: any) => r.equipment_id === a.id);
+                  const bOnDemo = selectedDemo?.reservations?.some((r: any) => r.equipment_id === b.id);
+                  const aIsMaint = a.effective_status === 'maintenance' || a.availability_status === 'maintenance';
+                  const bIsMaint = b.effective_status === 'maintenance' || b.availability_status === 'maintenance';
+                  const aAvail = !aOnDemo && !aIsMaint && (modalEquipmentUnits.length > 0
+                    ? a.is_available_for_dates !== false && a.effective_status === 'available'
+                    : a.availability_status === 'available');
+                  const bAvail = !bOnDemo && !bIsMaint && (modalEquipmentUnits.length > 0
+                    ? b.is_available_for_dates !== false && b.effective_status === 'available'
+                    : b.availability_status === 'available');
+                  const aMatch = selectedDemo?.product_id && a.product_id === selectedDemo.product_id;
+                  const bMatch = selectedDemo?.product_id && b.product_id === selectedDemo.product_id;
+
+                  if (aAvail && !bAvail) return -1;
+                  if (!aAvail && bAvail) return 1;
+                  if (aMatch && !bMatch) return -1;
+                  if (!aMatch && bMatch) return 1;
+                  return 0;
+                });
+
+                if (sortedRoster.length === 0) {
+                  return (
+                    <div className="p-4 text-center text-xs text-[#4A5568]">
+                      No fleet equipment units found in depot inventory.
+                    </div>
+                  );
+                }
+
+                return sortedRoster.map((unit) => {
+                  const isLocationMismatch =
+                    unit.current_location &&
+                    selectedDemo?.location &&
+                    !selectedDemo.location.toLowerCase().includes(unit.current_location.toLowerCase());
+
+                  const isAlreadyOnThisDemo = selectedDemo?.reservations?.some((r: any) => r.equipment_id === unit.id);
+                  const isMaintenance = unit.effective_status === 'maintenance' || unit.availability_status === 'maintenance';
+                  const isReserved = modalEquipmentUnits.length > 0
+                    ? (!unit.is_available_for_dates || unit.effective_status === 'reserved')
+                    : (unit.availability_status === 'reserved');
+                  const isAvailable = !isAlreadyOnThisDemo && !isMaintenance && !isReserved;
+                  const isProductMatch = selectedDemo?.product_id && unit.product_id === selectedDemo.product_id;
+
+                  if (!isAvailable) {
+                    return (
+                      <div
+                        key={unit.id}
+                        className="block p-2.5 rounded-lg border border-gray-200 bg-gray-50/90 text-gray-500 cursor-not-allowed select-none transition-all"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex items-start gap-2">
+                            <input
+                              type="radio"
+                              name="reserve_unit"
+                              disabled
+                              checked={false}
+                              className="mt-0.5 cursor-not-allowed opacity-40"
+                            />
+                            <div>
+                              <p className="font-semibold text-xs text-gray-600 line-through">
+                                {unit.model} — {unit.serial_no || 'Unserialized'}
+                              </p>
+                              <span className="text-[10px] text-gray-500">
+                                Product: {unit.product_name} • Depot: {unit.current_location}
+                              </span>
+                              {unit.conflicting_reservation ? (
+                                <p className="text-[10px] text-red-600 font-semibold mt-0.5">
+                                  ⚠️ Booked for {unit.conflicting_reservation.demo_no || 'Another Demo'} ({unit.conflicting_reservation.reserved_from} to {unit.conflicting_reservation.reserved_to})
+                                </p>
+                              ) : isAlreadyOnThisDemo ? (
+                                <p className="text-[10px] text-blue-700 font-semibold mt-0.5">
+                                  ℹ️ Already allocated to this Demo ({selectedDemo?.demo_no})
+                                </p>
+                              ) : isMaintenance ? (
+                                <p className="text-[10px] text-red-600 font-semibold mt-0.5">
+                                  ⚠️ Unit is currently under maintenance
+                                </p>
+                              ) : (
+                                <p className="text-[10px] text-amber-700 font-semibold mt-0.5">
+                                  ⚠️ Unit is currently locked or reserved for selected dates
+                                </p>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            {isAlreadyOnThisDemo ? (
+                              <Badge variant="info" size="sm">ALREADY ALLOCATED</Badge>
+                            ) : isMaintenance ? (
+                              <Badge variant="danger" size="sm">MAINTENANCE</Badge>
+                            ) : (
+                              <Badge variant="warning" size="sm">RESERVED FOR DATES</Badge>
+                            )}
+                          </div>
                         </div>
                       </div>
+                    );
+                  }
 
-                      <div className="flex items-center gap-1.5">
-                        {isLocationMismatch && (
-                          <span
-                            className="px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200"
-                            title={`Depot (${unit.current_location}) differs from Demo Location (${selectedDemo?.location})`}
-                          >
-                            DEPOT MISMATCH
-                          </span>
-                        )}
-                        <Badge
-                          variant={unit.availability_status === 'available' ? 'success' : 'warning'}
-                        >
-                          {unit.availability_status.toUpperCase()}
-                        </Badge>
+                  return (
+                    <label
+                      key={unit.id}
+                      className={`block p-2.5 rounded-lg border cursor-pointer transition-all ${
+                        reserveForm.equipment_id === unit.id
+                          ? 'bg-[#E3EFEE] border-[#0F5E63] text-[#14213D] shadow-sm ring-1 ring-[#0F5E63]/20'
+                          : 'bg-white border-[#DCD8CE] text-[#14213D] hover:bg-[#F0F5FF]'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="radio"
+                            name="reserve_unit"
+                            value={unit.id}
+                            checked={reserveForm.equipment_id === unit.id}
+                            onChange={() => setReserveForm({ ...reserveForm, equipment_id: unit.id })}
+                            className="cursor-pointer"
+                          />
+                          <div>
+                            <p className="font-semibold text-xs text-[#14213D]">
+                              {unit.model} — {unit.serial_no || 'Unserialized'}
+                            </p>
+                            <span className="text-[10px] text-[#4A5568]">
+                              Product: {unit.product_name} • Depot: {unit.current_location}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          {isProductMatch && (
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#E3EFEE] text-[#0F5E63] border border-[#0F5E63]/20">
+                              MATCHES DEMO PRODUCT
+                            </span>
+                          )}
+                          {isLocationMismatch && (
+                            <span
+                              className="px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200"
+                              title={`Depot (${unit.current_location}) differs from Demo Location (${selectedDemo?.location})`}
+                            >
+                              DEPOT MISMATCH
+                            </span>
+                          )}
+                          <Badge variant="success" size="sm">AVAILABLE</Badge>
+                        </div>
                       </div>
-                    </div>
-                  </label>
-                );
-              })}
+                    </label>
+                  );
+                });
+              })()}
             </div>
           </div>
 
@@ -2648,14 +2862,29 @@ export default function DemosPage() {
             <Button variant="outline" type="button" onClick={() => setIsReserveEquipOpen(false)}>
               Cancel
             </Button>
-            <Button
-              variant="primary"
-              type="submit"
-              isLoading={isSubmitting}
-              disabled={!reserveForm.equipment_id}
-            >
-              Lock Reservation
-            </Button>
+            {(() => {
+              const roster = modalEquipmentUnits.length > 0 ? modalEquipmentUnits : equipmentList;
+              const chosen = roster.find((u) => u.id === reserveForm.equipment_id);
+              const isChosenAvailable =
+                chosen &&
+                !selectedDemo?.reservations?.some((r: any) => r.equipment_id === chosen.id) &&
+                chosen.effective_status !== 'maintenance' &&
+                chosen.availability_status !== 'maintenance' &&
+                (modalEquipmentUnits.length > 0
+                  ? chosen.is_available_for_dates !== false && chosen.effective_status === 'available'
+                  : chosen.availability_status === 'available');
+
+              return (
+                <Button
+                  variant="primary"
+                  type="submit"
+                  isLoading={isSubmitting}
+                  disabled={!reserveForm.equipment_id || !isChosenAvailable}
+                >
+                  Lock Reservation
+                </Button>
+              );
+            })()}
           </div>
         </form>
       </Modal>

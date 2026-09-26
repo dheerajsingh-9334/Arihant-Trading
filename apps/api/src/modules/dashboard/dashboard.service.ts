@@ -294,7 +294,7 @@ export class DashboardService {
       leadsQuery.select(sql<number>`count(leads.id)::int`.as('c')).executeTakeFirst(),
       leadsQuery.select(sql<number>`count(leads.id)::int`.as('c')).where('leads.category', '=', 'active').executeTakeFirst(),
       leadsQuery.select(sql<number>`count(leads.id)::int`.as('c')).where('leads.category', '=', 'expected').executeTakeFirst(),
-      leadsQuery.select(sql<number>`count(leads.id)::int`.as('c')).where('leads.category', '=', 'follow_up').executeTakeFirst(),
+      leadsQuery.select(sql<number>`count(leads.id)::int`.as('c')).where('leads.category', 'in', ['follow_up', 'new_lead']).executeTakeFirst(),
       leadsQuery.select(sql<number>`coalesce(sum(leads.value_lakh), 0)::float`.as('v')).executeTakeFirst(),
       leadsQuery.select(sql<number>`coalesce(sum(leads.value_lakh), 0)::float`.as('v')).where('leads.probability', '=', 'high').executeTakeFirst(),
       leadsQuery.select(sql<number>`coalesce(sum(leads.value_lakh), 0)::float`.as('v')).where('leads.probability', '=', 'medium').executeTakeFirst(),

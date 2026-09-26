@@ -88,6 +88,7 @@ create table organisations (
   id          uuid primary key default gen_random_uuid(),
   name        text not null,                 -- 'Force Head Quarter BSF New Delhi'
   sector      text,                          -- Defence / Police / Railways / Nuclear...
+  department  text,                          -- Procurement & Ordnance Branch
   is_govt     boolean default true,
   city        text,
   state       text,
@@ -120,6 +121,7 @@ create table leads (
   organisation_id     uuid not null references organisations(id),
   primary_contact_id  uuid references contacts(id),
   product_id          uuid references products(id),
+  department          text,                              -- Procurement & Ordnance Branch
   source              text,                              -- referral / GeM / cold / partner
   category            lead_category   default 'follow_up',   -- A / E / F
   probability         lead_probability default 'medium',     -- H / M / L

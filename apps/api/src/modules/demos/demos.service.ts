@@ -30,6 +30,28 @@ import type {
   UpdateEquipmentDto,
 } from './demos.dto.js';
 
+function formatDateOnly(d: any, fallback: string = ''): string {
+  if (!d) return fallback;
+  if (d instanceof Date) {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+  const str = String(d);
+  if (str.includes('T')) {
+    const parsed = new Date(str);
+    if (!isNaN(parsed.getTime())) {
+      const year = parsed.getFullYear();
+      const month = String(parsed.getMonth() + 1).padStart(2, '0');
+      const day = String(parsed.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+    return str.split('T')[0];
+  }
+  return str;
+}
+
 @Injectable()
 export class DemosService {
   private readonly logger = new Logger(DemosService.name);
@@ -205,8 +227,8 @@ export class DemosService {
 
     const allUnits = await q.execute();
 
-    const fromDate = query.from_date || new Date().toISOString().split('T')[0];
-    const toDate = query.to_date || fromDate;
+    const fromDate = (query.from_date || new Date().toISOString()).split('T')[0];
+    const toDate = (query.to_date || fromDate).split('T')[0];
 
     // Fetch active reservations in range
     const activeReservations = await this.db
@@ -216,13 +238,14 @@ export class DemosService {
         'demo_reservations.equipment_id',
         'demo_reservations.reserved_from',
         'demo_reservations.reserved_to',
+        'demos.id as demo_id',
         'demos.demo_no',
         'demos.location as demo_location',
       ])
-      .where('demo_reservations.status', 'in', ['approved', 'requested'])
-      .where('demos.status', 'not in', ['cancelled', 'completed'])
+      .where('demo_reservations.status', 'in', ['approved', 'requested', 'alternative_suggested'])
+      .where(sql<boolean>`coalesce(demos.status, '') not in ('cancelled', 'completed')`)
       .where('demo_reservations.reserved_from', '<=', toDate)
-      .where('demo_reservations.reserved_to', '>=', fromDate)
+      .where(sql<boolean>`coalesce(demo_reservations.reserved_to, demo_reservations.reserved_from) >= ${fromDate}`)
       .execute();
 
     const reservedMap = new Map<string, any>();
@@ -238,13 +261,34 @@ export class DemosService {
         calculatedStatus = 'maintenance';
       } else if (reservation) {
         calculatedStatus = 'reserved';
+      } else if (unit.availability_status === 'reserved' && unit.reserved_until) {
+        const untilStr = formatDateOnly(unit.reserved_until);
+        if (untilStr >= fromDate) {
+          calculatedStatus = 'reserved';
+        }
       }
+
+      const conflictingReservation = reservation
+        ? {
+            demo_no: reservation.demo_no,
+            demo_location: reservation.demo_location,
+            reserved_from: formatDateOnly(reservation.reserved_from, fromDate),
+            reserved_to: formatDateOnly(reservation.reserved_to, toDate),
+          }
+        : calculatedStatus === 'reserved' && unit.reserved_until
+        ? {
+            demo_no: 'Depot Fleet Hold',
+            demo_location: unit.current_location,
+            reserved_from: fromDate,
+            reserved_to: formatDateOnly(unit.reserved_until, toDate),
+          }
+        : null;
 
       return {
         ...unit,
         is_available_for_dates: calculatedStatus === 'available',
         effective_status: calculatedStatus,
-        conflicting_reservation: reservation || null,
+        conflicting_reservation: conflictingReservation,
       };
     });
 
@@ -850,6 +894,17 @@ export class DemosService {
         throw new BadRequestException(`Cannot reserve equipment for demo in terminal state "${demo.status}"`);
       }
 
+      const fromDate = (dto.reserved_from || '').split('T')[0];
+      const toDate = (dto.reserved_to || fromDate).split('T')[0];
+
+      if (!fromDate || !toDate) {
+        throw new BadRequestException('Reservation start and end dates are required.');
+      }
+
+      if (fromDate > toDate) {
+        throw new BadRequestException('Reservation start date cannot be after end date.');
+      }
+
       // 2. Lock the equipment unit row (§10: prevent concurrent race conditions)
       const equipment = await trx
         .selectFrom('demo_equipment')
@@ -864,6 +919,21 @@ export class DemosService {
 
       if (equipment.availability_status === 'maintenance') {
         throw new BadRequestException('Equipment is currently under maintenance and cannot be reserved.');
+      }
+
+      // Check if this equipment unit is ALREADY reserved on THIS demo
+      const existingOnThisDemo = await trx
+        .selectFrom('demo_reservations')
+        .where('demo_id', '=', demoId)
+        .where('equipment_id', '=', dto.equipment_id)
+        .where('status', 'in', ['approved', 'requested'])
+        .executeTakeFirst();
+
+      if (existingOnThisDemo) {
+        throw new ConflictException({
+          code: 'EQUIPMENT_ALREADY_RESERVED_ON_THIS_DEMO',
+          message: `Equipment unit ${equipment.model} (${equipment.serial_no || 'Unit'}) is already reserved for this demo.`,
+        });
       }
 
       // Location Mismatch Alert (§7): check if equipment depot differs from demo location
@@ -884,10 +954,10 @@ export class DemosService {
         .selectFrom('demo_reservations')
         .innerJoin('demos', 'demo_reservations.demo_id', 'demos.id')
         .where('demo_reservations.equipment_id', '=', dto.equipment_id)
-        .where('demo_reservations.status', 'in', ['approved', 'requested'])
-        .where('demos.status', 'not in', ['cancelled', 'completed'])
-        .where('demo_reservations.reserved_from', '<=', dto.reserved_to)
-        .where('demo_reservations.reserved_to', '>=', dto.reserved_from)
+        .where('demo_reservations.status', 'in', ['approved', 'requested', 'alternative_suggested'])
+        .where(sql<boolean>`coalesce(demos.status, '') not in ('cancelled', 'completed')`)
+        .where('demo_reservations.reserved_from', '<=', toDate)
+        .where(sql<boolean>`coalesce(demo_reservations.reserved_to, demo_reservations.reserved_from) >= ${fromDate}`)
         .select([
           'demo_reservations.id',
           'demo_reservations.reserved_from',
@@ -898,11 +968,24 @@ export class DemosService {
         .executeTakeFirst();
 
       if (conflict) {
+        const confFrom = formatDateOnly(conflict.reserved_from, fromDate);
+        const confTo = formatDateOnly(conflict.reserved_to, confFrom);
         throw new ConflictException({
           code: 'EQUIPMENT_ALREADY_RESERVED',
-          message: `Equipment unit ${equipment.model} (${equipment.serial_no || 'Unit'}) is already reserved from ${conflict.reserved_from} to ${conflict.reserved_to} for Demo ${conflict.demo_no || ''}.`,
+          message: `Equipment unit ${equipment.model} (${equipment.serial_no || 'Unit'}) is already reserved from ${confFrom} to ${confTo} for Demo ${conflict.demo_no || ''}.`,
           conflicting_reservation: conflict,
         });
+      }
+
+      // Check if equipment availability_status is 'reserved' and reserved_until covers the date
+      if (equipment.availability_status === 'reserved' && equipment.reserved_until) {
+        const reservedUntilStr = formatDateOnly(equipment.reserved_until);
+        if (reservedUntilStr >= fromDate) {
+          throw new ConflictException({
+            code: 'EQUIPMENT_ALREADY_RESERVED',
+            message: `Equipment unit ${equipment.model} (${equipment.serial_no || 'Unit'}) is currently reserved until ${reservedUntilStr}.`,
+          });
+        }
       }
 
       // 4. Create reservation
@@ -911,8 +994,8 @@ export class DemosService {
         .values({
           demo_id: demoId,
           equipment_id: dto.equipment_id,
-          reserved_from: dto.reserved_from,
-          reserved_to: dto.reserved_to,
+          reserved_from: fromDate,
+          reserved_to: toDate,
           status: 'approved',
           approved_by: user.id,
           remarks: dto.remarks || null,
@@ -925,7 +1008,7 @@ export class DemosService {
         .updateTable('demo_equipment')
         .set({
           availability_status: 'reserved',
-          reserved_until: dto.reserved_to,
+          reserved_until: toDate,
         })
         .where('id', '=', dto.equipment_id)
         .execute();

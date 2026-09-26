@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
-import { ROLE_PROFILES, type BosModuleKey } from '@arihant/shared';
+import { ROLE_PROFILES, formatLakh, type BosModuleKey } from '@arihant/shared';
 
 interface SearchResult {
   id: string;
@@ -187,13 +187,16 @@ export const CommandPalette: React.FC<{
           href: `/tenders?highlight=${t.id}`,
         }));
 
-        const leadItems: SearchResult[] = (leadRes.data || []).map((l: any) => ({
-          id: `lead-${l.id}`,
-          title: l.organisation_name || 'Prospect Client',
-          subtitle: `${l.product_name || 'Hardware'}${l.estimated_value_lakh ? ` · Est. ₹${l.estimated_value_lakh} Lakh` : ''}`,
-          category: 'Lead' as const,
-          href: `/leads?highlight=${l.id}`,
-        }));
+        const leadItems: SearchResult[] = (leadRes.data || []).map((l: any) => {
+          const val = l.value_lakh ?? l.estimated_value_lakh;
+          return {
+            id: `lead-${l.id}`,
+            title: l.organisation_name || 'Prospect Client',
+            subtitle: `${l.product_name || 'Hardware'}${val !== undefined && val !== null ? ` · Est. ${formatLakh(Number(val))}` : ''}`,
+            category: 'Lead' as const,
+            href: `/leads?highlight=${l.id}`,
+          };
+        });
 
         const filteredStatic = allowedStaticItems.filter(
           (item) =>

@@ -19,7 +19,8 @@ export const USER_ROLES: UserRole[] = [
   'admin',
 ];
 
-export type LeadCategory = 'active' | 'expected' | 'follow_up';
+export type LeadCategory = 'new_lead' | 'active' | 'expected' | 'follow_up';
+export const LEAD_CATEGORIES: LeadCategory[] = ['new_lead', 'active', 'expected', 'follow_up'];
 export type LeadProbability = 'high' | 'medium' | 'low';
 export type ChannelType = 'direct' | 'partner';
 

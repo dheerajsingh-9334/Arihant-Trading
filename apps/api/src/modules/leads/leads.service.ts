@@ -13,7 +13,7 @@ import { AppEvents } from '../../common/events/event-names.js';
 import { getPaginationParams, buildPaginatedResult } from '../../common/utils/pagination.js';
 import { assertRegionScope } from '../../common/utils/scope.util.js';
 import { LeadWorkflowService } from './leads.workflow.js';
-import type { Database, AuthUser, PaginatedResult, LeadStatus, LeadType } from '@arihant/shared';
+import type { Database, AuthUser, PaginatedResult, LeadStatus, LeadCategory, LeadType } from '@arihant/shared';
 import type {
   CreateLeadDto,
   UpdateLeadDto,
@@ -221,6 +221,7 @@ export class LeadsService {
         'leads.quot_price',
         'leads.order_price',
         'leads.value_lakh',
+        'leads.value_lakh as estimated_value_lakh',
         'leads.booking_month',
         'leads.billing_month',
         'leads.order_status',
@@ -231,6 +232,7 @@ export class LeadsService {
         'organisations.city as city',
         'organisations.state as state',
         'organisations.sector as sector',
+        sql<string>`coalesce(leads.department, organisations.department)`.as('department'),
         'organisations.region_id',
         'organisations.zone_id',
         'products.name as product_name',
@@ -240,6 +242,7 @@ export class LeadsService {
         'contacts.email as contact_email',
         'contacts.designation as contact_designation',
         'assignee.full_name as assignee_name',
+        'assignee.full_name as assigned_salesperson_name',
         'rm.full_name as regional_manager_name',
         'regions.name as region_name',
         'zones.name as zone_name',
@@ -319,6 +322,7 @@ export class LeadsService {
         'organisations.city as city',
         'organisations.state as state',
         'organisations.sector as sector',
+        sql<string>`coalesce(leads.department, organisations.department)`.as('department'),
         'organisations.region_id',
         'organisations.zone_id',
         'products.name as product_name',
@@ -328,6 +332,7 @@ export class LeadsService {
         'contacts.email as contact_email',
         'contacts.designation as contact_designation',
         'assignee.full_name as assignee_name',
+        'assignee.full_name as assigned_salesperson_name',
         'rm.full_name as regional_manager_name',
         'regions.name as region_name',
         'zones.name as zone_name',
@@ -345,6 +350,25 @@ export class LeadsService {
 
     if (user.role === 'regional_manager') {
       assertRegionScope(user, lead.region_id, lead.zone_id);
+    }
+
+    // Fallback if primary contact details were not joined
+    if (!lead.contact_name) {
+      const orgContact = await this.db
+        .selectFrom('contacts')
+        .select([
+          'contacts.full_name as contact_name',
+          'contacts.mobile as contact_mobile',
+          'contacts.email as contact_email',
+          'contacts.designation as contact_designation',
+        ])
+        .where('organisation_id', '=', lead.organisation_id)
+        .orderBy('is_primary', 'desc')
+        .orderBy('created_at', 'asc')
+        .executeTakeFirst();
+      if (orgContact) {
+        Object.assign(lead, orgContact);
+      }
     }
 
     // Product interests
@@ -444,9 +468,15 @@ export class LeadsService {
 
     const currentStatus = (lead.lead_status || lead.status || 'new').toLowerCase();
     const allowedTransitions = this.workflowService.getAllowedTransitions(currentStatus);
+    const lastInteraction = interactions[0];
+    const nextFollowUp = followUps[0];
 
     return {
       ...lead,
+      estimated_value_lakh: lead.value_lakh,
+      last_interaction_type: lastInteraction?.type || (lead as any).last_interaction_type || null,
+      last_interaction_notes: lastInteraction?.remarks || (lead as any).remarks || null,
+      next_followup_status: nextFollowUp?.status || (lead.next_followup_date ? 'pending' : null),
       current_status: currentStatus,
       allowed_transitions: allowedTransitions,
       product_interests: productInterests,
@@ -510,13 +540,16 @@ export class LeadsService {
         }
         orgName = existingOrg.name;
 
-        // Optionally update missing location/sector fields if passed
+        // Optionally update missing location/sector/department fields if passed
         const orgUpdates: any = {};
-        if (dto.city && !existingOrg.city) orgUpdates.city = dto.city.trim();
-        if (dto.state && !existingOrg.state) orgUpdates.state = dto.state.trim();
-        if (dto.zone_id && !existingOrg.zone_id) orgUpdates.zone_id = dto.zone_id;
-        if (dto.region_id && !existingOrg.region_id) orgUpdates.region_id = dto.region_id;
-        if (dto.sector && !existingOrg.sector) orgUpdates.sector = dto.sector.trim();
+        if (dto.city && (!existingOrg.city || existingOrg.city !== dto.city.trim())) orgUpdates.city = dto.city.trim();
+        if (dto.state && (!existingOrg.state || existingOrg.state !== dto.state.trim())) orgUpdates.state = dto.state.trim();
+        if (dto.zone_id && (!existingOrg.zone_id || existingOrg.zone_id !== dto.zone_id)) orgUpdates.zone_id = dto.zone_id;
+        if (dto.region_id && (!existingOrg.region_id || existingOrg.region_id !== dto.region_id)) orgUpdates.region_id = dto.region_id;
+        if (dto.sector && (!existingOrg.sector || existingOrg.sector !== dto.sector.trim())) orgUpdates.sector = dto.sector.trim();
+        if (dto.department && (!(existingOrg as any).department || (existingOrg as any).department !== dto.department.trim())) {
+          orgUpdates.department = dto.department.trim();
+        }
 
         if (Object.keys(orgUpdates).length > 0) {
           orgUpdates.updated_at = new Date();
@@ -526,13 +559,29 @@ export class LeadsService {
         // Find existing by name (case-insensitive deduplication) or create new
         const existingOrg = await trx
           .selectFrom('organisations')
-          .select(['id', 'name', 'region_id', 'zone_id'])
+          .selectAll()
           .where(sql<boolean>`lower(trim(name)) = lower(trim(${orgName}))`)
           .executeTakeFirst();
 
         if (existingOrg) {
           orgId = existingOrg.id;
           orgName = existingOrg.name;
+
+          // Update missing or passed location/sector/department fields if passed
+          const orgUpdates: any = {};
+          if (dto.city && (!existingOrg.city || existingOrg.city !== dto.city.trim())) orgUpdates.city = dto.city.trim();
+          if (dto.state && (!existingOrg.state || existingOrg.state !== dto.state.trim())) orgUpdates.state = dto.state.trim();
+          if (dto.zone_id && (!existingOrg.zone_id || existingOrg.zone_id !== dto.zone_id)) orgUpdates.zone_id = dto.zone_id;
+          if (dto.region_id && (!existingOrg.region_id || existingOrg.region_id !== dto.region_id)) orgUpdates.region_id = dto.region_id;
+          if (dto.sector && (!existingOrg.sector || existingOrg.sector !== dto.sector.trim())) orgUpdates.sector = dto.sector.trim();
+          if (dto.department && (!(existingOrg as any).department || (existingOrg as any).department !== dto.department.trim())) {
+            orgUpdates.department = dto.department.trim();
+          }
+
+          if (Object.keys(orgUpdates).length > 0) {
+            orgUpdates.updated_at = new Date();
+            await trx.updateTable('organisations').set(orgUpdates).where('id', '=', orgId).execute();
+          }
         } else {
           const newOrg = await trx
             .insertInto('organisations')
@@ -542,7 +591,8 @@ export class LeadsService {
               state: dto.state?.trim() || null,
               zone_id: dto.zone_id || null,
               region_id: dto.region_id || null,
-              sector: dto.sector?.trim() || dto.department?.trim() || null,
+              sector: dto.sector?.trim() || null,
+              department: dto.department?.trim() || null,
               is_govt: true,
               created_by: user.id,
             })
@@ -558,27 +608,52 @@ export class LeadsService {
       if (contactId) {
         const contact = await trx
           .selectFrom('contacts')
-          .select('id')
+          .selectAll()
           .where('id', '=', contactId)
           .where('organisation_id', '=', orgId)
           .executeTakeFirst();
         if (!contact) {
           throw new BadRequestException('Specified contact person does not belong to this organisation');
         }
+        const contactUpdates: any = {};
+        if (dto.contact_designation && contact.designation !== dto.contact_designation.trim()) contactUpdates.designation = dto.contact_designation.trim();
+        if (dto.contact_mobile && contact.mobile !== dto.contact_mobile.trim()) contactUpdates.mobile = dto.contact_mobile.trim();
+        if (dto.contact_email && contact.email !== dto.contact_email.trim()) contactUpdates.email = dto.contact_email.trim();
+        if (Object.keys(contactUpdates).length > 0) {
+          await trx.updateTable('contacts').set(contactUpdates).where('id', '=', contactId).execute();
+        }
       } else if (dto.contact_name?.trim()) {
-        const newContact = await trx
-          .insertInto('contacts')
-          .values({
-            organisation_id: orgId,
-            full_name: dto.contact_name.trim(),
-            designation: dto.contact_designation?.trim() || null,
-            mobile: dto.contact_mobile?.trim() || null,
-            email: dto.contact_email?.trim() || null,
-            is_primary: true,
-          })
-          .returning('id')
-          .executeTakeFirstOrThrow();
-        contactId = newContact.id;
+        const existingContact = await trx
+          .selectFrom('contacts')
+          .selectAll()
+          .where('organisation_id', '=', orgId)
+          .where(sql<boolean>`lower(trim(full_name)) = lower(trim(${dto.contact_name.trim()}))`)
+          .executeTakeFirst();
+
+        if (existingContact) {
+          contactId = existingContact.id;
+          const contactUpdates: any = {};
+          if (dto.contact_designation && existingContact.designation !== dto.contact_designation.trim()) contactUpdates.designation = dto.contact_designation.trim();
+          if (dto.contact_mobile && existingContact.mobile !== dto.contact_mobile.trim()) contactUpdates.mobile = dto.contact_mobile.trim();
+          if (dto.contact_email && existingContact.email !== dto.contact_email.trim()) contactUpdates.email = dto.contact_email.trim();
+          if (Object.keys(contactUpdates).length > 0) {
+            await trx.updateTable('contacts').set(contactUpdates).where('id', '=', contactId).execute();
+          }
+        } else {
+          const newContact = await trx
+            .insertInto('contacts')
+            .values({
+              organisation_id: orgId,
+              full_name: dto.contact_name.trim(),
+              designation: dto.contact_designation?.trim() || null,
+              mobile: dto.contact_mobile?.trim() || null,
+              email: dto.contact_email?.trim() || null,
+              is_primary: true,
+            })
+            .returning('id')
+            .executeTakeFirstOrThrow();
+          contactId = newContact.id;
+        }
       }
 
       // Derive Fresh vs Re-Approached
@@ -591,6 +666,18 @@ export class LeadsService {
       const hasPriorInteractions = (priorInteractionsCount?.count || 0) > 0;
       const derivedType: LeadType = dto.lead_type || (hasPriorInteractions ? 're_approached' : 'fresh');
 
+      // Determine lead category: explicitly provided or contextual
+      let assignedCategory: LeadCategory = 'new_lead';
+      if (dto.category) {
+        assignedCategory = (dto.category === ('new' as any) ? 'new_lead' : dto.category) as LeadCategory;
+      } else if (leadStatus === 'new') {
+        assignedCategory = 'new_lead';
+      } else if (['qualified', 'demo', 'proposal', 'tender_discussion', 'negotiation'].includes(leadStatus)) {
+        assignedCategory = 'active';
+      } else {
+        assignedCategory = 'follow_up';
+      }
+
       // Insert Lead
       const lead = await trx
         .insertInto('leads')
@@ -598,8 +685,9 @@ export class LeadsService {
           organisation_id: orgId,
           primary_contact_id: contactId,
           product_id: primaryProductId,
+          department: dto.department?.trim() || null,
           source: dto.source || 'Direct',
-          category: dto.category || 'follow_up',
+          category: assignedCategory,
           probability: dto.probability || 'medium',
           channel: dto.channel || 'direct',
           status: initialStatus,
@@ -616,7 +704,16 @@ export class LeadsService {
           qty: dto.qty || null,
           quot_price: dto.quot_price || null,
           order_price: dto.order_price || null,
-          value_lakh: dto.value_lakh || null,
+          value_lakh:
+            dto.value_lakh !== undefined && dto.value_lakh !== null
+              ? dto.value_lakh
+              : dto.estimated_value_lakh !== undefined && dto.estimated_value_lakh !== null
+              ? dto.estimated_value_lakh
+              : dto.estimated_value !== undefined && dto.estimated_value !== null
+              ? Number(dto.estimated_value) > 1000
+                ? Number(dto.estimated_value) / 100000
+                : Number(dto.estimated_value)
+              : null,
           booking_month: dto.booking_month || null,
           billing_month: dto.billing_month || null,
           order_status: dto.order_status || null,
@@ -729,10 +826,24 @@ export class LeadsService {
   async update(id: string, dto: UpdateLeadDto, user: AuthUser) {
     const existing = await this.findOne(id, user);
 
+    const { estimated_value_lakh, estimated_value, ...cleanDto } = dto;
+    const resolvedValueLakh =
+      dto.value_lakh !== undefined
+        ? dto.value_lakh
+        : estimated_value_lakh !== undefined
+        ? estimated_value_lakh
+        : estimated_value !== undefined
+        ? Number(estimated_value) > 1000
+          ? Number(estimated_value) / 100000
+          : Number(estimated_value)
+        : undefined;
+
     const updated = await this.db
       .updateTable('leads')
       .set({
-        ...dto,
+        ...cleanDto,
+        value_lakh: resolvedValueLakh,
+        category: dto.category ? ((dto.category === ('new' as any) ? 'new_lead' : dto.category) as LeadCategory) : undefined,
         lead_status: dto.lead_status || (dto.status ? (dto.status.toLowerCase() as any) : undefined),
         status: dto.status || (dto.lead_status ? dto.lead_status : undefined),
         next_followup_at: dto.next_followup_date ? new Date(dto.next_followup_date) : undefined,
@@ -751,7 +862,7 @@ export class LeadsService {
       newValue: updated,
     });
 
-    return updated;
+    return this.findOne(id, user);
   }
 
   async changeStatus(id: string, dto: ChangeLeadStatusDto, user: AuthUser) {
@@ -1012,7 +1123,7 @@ export class LeadsService {
   async getDashboard(user: AuthUser) {
     let baseLeads = this.db
       .selectFrom('leads')
-      .innerJoin('organisations', 'leads.organisation_id', 'organisations.id');
+      .leftJoin('organisations', 'leads.organisation_id', 'organisations.id');
 
     if (user.role === 'sales') {
       baseLeads = baseLeads.where('leads.assigned_to', '=', user.id);
@@ -1051,7 +1162,7 @@ export class LeadsService {
     // Follow-ups summary
     let followUpQuery = this.db
       .selectFrom('follow_ups')
-      .innerJoin('organisations', 'follow_ups.organisation_id', 'organisations.id');
+      .leftJoin('organisations', 'follow_ups.organisation_id', 'organisations.id');
 
     if (user.role === 'sales') {
       followUpQuery = followUpQuery.where('follow_ups.assigned_to', '=', user.id);
@@ -1061,38 +1172,73 @@ export class LeadsService {
 
     const followUpStats = await followUpQuery
       .select([
-        sql<number>`count(case when follow_ups.status = 'pending' and follow_ups.due_date = ${today} then 1 end)::int`.as('due_today'),
-        sql<number>`count(case when follow_ups.status = 'pending' and follow_ups.due_date < ${today} then 1 end)::int`.as('overdue'),
-        sql<number>`count(case when follow_ups.status = 'pending' and follow_ups.due_date > ${today} then 1 end)::int`.as('upcoming'),
+        sql<number>`count(case when follow_ups.status = 'pending' and follow_ups.due_date = ${today}::date then 1 end)::int`.as('due_today'),
+        sql<number>`count(case when follow_ups.status = 'pending' and follow_ups.due_date < ${today}::date then 1 end)::int`.as('overdue'),
+        sql<number>`count(case when follow_ups.status = 'pending' and follow_ups.due_date > ${today}::date then 1 end)::int`.as('upcoming'),
         sql<number>`count(case when follow_ups.status = 'completed' then 1 end)::int`.as('completed'),
       ])
       .executeTakeFirst();
 
+    const totalLeads = Number(stats?.total_leads) || 0;
+    const freshLeads = Number(stats?.fresh_leads) || 0;
+    const reApproachedLeads = Number(stats?.re_approached_leads) || 0;
+    const convertedLeads = Number(stats?.converted) || 0;
+    const lostLeads = Number(stats?.lost) || 0;
+    const activeLeads = Math.max(0, totalLeads - convertedLeads - lostLeads);
+    const pipelineValueLakh = Math.round((Number(stats?.pipeline_value_lakh) || 0) * 100) / 100;
+
+    const dueToday = Number(followUpStats?.due_today) || 0;
+    const overdue = Number(followUpStats?.overdue) || 0;
+    const upcoming = Number(followUpStats?.upcoming) || 0;
+    const completed = Number(followUpStats?.completed) || 0;
+
     return {
+      // Top-level counts for direct card bindings (both snake_case and camelCase)
+      total_leads: totalLeads,
+      totalLeads,
+      fresh_leads: freshLeads,
+      freshLeads,
+      reapproached_leads: reApproachedLeads,
+      re_approached_leads: reApproachedLeads,
+      reApproachedLeads,
+      active_leads: activeLeads,
+      activeLeads,
+      converted_leads: convertedLeads,
+      convertedLeads,
+      lost_leads: lostLeads,
+      lostLeads,
+      pipeline_value_lakh: pipelineValueLakh,
+      pipelineValueLakh,
+      followups_due_today: dueToday,
+      followupsDueToday: dueToday,
+      followups_overdue: overdue,
+      followupsOverdue: overdue,
+
+      // Nested metrics preserving contract for e2e tests & intelligence reporting
       metrics: {
-        totalLeads: stats?.total_leads || 0,
-        freshLeads: stats?.fresh_leads || 0,
-        reApproachedLeads: stats?.re_approached_leads || 0,
-        activeLeads: (stats?.total_leads || 0) - (stats?.converted || 0) - (stats?.lost || 0),
-        pipelineValueLakh: Math.round((stats?.pipeline_value_lakh || 0) * 100) / 100,
+        totalLeads,
+        freshLeads,
+        reApproachedLeads,
+        activeLeads,
+        pipelineValueLakh,
         byStatus: {
-          new: stats?.new_leads || 0,
-          contacted: stats?.contacted || 0,
-          qualified: stats?.qualified || 0,
-          follow_up: stats?.follow_up || 0,
-          demo: stats?.demo || 0,
-          proposal: stats?.proposal || 0,
-          tender_discussion: stats?.tender_discussion || 0,
-          negotiation: stats?.negotiation || 0,
-          converted: stats?.converted || 0,
-          lost: stats?.lost || 0,
-          on_hold: stats?.on_hold || 0,
+          new: Number(stats?.new_leads) || 0,
+          contacted: Number(stats?.contacted) || 0,
+          qualified: Number(stats?.qualified) || 0,
+          follow_up: Number(stats?.follow_up) || 0,
+          demo: Number(stats?.demo) || 0,
+          proposal: Number(stats?.proposal) || 0,
+          tender_discussion: Number(stats?.tender_discussion) || 0,
+          negotiation: Number(stats?.negotiation) || 0,
+          converted: convertedLeads,
+          lost: lostLeads,
+          on_hold: Number(stats?.on_hold) || 0,
         },
         followUps: {
-          dueToday: followUpStats?.due_today || 0,
-          overdue: followUpStats?.overdue || 0,
-          upcoming: followUpStats?.upcoming || 0,
-          completed: followUpStats?.completed || 0,
+          dueToday,
+          overdue,
+          upcoming,
+          completed,
         },
       },
     };

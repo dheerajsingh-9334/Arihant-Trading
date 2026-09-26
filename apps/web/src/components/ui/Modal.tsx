@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 import { twMerge } from 'tailwind-merge';
 import { IconButton } from './Button';
@@ -10,6 +10,26 @@ export interface ModalProps {
   description?: string;
   children: React.ReactNode;
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '4xl';
+  zIndex?: number;
+  className?: string;
+}
+
+// Global modal stack tracking for z-index layering, body scroll lock, and ESC key routing
+interface StackEntry {
+  id: string;
+  onClose: () => void;
+  zIndex: number;
+}
+const activeModalStack: StackEntry[] = [];
+let nextModalId = 0;
+
+function updateBodyOverflow() {
+  if (typeof document === 'undefined') return;
+  if (activeModalStack.length > 0) {
+    document.body.style.overflow = 'hidden';
+  } else {
+    document.body.style.overflow = 'unset';
+  }
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -19,26 +39,55 @@ export const Modal: React.FC<ModalProps> = ({
   description,
   children,
   maxWidth = 'lg',
+  zIndex,
+  className,
 }) => {
+  const modalIdRef = useRef<string | null>(null);
+
+  if (!modalIdRef.current) {
+    modalIdRef.current = `modal_${++nextModalId}`;
+  }
+  const modalId = modalIdRef.current;
+
   useEffect(() => {
+    if (!isOpen) return;
+
+    // Default base z-index 50, increment by 10 for each nested stacked modal
+    const baseZ = zIndex ?? (50 + activeModalStack.length * 10);
+    const entry: StackEntry = {
+      id: modalId,
+      onClose,
+      zIndex: baseZ,
+    };
+    activeModalStack.push(entry);
+    updateBodyOverflow();
+
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') {
+        const top = activeModalStack[activeModalStack.length - 1];
+        if (top && top.id === modalId) {
+          e.stopPropagation();
+          onClose();
+        }
+      }
     };
 
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-      window.addEventListener('keydown', handleKeyDown);
-    } else {
-      document.body.style.overflow = 'unset';
-    }
+    window.addEventListener('keydown', handleKeyDown);
 
     return () => {
-      document.body.style.overflow = 'unset';
       window.removeEventListener('keydown', handleKeyDown);
+      const idx = activeModalStack.findIndex((m) => m.id === modalId);
+      if (idx !== -1) {
+        activeModalStack.splice(idx, 1);
+      }
+      updateBodyOverflow();
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, modalId, zIndex]);
 
   if (!isOpen) return null;
+
+  const currentEntry = activeModalStack.find((m) => m.id === modalId);
+  const resolvedZIndex = zIndex ?? currentEntry?.zIndex ?? (50 + activeModalStack.length * 10);
 
   const maxWidths = {
     sm: 'sm:max-w-sm',
@@ -50,7 +99,10 @@ export const Modal: React.FC<ModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div
+      className={twMerge('fixed inset-0 flex items-center justify-center p-4', className)}
+      style={{ zIndex: resolvedZIndex }}
+    >
       {/* Translucent overlay */}
       <div
         className="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity animate-in fade-in duration-150"

@@ -84,7 +84,7 @@ export class CreateLeadDto {
   @IsOptional()
   source?: string;
 
-  @IsEnum(['active', 'expected', 'follow_up'] as const)
+  @IsEnum(['new_lead', 'active', 'expected', 'follow_up'] as const)
   @IsOptional()
   category?: LeadCategory;
 
@@ -156,6 +156,14 @@ export class CreateLeadDto {
   @IsOptional()
   value_lakh?: number;
 
+  @IsNumber()
+  @IsOptional()
+  estimated_value_lakh?: number;
+
+  @IsNumber()
+  @IsOptional()
+  estimated_value?: number;
+
   @IsString()
   @IsOptional()
   booking_month?: string;
@@ -184,9 +192,13 @@ export class UpdateLeadDto {
 
   @IsString()
   @IsOptional()
+  department?: string;
+
+  @IsString()
+  @IsOptional()
   source?: string;
 
-  @IsEnum(['active', 'expected', 'follow_up'] as const)
+  @IsEnum(['new_lead', 'active', 'expected', 'follow_up'] as const)
   @IsOptional()
   category?: LeadCategory;
 
@@ -245,6 +257,14 @@ export class UpdateLeadDto {
   @IsNumber()
   @IsOptional()
   value_lakh?: number;
+
+  @IsNumber()
+  @IsOptional()
+  estimated_value_lakh?: number;
+
+  @IsNumber()
+  @IsOptional()
+  estimated_value?: number;
 
   @IsString()
   @IsOptional()

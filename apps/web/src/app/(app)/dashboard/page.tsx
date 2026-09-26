@@ -906,18 +906,24 @@ export default function DashboardPage() {
                 </div>
               ) : (
                 leadsList.map((l) => (
-                  <div key={l.id} className="p-3.5 hover:bg-[#FBFAF7] transition-colors flex items-start justify-between gap-3">
+                  <Link
+                    key={l.id}
+                    href={`/leads?highlight=${l.id}`}
+                    className="p-3.5 hover:bg-[#FBFAF7] transition-colors flex items-start justify-between gap-3 block"
+                  >
                     <div>
-                      <div className="font-bold text-xs text-gray-900">{l.organisation_name || 'Prospect Client'}</div>
+                      <div className="font-bold text-xs text-gray-900 hover:text-[#0F5E63] transition-colors">
+                        {l.organisation_name || 'Prospect Client'}
+                      </div>
                       <div className="text-[11px] text-[#4A5568] mt-0.5">{l.product_name || 'Security Hardware'}</div>
                       <div className="text-[10px] text-gray-500 mt-1 font-mono">
-                        Est. Value: <strong className="text-gray-900 font-bold">₹{l.estimated_value_lakh ?? 0} Lakh</strong>
+                        Est. Value: <strong className="text-gray-900 font-bold">{formatLakh(Number(l.value_lakh ?? l.estimated_value_lakh ?? 0))}</strong>
                       </div>
                     </div>
                     <Badge variant="outline" size="sm" className="uppercase shrink-0 font-bold">
-                      {l.stage || 'QUALIFIED'}
+                      {l.stage || l.lead_status || l.status || 'QUALIFIED'}
                     </Badge>
-                  </div>
+                  </Link>
                 ))
               )}
             </div>

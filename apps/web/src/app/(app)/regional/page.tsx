@@ -52,6 +52,24 @@ import {
 } from '@/components/ui';
 import { formatLakh, formatINR } from '@arihant/shared';
 
+const formatLeadCategory = (category?: string) => {
+  if (!category) return 'New Lead';
+  const c = category.toLowerCase().trim();
+  if (c === 'new_lead' || c === 'new') return 'New Lead';
+  if (c === 'follow_up' || c === 'follow-up') return 'Follow-up';
+  if (c === 'active') return 'Active';
+  if (c === 'expected') return 'Expected';
+  return category.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
+};
+
+const getCategoryBadgeVariant = (category?: string): 'info' | 'success' | 'warning' | 'default' => {
+  const c = category?.toLowerCase().trim();
+  if (c === 'new_lead' || c === 'new') return 'info';
+  if (c === 'active') return 'success';
+  if (c === 'expected') return 'warning';
+  return 'default';
+};
+
 export default function RegionalPage() {
   const { user, hasRole } = useAuth();
   const [data, setData] = useState<any | null>(null);
@@ -444,8 +462,12 @@ export default function RegionalPage() {
                     </TableCell>
                     <TableCell className="text-[#14213D]">{ld.product_name || 'Security Scanning Hardware'}</TableCell>
                     <TableCell>
-                      <Badge variant="outline" size="sm" className="uppercase font-bold">
-                        {ld.category}
+                      <Badge
+                        variant={getCategoryBadgeVariant(ld.category)}
+                        size="sm"
+                        className="font-semibold"
+                      >
+                        {formatLeadCategory(ld.category)}
                       </Badge>
                     </TableCell>
                     <TableCell>
